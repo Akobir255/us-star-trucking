@@ -1,42 +1,52 @@
-import { Loader } from "@googlemaps/js-api-loader";
+const API_KEY =
+  "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdjZWRkNmIwOTdmYTQyNWQ5MmNiMzQ0NzVmNDQ0ZTkzIiwiaCI6Im11cm11cjY0In0=";
 
-const loader = new Loader({
-  apiKey: "AIzaSyD4c8Gs15mvWYKOWFXB8viJggDLRn-OtQY",
-  version: "weekly",
-});
+async function getCoordinates(zip) {
+  const res = await fetch(
+    `https://api.openrouteservice.org/geocode/search?api_key=${API_KEY}&text=${zip}&boundary.country=USA&size=1`
+  );
 
-export async function getDistance(origin, destination) {
-  await loader.load();
+  const data = await res.json();
 
-  return new Promise((resolve, reject) => {
-    const service = new google.maps.DistanceMatrixService();
+  if (!data.features || data.features.length === 0) {
+    throw new Error("Invalid ZIP Code");
+  }
 
-    service.getDistanceMatrix(
-      {
-        origins: [origin],
-        destinations: [destination],
-        travelMode: google.maps.TravelMode.DRIVING,
-        unitSystem: google.maps.UnitSystem.IMPERIAL,
+  return data.features[0].geometry.coordinates;
+}
+
+export async function getDistance(originZip, destinationZip) {
+  const origin = await getCoordinates(originZip);
+  const destination = await getCoordinates(destinationZip);
+
+  const response = await fetch(
+    "https://api.openrouteservice.org/v2/directions/driving-car",
+    {
+      method: "POST",
+      headers: {
+        Authorization: API_KEY,
+        "Content-Type": "application/json",
       },
-      (response, status) => {
-        if (status !== "OK") {
-          reject(status);
-          return;
-        }
+      body: JSON.stringify({
+        coordinates: [origin, destination],
+      }),
+    }
+  );
 
-        const result = response.rows[0].elements[0];
+  const data = await response.json();
 
-        if (result.status !== "OK") {
-          reject(result.status);
-          return;
-        }
+  if (!data.routes || data.routes.length === 0) {
+    throw new Error("Unable to calculate route");
+  }
 
-        resolve({
-          miles: Math.round(result.distance.value / 1609.34),
-          distance: result.distance.text,
-          duration: result.duration.text,
-        });
-      }
-    );
-  });
+  const summary = data.routes[0].summary;
+
+  const miles = Math.round(summary.distance * 0.000621371);
+  const hours = summary.duration / 3600;
+
+  return {
+    miles,
+    distance: `${miles} miles`,
+    duration: `${hours.toFixed(1)} hours`,
+  };
 }

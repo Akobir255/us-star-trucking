@@ -20,33 +20,26 @@ export function calculateQuote(
 
   let price = miles * rate;
 
-  // Minimum charge
-  if (price < 200) price = 200;
-
-  // Vehicle surcharge
-  switch (vehicle) {
-    case "SUV":
-      price += 100;
-      break;
-
-    case "Pickup Truck":
-      price += 150;
-      break;
-
-    case "Van":
-      price += 100;
-      break;
-
-    default:
-      break;
+  if (price < 200) {
+    price = 200;
   }
 
-  // Vehicle condition
+  if (vehicle === "SUV") {
+    price += 100;
+  }
+
+  if (vehicle === "Pickup Truck") {
+    price += 150;
+  }
+
+  if (vehicle === "Van") {
+    price += 100;
+  }
+
   if (condition === "Non-Running") {
     price += 100;
   }
 
-  // Enclosed transport
   if (transport === "Enclosed") {
     price *= 1.3;
   }
