@@ -1,242 +1,252 @@
 import { useState } from "react";
 import emailjs from "@emailjs/browser";
+import PlaceAutocomplete from "./PlaceAutocomplete";
 
-function QuoteForm() {
-  const [formData, setFormData] = useState({
-    pickupCity: "",
-    pickupState: "",
-    deliveryCity: "",
-    deliveryState: "",
-    vehicleYear: "",
-    vehicleMake: "",
-    vehicleModel: "",
-    vehicleType: "",
-    vehicleCondition: "Running",
-    transportType: "Open",
+export default function QuoteForm() {
+  const initialForm = {
+    pickup: "",
+    delivery: "",
+    year: "",
+    make: "",
+    model: "",
+    vehicle: "",
+    condition: "",
+    transport: "",
     name: "",
     phone: "",
     email: "",
-    notes: "",
+  };
+
+  const [formData, setFormData] = useState(initialForm);
+
+  const [loading, setLoading] = useState(false);
+
+  const [message, setMessage] = useState({
+    type: "",
+    text: "",
   });
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Form Data:", formData);
+    setLoading(true);
 
-    emailjs
-      .send(
+    setMessage({
+      type: "",
+      text: "",
+    });
+
+    try {
+      await emailjs.send(
         "service_7iyk46o",
         "template_hip0ibn",
         formData,
         "VmOz4fwe7AtHA_Xjf"
-      )
-      .then(() => {
-        alert("Thank you! Your quote request has been sent.");
+      );
 
-        setFormData({
-          pickupCity: "",
-          pickupState: "",
-          deliveryCity: "",
-          deliveryState: "",
-          vehicleYear: "",
-          vehicleMake: "",
-          vehicleModel: "",
-          vehicleType: "",
-          vehicleCondition: "Running",
-          transportType: "Open",
-          name: "",
-          phone: "",
-          email: "",
-          notes: "",
-        });
-      })
-      .catch((error) => {
-        console.error("EmailJS Error:", error);
-        alert("Something went wrong. Please try again.");
+      setMessage({
+        type: "success",
+        text: "✅ Your quote request has been sent successfully!",
       });
+
+      setFormData(initialForm);
+
+    } catch (error) {
+      console.error(error);
+
+      setMessage({
+        type: "error",
+        text: "❌ Something went wrong. Please try again.",
+      });
+
+    } finally {
+      setLoading(false);
+    }
   };
 
+
   return (
-      <section
-  id="quote-form"
-  className="max-w-6xl mx-auto px-6 -mt-10 relative z-10">
+    <section className="max-w-6xl mx-auto px-6 -mt-10 relative z-10">
+
       <div className="bg-white rounded-3xl shadow-2xl p-8">
 
-        <h2 className="text-3xl font-bold text-center mb-8">
-          Get Your Free Auto Transport Quote
+        <h2 className="text-3xl font-bold text-center mb-2">
+          Get Your Free Car Shipping Quote
         </h2>
 
-        <form onSubmit={handleSubmit}>
-          <div className="grid md:grid-cols-2 gap-4">
+        <p className="text-center text-gray-600 mb-8">
+          Fast • Safe • Door-to-Door Auto Transport
+        </p>
 
-            <input
-              type="text"
-              name="pickupCity"
-              placeholder="Pickup City"
-              value={formData.pickupCity}
-              onChange={handleChange}
-              className="border rounded-xl p-4"
-              required
-            />
 
-            <input
-              type="text"
-              name="pickupState"
-              placeholder="Pickup State"
-              value={formData.pickupState}
-              onChange={handleChange}
-              className="border rounded-xl p-4"
-              required
-            />
+        <form
+          onSubmit={handleSubmit}
+          className="grid md:grid-cols-2 gap-4"
+        >
 
-            <input
-              type="text"
-              name="deliveryCity"
-              placeholder="Delivery City"
-              value={formData.deliveryCity}
-              onChange={handleChange}
-              className="border rounded-xl p-4"
-              required
-            />
 
-            <input
-              type="text"
-              name="deliveryState"
-              placeholder="Delivery State"
-              value={formData.deliveryState}
-              onChange={handleChange}
-              className="border rounded-xl p-4"
-              required
-            />
+          <PlaceAutocomplete
+            name="pickup"
+            value={formData.pickup}
+            onChange={handleChange}
+            placeholder="Pickup Location"
+          />
 
-            <input
-              type="number"
-              name="vehicleYear"
-              placeholder="Vehicle Year (Example: 2022)"
-              value={formData.vehicleYear}
-              onChange={handleChange}
-              min="1900"
-              max="2099"
-              className="border rounded-xl p-4"
-              required
-            />
 
-            <input
-              type="text"
-              name="vehicleMake"
-              placeholder="Vehicle Make"
-              value={formData.vehicleMake}
-              onChange={handleChange}
-              className="border rounded-xl p-4"
-              required
-            />
+          <PlaceAutocomplete
+            name="delivery"
+            value={formData.delivery}
+            onChange={handleChange}
+            placeholder="Delivery Location"
+          />
 
-            <input
-              type="text"
-              name="vehicleModel"
-              placeholder="Vehicle Model"
-              value={formData.vehicleModel}
-              onChange={handleChange}
-              className="border rounded-xl p-4"
-              required
-            />
 
-            <select
-              name="vehicleType"
-              value={formData.vehicleType}
-              onChange={handleChange}
-              className="border rounded-xl p-4"
-              required
-            >
-              <option value="">Vehicle Type</option>
-              <option>Sedan</option>
-              <option>SUV</option>
-              <option>Pickup Truck</option>
-              <option>Van</option>
-              <option>Motorcycle</option>
-            </select>
+          <input
+            type="text"
+            name="year"
+            value={formData.year}
+            onChange={handleChange}
+            placeholder="Vehicle Year"
+            className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
 
-            <select
-              name="vehicleCondition"
-              value={formData.vehicleCondition}
-              onChange={handleChange}
-              className="border rounded-xl p-4"
-            >
-              <option>Running</option>
-              <option>Non-Running</option>
-            </select>
 
-            <select
-              name="transportType"
-              value={formData.transportType}
-              onChange={handleChange}
-              className="border rounded-xl p-4"
-            >
-              <option>Open Transport</option>
-              <option>Enclosed Transport</option>
-            </select>
+          <input
+            type="text"
+            name="make"
+            value={formData.make}
+            onChange={handleChange}
+            placeholder="Vehicle Make"
+            className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
 
-            <input
-              type="text"
-              name="name"
-              placeholder="Full Name"
-              value={formData.name}
-              onChange={handleChange}
-              className="border rounded-xl p-4 md:col-span-2"
-              required
-            />
 
-            <input
-              type="tel"
-              name="phone"
-              placeholder="Phone Number"
-              value={formData.phone}
-              onChange={handleChange}
-              className="border rounded-xl p-4"
-              required
-            />
+          <input
+            type="text"
+            name="model"
+            value={formData.model}
+            onChange={handleChange}
+            placeholder="Vehicle Model"
+            className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
 
-            <input
-              type="email"
-              name="email"
-              placeholder="Email Address"
-              value={formData.email}
-              onChange={handleChange}
-              className="border rounded-xl p-4"
-              required
-            />
 
-            <textarea
-              name="notes"
-              placeholder="Additional Notes (Optional)"
-              value={formData.notes}
-              onChange={handleChange}
-              rows="5"
-              className="border rounded-xl p-4 md:col-span-2"
-            />
+          <select
+            name="vehicle"
+            value={formData.vehicle}
+            onChange={handleChange}
+            className="border border-gray-300 p-3 rounded-lg"
+            required
+          >
+            <option value="">Vehicle Type</option>
+            <option value="Sedan">Sedan</option>
+            <option value="SUV">SUV</option>
+            <option value="Pickup Truck">Pickup Truck</option>
+            <option value="Van">Van</option>
+            <option value="Motorcycle">Motorcycle</option>
+          </select>
 
-          </div>
+
+          <select
+            name="condition"
+            value={formData.condition}
+            onChange={handleChange}
+            className="border border-gray-300 p-3 rounded-lg"
+            required
+          >
+            <option value="">Vehicle Condition</option>
+            <option value="Running">Running</option>
+            <option value="Non-Running">Non-Running</option>
+          </select>
+
+
+          <select
+            name="transport"
+            value={formData.transport}
+            onChange={handleChange}
+            className="border border-gray-300 p-3 rounded-lg"
+            required
+          >
+            <option value="">Transport Type</option>
+            <option value="Open">Open Transport</option>
+            <option value="Enclosed">Enclosed Transport</option>
+          </select>
+
+
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Full Name"
+            className="border border-gray-300 p-3 rounded-lg"
+            required
+          />
+
+
+          <input
+            type="tel"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            placeholder="Phone Number"
+            className="border border-gray-300 p-3 rounded-lg"
+            required
+          />
+
+
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Email Address"
+            className="border border-gray-300 p-3 rounded-lg"
+            required
+          />
+
 
           <button
             type="submit"
-            className="mt-8 w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl text-lg font-bold transition"
+            disabled={loading}
+            className={`md:col-span-2 py-3 rounded-lg font-bold text-white ${
+              loading
+                ? "bg-gray-400"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
-            Get My Free Quote
+            {loading ? "Sending..." : "Get My Free Quote"}
           </button>
+
+
+          {message.text && (
+            <div
+              className={`md:col-span-2 text-center font-medium ${
+                message.type === "success"
+                  ? "text-green-600"
+                  : "text-red-600"
+              }`}
+            >
+              {message.text}
+            </div>
+          )}
 
         </form>
 
       </div>
+
     </section>
   );
 }
-
-export default QuoteForm;
