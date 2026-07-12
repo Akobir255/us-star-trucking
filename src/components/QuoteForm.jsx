@@ -4,7 +4,7 @@ import { getDistance } from "../googleDistance";
 import { calculateQuote } from "../pricing";
 
 const UNSPLASH_KEY = "5TVaxXdJqOFIlK8vkA10aeg_cN6spqAWH1zntE8gX6c";
-const GOOGLE_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdjZWRkNmIwOTdmYTQyNWQ5MmNiMzQ0NzVmNDQ0ZTkzIiwiaCI6Im11cm11cjY0In0=";
+const GOOGLE_KEY = "AIzaSyD4c8Gs15mvWYKOWFXB8viJggDLRn-OtQY";
 
 const MODEL_TO_TYPE = {
   // Sedans
@@ -312,7 +312,7 @@ export default function QuoteForm() {
   };
 
   return (
-    <section className="max-w-6xl mx-auto px-4 sm:px-6 -mt-10 relative z-10">
+    <section id="quote-form" className="max-w-6xl mx-auto px-4 sm:px-6 -mt-10 relative z-10">
       <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8">
         <h2 className="text-3xl font-bold text-center mb-2">
           Get Your Free Car Shipping Quote
