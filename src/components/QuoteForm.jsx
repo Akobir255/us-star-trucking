@@ -19,7 +19,6 @@ export default function QuoteForm() {
   };
 
   const [formData, setFormData] = useState(initialForm);
-
   const [loading, setLoading] = useState(false);
 
   const [message, setMessage] = useState({
@@ -108,17 +107,17 @@ export default function QuoteForm() {
       }
 
       await emailjs.send(
-  "service_7iyk46o",
-  "template_hip0ibn",
-  {
-    ...formData,
-    distance: quoteData.distance,
-    miles: quoteData.miles,
-    duration: quoteData.duration,
-    estimated_price: `$${quoteData.price}`,
-  },
-  "VmOz4fwe7AtHA_Xjf"
-);
+        "service_7iyk46o",
+        "template_hip0ibn",
+        {
+          ...formData,
+          distance: quoteData.distance,
+          miles: quoteData.miles,
+          estimated_price: `$${quoteData.price}`,
+        },
+        "VmOz4fwe7AtHA_Xjf"
+      );
+
       setMessage({
         type: "success",
         text: "✅ Your quote request has been sent successfully!",
@@ -139,9 +138,11 @@ export default function QuoteForm() {
   };
 
   return (
-    <section className="max-w-6xl mx-auto px-6 -mt-10 relative z-10">
+    <section
+      id="quote-form"
+      className="max-w-6xl mx-auto px-6 -mt-10 relative z-10"
+    >
       <div className="bg-white rounded-3xl shadow-2xl p-8">
-
         <h2 className="text-3xl font-bold text-center mb-2">
           Get Your Free Car Shipping Quote
         </h2>
@@ -154,8 +155,6 @@ export default function QuoteForm() {
           onSubmit={handleSubmit}
           className="grid md:grid-cols-2 gap-4"
         >
-
-          {/* Pickup ZIP */}
           <input
             type="text"
             name="pickup"
@@ -174,7 +173,6 @@ export default function QuoteForm() {
             required
           />
 
-          {/* Delivery ZIP */}
           <input
             type="text"
             name="delivery"
@@ -295,24 +293,20 @@ export default function QuoteForm() {
             required
           />
 
-          {/* ✅ Restored quote display block */}
           {quote && (
             <div className="md:col-span-2 bg-blue-50 border border-blue-200 rounded-xl p-5">
               <h3 className="text-xl font-bold mb-3">
                 Estimated Quote
               </h3>
-              <p>
-                <strong>Distance:</strong> {quote.distance}
-              </p>
-              <p>
-                <strong>Miles:</strong> {quote.miles}
-              </p>
-              <p>
-                <strong>Transit Time:</strong> {quote.duration}
-              </p>
+
+              <p><strong>Distance:</strong> {quote.distance}</p>
+              <p><strong>Miles:</strong> {quote.miles}</p>
+              <p><strong>Transit Time:</strong> {quote.duration}</p>
+
               <p className="text-3xl font-bold text-blue-700 mt-4">
                 ${quote.price}
               </p>
+
               <p className="text-sm text-gray-600 mt-2">
                 Final price may vary slightly depending on carrier availability.
               </p>
@@ -342,7 +336,6 @@ export default function QuoteForm() {
               {message.text}
             </div>
           )}
-
         </form>
       </div>
     </section>

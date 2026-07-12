@@ -1,45 +1,81 @@
 function WhyChooseUs() {
   const reasons = [
     {
-      title: "Licensed & Insured",
-      description: "Your vehicle is protected by fully licensed and insured carriers.",
+      icon: "🛡️",
+      title: "Licensed, Bonded & Insured",
+      description:
+        "Every shipment is handled by fully licensed FMCSA-compliant carriers with cargo insurance for complete peace of mind.",
     },
     {
+      icon: "🚚",
+      title: "Door-to-Door Delivery",
+      description:
+        "We pick up and deliver your vehicle as close to your preferred locations as safely possible.",
+    },
+    {
+      icon: "💰",
+      title: "Transparent Pricing",
+      description:
+        "No hidden fees. No surprise charges. Get competitive pricing with an instant online estimate.",
+    },
+    {
+      icon: "📍",
       title: "Nationwide Coverage",
-      description: "We ship cars safely across all 50 states.",
+      description:
+        "We transport cars, SUVs, trucks, motorcycles, and luxury vehicles anywhere in the continental United States.",
     },
     {
-      title: "Competitive Pricing",
-      description: "Transparent pricing with no hidden fees.",
+      icon: "⭐",
+      title: "Top-Rated Customer Service",
+      description:
+        "Our experienced shipping coordinators keep you informed from pickup to delivery.",
     },
     {
-      title: "24/7 Customer Support",
-      description: "Our team is available to answer your questions anytime.",
+      icon: "⏰",
+      title: "Fast Pickup",
+      description:
+        "Most vehicles are picked up within 1–3 business days depending on carrier availability.",
     },
   ];
 
   return (
-    <section className="bg-slate-100 py-20">
+    <section className="py-24 bg-gray-50">
       <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-4xl font-bold text-center mb-4">
-          Why Choose Us
-        </h2>
 
-        <p className="text-center text-gray-600 mb-12">
-          Trusted by customers nationwide for safe, reliable, and affordable vehicle transport.
-        </p>
+        <div className="text-center mb-16">
+          <h2 className="text-5xl font-bold">
+            Why Choose US Star Trucking LLC?
+          </h2>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <p className="text-xl text-gray-600 mt-5 max-w-3xl mx-auto">
+            Thousands of customers trust us for reliable, affordable,
+            and secure vehicle transportation across the United States.
+          </p>
+        </div>
+
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8">
+
           {reasons.map((item) => (
             <div
               key={item.title}
-              className="bg-white p-6 rounded-2xl shadow-md"
+              className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition p-8"
             >
-              <h3 className="text-xl font-semibold mb-3">{item.title}</h3>
-              <p className="text-gray-600">{item.description}</p>
+              <div className="text-5xl mb-5">
+                {item.icon}
+              </div>
+
+              <h3 className="text-2xl font-bold mb-3">
+                {item.title}
+              </h3>
+
+              <p className="text-gray-600 leading-7">
+                {item.description}
+              </p>
             </div>
           ))}
+
         </div>
+
       </div>
     </section>
   );
