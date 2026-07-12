@@ -30,7 +30,7 @@ export async function getDistance(originZip, destinationZip) {
     {
       method: "POST",
       headers: {
-        Authorization: API_KEY,
+        "Authorization": `Bearer ${API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
