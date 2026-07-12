@@ -9,7 +9,10 @@ function Hero() {
   };
 
   return (
-    <section className="bg-gradient-to-br from-slate-950 via-slate-900 to-blue-900 text-white overflow-hidden">
+    <section
+      id="home"
+      className="bg-gradient-to-br from-slate-950 via-slate-900 to-blue-900 text-white overflow-hidden"
+    >
       <div className="max-w-7xl mx-auto px-6 py-24 lg:py-32 grid lg:grid-cols-2 gap-16 items-center">
 
         {/* LEFT SIDE */}
@@ -20,24 +23,19 @@ function Hero() {
           </div>
 
           <h2 className="text-blue-400 uppercase tracking-[4px] font-bold">
-            CarShippingService.org
+            US Star Trucking LLC
           </h2>
 
-          <p className="mt-2 text-slate-300 text-lg">
-            Powered by US Star Trucking LLC
-          </p>
-
-          <h1 className="text-5xl lg:text-7xl font-extrabold leading-tight mt-6">
-            Nationwide
-            <span className="text-blue-500"> Car Shipping </span>
-            You Can Trust
+          <h1 className="text-5xl lg:text-7xl font-extrabold leading-tight mt-4">
+            Reliable
+            <span className="text-blue-500"> Nationwide </span>
+            Auto Transport
           </h1>
 
           <p className="mt-8 text-xl text-slate-300 leading-8">
-            Ship your vehicle anywhere in the United States with licensed and
-            insured carriers. We provide fast quotes, competitive pricing,
-            door-to-door delivery, and dependable customer service from pickup
-            to delivery.
+            Fast, safe, and affordable vehicle shipping anywhere in the United
+            States. We provide door-to-door transport backed by licensed,
+            insured, and experienced carriers you can trust.
           </p>
 
           <div className="flex flex-wrap gap-4 mt-10">
@@ -53,40 +51,12 @@ function Hero() {
               href="tel:+18657227114"
               className="border border-white px-8 py-4 rounded-xl hover:bg-white hover:text-slate-900 transition font-semibold"
             >
-              📞 (865) 722-7114
+              📞 Call (865) 722-7114
             </a>
 
           </div>
 
-          {/* Trust Badges */}
-
-          <div className="flex flex-wrap gap-3 mt-8">
-
-            <span className="bg-green-600 px-4 py-2 rounded-full text-sm font-semibold">
-              ✓ Licensed & Insured
-            </span>
-
-            <span className="bg-blue-600 px-4 py-2 rounded-full text-sm font-semibold">
-              ✓ Door-to-Door
-            </span>
-
-            <span className="bg-indigo-600 px-4 py-2 rounded-full text-sm font-semibold">
-              ✓ Open & Enclosed
-            </span>
-
-            <span className="bg-slate-700 px-4 py-2 rounded-full text-sm font-semibold">
-              ✓ Nationwide
-            </span>
-
-            <span className="bg-orange-600 px-4 py-2 rounded-full text-sm font-semibold">
-              ✓ Free Quotes
-            </span>
-
-          </div>
-
-          {/* Stats */}
-
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 mt-12 text-sm">
+          <div className="grid grid-cols-2 gap-6 mt-12 text-sm">
 
             <div className="bg-white/10 rounded-xl p-4">
               <p className="font-bold text-blue-400">USDOT</p>
@@ -108,16 +78,6 @@ function Hero() {
               <p>Door-to-Door</p>
             </div>
 
-            <div className="bg-white/10 rounded-xl p-4">
-              <p className="font-bold text-blue-400">Transport</p>
-              <p>Open & Enclosed</p>
-            </div>
-
-            <div className="bg-white/10 rounded-xl p-4">
-              <p className="font-bold text-blue-400">Quotes</p>
-              <p>100% Free</p>
-            </div>
-
           </div>
 
         </div>
@@ -128,22 +88,22 @@ function Hero() {
 
           <img
             src={heroImage}
-            alt="Nationwide Car Shipping"
+            alt="US Star Trucking Auto Transport"
             className="rounded-3xl shadow-2xl"
           />
 
-          <div className="absolute -bottom-6 left-6 bg-white text-slate-900 rounded-2xl p-6 shadow-2xl max-w-xs">
+          <div className="absolute -bottom-6 left-6 bg-white text-slate-900 rounded-2xl p-6 shadow-2xl">
 
-            <p className="text-3xl font-extrabold text-yellow-500">
-              ★★★★★
+            <p className="text-3xl font-extrabold text-blue-600">
+              ⭐⭐⭐⭐⭐
             </p>
 
-            <p className="font-bold mt-2 text-lg">
-              Trusted Nationwide Auto Transport
+            <p className="font-bold mt-2">
+              Trusted Nationwide Vehicle Transport
             </p>
 
-            <p className="text-sm text-slate-600 mt-2">
-              Licensed • Insured • Door-to-Door Delivery
+            <p className="text-sm text-slate-600">
+              Safe • Secure • Fast Delivery
             </p>
 
           </div>

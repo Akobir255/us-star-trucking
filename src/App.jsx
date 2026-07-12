@@ -1,5 +1,6 @@
 import Navbar from "./components/Navbar";
 import FAQ from "./components/FAQ";
+import FloatingButtons from "./components/FloatingButtons";
 import Hero from "./components/Hero";
 import Services from "./components/Services";
 import WhyChooseUs from "./components/WhyChooseUs";
@@ -13,7 +14,7 @@ import Reviews from "./components/Reviews";
 
 function App() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 pt-20">
       <Navbar />
       <Hero />
       <TrustBar />
@@ -26,6 +27,9 @@ function App() {
       <FAQ />
       <Contact />
       <Footer />
+
+      {/* Floating Contact Buttons */}
+      <FloatingButtons />
     </div>
   );
 }
