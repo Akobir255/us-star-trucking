@@ -72,6 +72,7 @@ async function fetchVehicleImage(make, model, year) {
   // Grab several results and pick the one most likely to be a full exterior shot.
   const queries = [
     `${year} ${make} ${model}`.trim(),
+    `${make} ${model} car`.trim(),
     `${make} ${model}`.trim(),
   ];
 
@@ -80,6 +81,10 @@ async function fetchVehicleImage(make, model, year) {
     "badge", "logo", "emblem", "interior", "dashboard", "dash", "engine",
     "wheel", "steering", "seat", "gauge", "detail", "closeup", "close-up",
     "trunk", "headlight", "taillight", "rim", "tire", "grille", "mirror",
+    // non-vehicle junk
+    "document", "supreme", "court", "map", "diagram", "chart", "patent",
+    "manual", "brochure", "advertisement", "poster", "stamp", "coin",
+    "flag", "seal", "sign", "plate", "text", "page", "book", "letter",
   ];
 
   for (const q of queries) {
@@ -88,7 +93,7 @@ async function fetchVehicleImage(make, model, year) {
         "https://commons.wikimedia.org/w/api.php" +
         "?action=query&generator=search&gsrnamespace=6" +
         `&gsrsearch=${encodeURIComponent(q)}` +
-        "&gsrlimit=15&prop=imageinfo&iiprop=url&iiurlwidth=800" +
+        "&gsrlimit=20&prop=imageinfo&iiprop=url|mime&iiurlwidth=900" +
         "&format=json&origin=*";
 
       const res = await fetch(url);
@@ -99,15 +104,18 @@ async function fetchVehicleImage(make, model, year) {
       const items = Object.values(pages)
         .map((p) => {
           const info = p?.imageinfo?.[0];
-          return info ? { title: (p.title || "").toLowerCase(), url: info.thumburl || info.url } : null;
+          return info
+            ? { title: (p.title || "").toLowerCase(), url: info.thumburl || info.url }
+            : null;
         })
-        .filter((x) => x && x.url && /\.(jpe?g)$/i.test(x.url)); // photos only, no svg/png diagrams
+        .filter((x) => x && x.url && /\.(jpe?g)$/i.test(x.url)); // photos only
 
       if (items.length === 0) continue;
 
       // Prefer a result whose filename has none of the "bad" words.
       const clean = items.find((it) => !badWords.some((w) => it.title.includes(w)));
-      return (clean || items[0]).url;
+      if (clean) return clean.url;
+      // If everything looked bad for this query, try the next (broader) query
     } catch (e) {
       console.error(e);
     }
