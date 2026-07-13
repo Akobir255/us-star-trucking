@@ -230,14 +230,124 @@ function Autocomplete({ placeholder, value, onChange, suggestions, onSelect, loa
   );
 }
 
+let vehicleIdCounter = 0;
+function makeEmptyVehicle() {
+  vehicleIdCounter += 1;
+  return {
+    id: `v${vehicleIdCounter}-${Date.now()}`,
+    year: "",
+    make: "",
+    model: "",
+    vehicle: "",
+    condition: "",
+    image: null,
+    imageLoading: false,
+    makeSuggestions: [],
+    modelSuggestions: [],
+    allModels: [],
+    modelsLoading: false,
+  };
+}
+
+function VehicleCard({ vehicle, index, canRemove, onRemove, onFieldChange, onMakeChange, onMakeSelect, onModelChange, onModelSelect }) {
+  return (
+    <div className="border border-gray-200 rounded-2xl p-4 sm:p-5 relative">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-bold text-gray-700">Vehicle {index + 1}</h3>
+        {canRemove && (
+          <button
+            type="button"
+            onClick={onRemove}
+            className="text-sm text-red-500 hover:text-red-700 font-medium"
+          >
+            ✕ Remove
+          </button>
+        )}
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <input
+          type="text"
+          value={vehicle.year}
+          onChange={(e) => onFieldChange("year", e.target.value)}
+          placeholder="Vehicle Year"
+          className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+        />
+
+        <Autocomplete
+          placeholder="Vehicle Make (e.g. Toyota)"
+          value={vehicle.make}
+          onChange={onMakeChange}
+          suggestions={vehicle.makeSuggestions}
+          onSelect={onMakeSelect}
+          loading={false}
+        />
+
+        <Autocomplete
+          placeholder="Vehicle Model (e.g. Camry)"
+          value={vehicle.model}
+          onChange={onModelChange}
+          suggestions={vehicle.modelSuggestions}
+          onSelect={onModelSelect}
+          loading={vehicle.modelsLoading}
+        />
+
+        <select
+          value={vehicle.vehicle}
+          onChange={(e) => onFieldChange("vehicle", e.target.value)}
+          className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+        >
+          <option value="">Vehicle Type</option>
+          <option value="Sedan">Sedan</option>
+          <option value="SUV">SUV</option>
+          <option value="Pickup Truck">Pickup Truck</option>
+          <option value="Van">Van</option>
+          <option value="Motorcycle">Motorcycle</option>
+        </select>
+
+        <select
+          value={vehicle.condition}
+          onChange={(e) => onFieldChange("condition", e.target.value)}
+          className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-2"
+          required
+        >
+          <option value="">Vehicle Condition</option>
+          <option value="Running">Running</option>
+          <option value="Non-Running">Non-Running</option>
+        </select>
+
+        {(vehicle.imageLoading || vehicle.image) && (
+          <div className="md:col-span-2 rounded-xl overflow-hidden h-60 sm:h-72 bg-gray-100 flex items-center justify-center">
+            {vehicle.imageLoading ? (
+              <div className="flex flex-col items-center gap-2 text-gray-400">
+                <Spinner />
+                <span className="text-sm">Loading vehicle image…</span>
+              </div>
+            ) : (
+              <img
+                src={vehicle.image}
+                alt={`${vehicle.make} ${vehicle.model}`}
+                className="w-full h-full object-contain"
+              />
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function QuoteForm() {
   const initialForm = {
-    pickup: "", delivery: "", year: "", make: "", model: "",
-    vehicle: "", condition: "", transport: "", name: "", phone: "", email: "",
+    pickup: "", delivery: "", transport: "",
+    name: "", phone: "", email: "",
     website: "", // honeypot — must stay empty
   };
 
   const [formData, setFormData] = useState(initialForm);
+  const [vehicles, setVehicles] = useState([makeEmptyVehicle()]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [quote, setQuote] = useState(null);
@@ -247,14 +357,6 @@ export default function QuoteForm() {
   const [deliveryCity, setDeliveryCity] = useState("");
   const [zipLoadingPickup, setZipLoadingPickup] = useState(false);
   const [zipLoadingDelivery, setZipLoadingDelivery] = useState(false);
-
-  const [makeSuggestions, setMakeSuggestions] = useState([]);
-  const [allModels, setAllModels] = useState([]);
-  const [modelSuggestions, setModelSuggestions] = useState([]);
-  const [modelsLoading, setModelsLoading] = useState(false);
-
-  const [vehicleImage, setVehicleImage] = useState(null);
-  const [imageLoading, setImageLoading] = useState(false);
 
   const quoteRef = useRef(null);
 
@@ -300,50 +402,58 @@ export default function QuoteForm() {
     setFormData((p) => ({ ...p, [name]: value }));
   };
 
-  const handleMakeChange = (val) => {
-    setFormData((p) => ({ ...p, make: val, model: "", vehicle: "" }));
-    setAllModels([]);
-    setModelSuggestions([]);
-    setVehicleImage(null);
-    const filtered = VEHICLE_MAKES.filter((m) => m.toLowerCase().startsWith(val.toLowerCase())).slice(0, 8);
-    setMakeSuggestions(filtered);
+  // ---- vehicle list helpers ----
+  const patchVehicle = (id, patch) => {
+    setVehicles((prev) => prev.map((v) => (v.id === id ? { ...v, ...patch } : v)));
   };
 
-  const handleMakeSelect = async (make) => {
-    setFormData((p) => ({ ...p, make, model: "", vehicle: "" }));
-    setMakeSuggestions([]);
-    setVehicleImage(null);
-    setModelsLoading(true);
+  const addVehicle = () => {
+    setVehicles((prev) => [...prev, makeEmptyVehicle()]);
+  };
+
+  const removeVehicle = (id) => {
+    setVehicles((prev) => (prev.length > 1 ? prev.filter((v) => v.id !== id) : prev));
+  };
+
+  const handleVehicleField = (id, field, value) => {
+    patchVehicle(id, { [field]: value });
+  };
+
+  const handleVehicleMakeChange = (id, val) => {
+    const filtered = VEHICLE_MAKES.filter((m) => m.toLowerCase().startsWith(val.toLowerCase())).slice(0, 8);
+    patchVehicle(id, {
+      make: val, model: "", vehicle: "", image: null,
+      allModels: [], modelSuggestions: [], makeSuggestions: filtered,
+    });
+  };
+
+  const handleVehicleMakeSelect = async (id, make) => {
+    patchVehicle(id, { make, model: "", vehicle: "", image: null, makeSuggestions: [], modelsLoading: true });
     try {
       const models = await fetchModels(make);
-      setAllModels(models);
+      patchVehicle(id, { allModels: models, modelsLoading: false });
     } catch (e) {
       console.error(e);
-    } finally {
-      setModelsLoading(false);
+      patchVehicle(id, { modelsLoading: false });
     }
   };
 
-  const handleModelChange = (val) => {
-    setFormData((p) => ({ ...p, model: val, vehicle: "" }));
-    setVehicleImage(null);
+  const handleVehicleModelChange = (id, val, allModels) => {
     const filtered = allModels.filter((m) => m.toLowerCase().startsWith(val.toLowerCase())).slice(0, 8);
-    setModelSuggestions(filtered);
+    patchVehicle(id, { model: val, vehicle: "", image: null, modelSuggestions: filtered });
   };
 
-  const handleModelSelect = async (model) => {
-    const detectedType = detectVehicleType(formData.make, model);
-    setFormData((p) => ({ ...p, model, vehicle: detectedType }));
-    setModelSuggestions([]);
-    if (formData.make && model) {
-      setImageLoading(true);
+  const handleVehicleModelSelect = async (id, make, model) => {
+    const detectedType = detectVehicleType(make, model);
+    patchVehicle(id, { model, vehicle: detectedType, modelSuggestions: [] });
+    if (make && model) {
+      patchVehicle(id, { imageLoading: true });
       try {
-        const img = await fetchVehicleImage(formData.make, model, formData.year);
-        setVehicleImage(img);
+        const img = await fetchVehicleImage(make, model, "");
+        patchVehicle(id, { image: img, imageLoading: false });
       } catch (e) {
         console.error(e);
-      } finally {
-        setImageLoading(false);
+        patchVehicle(id, { imageLoading: false });
       }
     }
   };
@@ -354,8 +464,21 @@ export default function QuoteForm() {
     setMessage({ type: "", text: "" });
     setQuote(null);
 
+    const payload = {
+      ...formData,
+      vehicles: vehicles.map(({ year, make, model, vehicle, condition }) => ({
+        year, make, model, vehicle, condition,
+      })),
+      // legacy single-vehicle fields for backwards compatibility with older backends
+      year: vehicles[0]?.year,
+      make: vehicles[0]?.make,
+      model: vehicles[0]?.model,
+      vehicle: vehicles[0]?.vehicle,
+      condition: vehicles[0]?.condition,
+    };
+
     try {
-      const data = await submitQuote(formData); // server: geocode + route + price + email
+      const data = await submitQuote(payload); // server: geocode + route + price + email
       setQuote(data.quote);
       setSubmitted(true);
       fireConfetti();
@@ -379,13 +502,12 @@ export default function QuoteForm() {
 
   const resetForm = () => {
     setFormData(initialForm);
+    setVehicles([makeEmptyVehicle()]);
     setQuote(null);
     setSubmitted(false);
     setMessage({ type: "", text: "" });
     setPickupCity("");
     setDeliveryCity("");
-    setVehicleImage(null);
-    setAllModels([]);
   };
 
   return (
@@ -445,7 +567,7 @@ export default function QuoteForm() {
           Fast · Safe · Door-to-Door Auto Transport
         </p>
 
-        <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Honeypot — hidden from humans, bots fill it and get silently rejected */}
           <input
             type="text"
@@ -458,157 +580,115 @@ export default function QuoteForm() {
             style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0 }}
           />
 
-          <ZipInput
-            label="Pickup ZIP Code"
-            name="pickup"
-            value={formData.pickup}
-            onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, "").slice(0, 5);
-              setFormData((p) => ({ ...p, pickup: value }));
-            }}
-            cityState={pickupCity}
-            loading={zipLoadingPickup}
-          />
+          <div className="grid md:grid-cols-2 gap-4">
+            <ZipInput
+              label="Pickup ZIP Code"
+              name="pickup"
+              value={formData.pickup}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, "").slice(0, 5);
+                setFormData((p) => ({ ...p, pickup: value }));
+              }}
+              cityState={pickupCity}
+              loading={zipLoadingPickup}
+            />
 
-          <ZipInput
-            label="Delivery ZIP Code"
-            name="delivery"
-            value={formData.delivery}
-            onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, "").slice(0, 5);
-              setFormData((p) => ({ ...p, delivery: value }));
-            }}
-            cityState={deliveryCity}
-            loading={zipLoadingDelivery}
-          />
+            <ZipInput
+              label="Delivery ZIP Code"
+              name="delivery"
+              value={formData.delivery}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, "").slice(0, 5);
+                setFormData((p) => ({ ...p, delivery: value }));
+              }}
+              cityState={deliveryCity}
+              loading={zipLoadingDelivery}
+            />
+          </div>
 
-          <input
-            type="text"
-            name="year"
-            value={formData.year}
-            onChange={handleChange}
-            placeholder="Vehicle Year"
-            className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
+          {/* Vehicles */}
+          <div className="flex flex-col gap-4">
+            {vehicles.map((v, i) => (
+              <VehicleCard
+                key={v.id}
+                vehicle={v}
+                index={i}
+                canRemove={vehicles.length > 1}
+                onRemove={() => removeVehicle(v.id)}
+                onFieldChange={(field, value) => handleVehicleField(v.id, field, value)}
+                onMakeChange={(val) => handleVehicleMakeChange(v.id, val)}
+                onMakeSelect={(make) => handleVehicleMakeSelect(v.id, make)}
+                onModelChange={(val) => handleVehicleModelChange(v.id, val, v.allModels)}
+                onModelSelect={(model) => handleVehicleModelSelect(v.id, v.make, model)}
+              />
+            ))}
+          </div>
 
-          <Autocomplete
-            placeholder="Vehicle Make (e.g. Toyota)"
-            value={formData.make}
-            onChange={handleMakeChange}
-            suggestions={makeSuggestions}
-            onSelect={handleMakeSelect}
-            loading={false}
-          />
-
-          <Autocomplete
-            placeholder="Vehicle Model (e.g. Camry)"
-            value={formData.model}
-            onChange={handleModelChange}
-            suggestions={modelSuggestions}
-            onSelect={handleModelSelect}
-            loading={modelsLoading}
-          />
-
-          <select
-            name="vehicle"
-            value={formData.vehicle}
-            onChange={handleChange}
-            className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
+          <button
+            type="button"
+            onClick={addVehicle}
+            className="self-start flex items-center gap-2 text-blue-600 hover:text-blue-800 font-semibold px-2 py-1"
           >
-            <option value="">Vehicle Type</option>
-            <option value="Sedan">Sedan</option>
-            <option value="SUV">SUV</option>
-            <option value="Pickup Truck">Pickup Truck</option>
-            <option value="Van">Van</option>
-            <option value="Motorcycle">Motorcycle</option>
-          </select>
+            <span className="text-xl leading-none">+</span> Add another vehicle
+          </button>
 
-          <select
-            name="condition"
-            value={formData.condition}
-            onChange={handleChange}
-            className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          >
-            <option value="">Vehicle Condition</option>
-            <option value="Running">Running</option>
-            <option value="Non-Running">Non-Running</option>
-          </select>
+          <div className="grid md:grid-cols-2 gap-4">
+            <select
+              name="transport"
+              value={formData.transport}
+              onChange={handleChange}
+              className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-2"
+              required
+            >
+              <option value="">Transport Type</option>
+              <option value="Open">Open Transport</option>
+              <option value="Enclosed">Enclosed Transport</option>
+            </select>
 
-          <select
-            name="transport"
-            value={formData.transport}
-            onChange={handleChange}
-            className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          >
-            <option value="">Transport Type</option>
-            <option value="Open">Open Transport</option>
-            <option value="Enclosed">Enclosed Transport</option>
-          </select>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Full Name"
+              className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
 
-          {(imageLoading || vehicleImage) && (
-            <div className="md:col-span-2 rounded-xl overflow-hidden h-72 sm:h-96 bg-gray-100 flex items-center justify-center">
-              {imageLoading ? (
-                <div className="flex flex-col items-center gap-2 text-gray-400">
-                  <Spinner />
-                  <span className="text-sm">Loading vehicle image…</span>
-                </div>
-              ) : (
-                <img
-                  src={vehicleImage}
-                  alt={`${formData.make} ${formData.model}`}
-                  className="w-full h-full object-contain"
-                />
-              )}
-            </div>
-          )}
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="Phone Number"
+              className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
 
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Full Name"
-            className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-
-          <input
-            type="tel"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            placeholder="Phone Number"
-            className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Email Address"
-            className="border border-gray-300 p-3 rounded-lg md:col-span-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Email Address"
+              className="border border-gray-300 p-3 rounded-lg md:col-span-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
 
           <button
             type="submit"
             disabled={loading}
-            className={`md:col-span-2 py-3 rounded-lg font-bold text-white transition-colors ${
+            className={`py-3 rounded-lg font-bold text-white transition-colors ${
               loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
             }`}
           >
-            {loading ? "Calculating…" : "Get My Free Quote"}
+            {loading ? "Calculating…" : `Get My Free Quote${vehicles.length > 1 ? ` (${vehicles.length} Vehicles)` : ""}`}
           </button>
 
           {message.text && (
             <div
-              className={`md:col-span-2 text-center font-medium ${
+              className={`text-center font-medium ${
                 message.type === "success" ? "text-green-600" : "text-red-600"
               }`}
             >
