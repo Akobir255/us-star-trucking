@@ -112,10 +112,16 @@ async function fetchVehicleImage(make, model, year) {
 
       if (items.length === 0) continue;
 
-      // Prefer a result whose filename has none of the "bad" words.
-      const clean = items.find((it) => !badWords.some((w) => it.title.includes(w)));
+      // Require the make name to appear in the filename — guarantees the photo
+      // is actually about this vehicle (blocks unrelated documents/maps/etc.)
+      const makeWord = make.toLowerCase().split(" ")[0];
+      const relevant = items.filter((it) => it.title.includes(makeWord));
+      if (relevant.length === 0) continue;
+
+      // Among relevant photos, prefer one with none of the "bad" words.
+      const clean = relevant.find((it) => !badWords.some((w) => it.title.includes(w)));
       if (clean) return clean.url;
-      // If everything looked bad for this query, try the next (broader) query
+      return relevant[0].url;
     } catch (e) {
       console.error(e);
     }
