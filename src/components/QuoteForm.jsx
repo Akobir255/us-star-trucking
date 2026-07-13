@@ -258,6 +258,16 @@ export default function QuoteForm() {
 
   const quoteRef = useRef(null);
 
+  // Scroll to the form if the page is opened with #quote-form in the URL
+  useEffect(() => {
+    if (window.location.hash === "#quote-form") {
+      const t = setTimeout(() => {
+        document.getElementById("quote-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 300);
+      return () => clearTimeout(t);
+    }
+  }, []);
+
   useEffect(() => {
     if (formData.pickup.length === 5) {
       setZipLoadingPickup(true);
