@@ -1,49 +1,40 @@
 const ORS_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdjZWRkNmIwOTdmYTQyNWQ5MmNiMzQ0NzVmNDQ0ZTkzIiwiaCI6Im11cm11cjY0In0=";
-const GOOGLE_KEY = "AIzaSyD4c8Gs15mvWYKOWFXB8viJggDLRn-OtQY";
 
-// Fetch with automatic retry for transient network failures
+// Fetch with automatic retry for transient network/CORS failures
 async function fetchWithRetry(url, options, retries = 3) {
+  let lastErr;
   for (let i = 0; i < retries; i++) {
     try {
       const res = await fetch(url, options);
       return res;
     } catch (err) {
-      if (i === retries - 1) throw err;
+      lastErr = err;
       await new Promise((r) => setTimeout(r, 500 * (i + 1)));
     }
   }
+  throw lastErr;
 }
 
-// Use Google Geocoding (no CORS issues) to turn a ZIP into coordinates + city/state.
-// ORS expects [longitude, latitude] order.
+// ORS geocoding: ZIP -> coordinates [lon, lat] + city/state
 async function getLocation(zip) {
   const res = await fetchWithRetry(
-    `https://maps.googleapis.com/maps/api/geocode/json?address=${zip}&components=country:US&key=${GOOGLE_KEY}`
+    `https://api.openrouteservice.org/geocode/search?api_key=${ORS_KEY}&text=${zip}&boundary.country=USA&size=1`
   );
 
   const data = await res.json();
 
-  if (!data.results || data.results.length === 0) {
+  if (!data.features || data.features.length === 0) {
     throw new Error("Invalid ZIP Code");
   }
 
-  const result = data.results[0];
-  const { lat, lng } = result.geometry.location;
-  const components = result.address_components;
+  const feature = data.features[0];
+  const coordinates = feature.geometry.coordinates; // already [lon, lat]
+  const props = feature.properties;
 
-  const city =
-    components.find((c) => c.types.includes("locality"))?.long_name ||
-    components.find((c) => c.types.includes("sublocality"))?.long_name ||
-    "";
+  const city = props.locality || props.county || props.region || "";
+  const state = props.region_a || props.region || "";
 
-  const state =
-    components.find((c) => c.types.includes("administrative_area_level_1"))?.short_name || "";
-
-  return {
-    coordinates: [lng, lat], // ORS wants [lon, lat]
-    city,
-    state,
-  };
+  return { coordinates, city, state };
 }
 
 export async function getDistance(originZip, destinationZip) {

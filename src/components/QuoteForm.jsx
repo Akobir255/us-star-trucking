@@ -4,7 +4,7 @@ import { getDistance } from "../googleDistance";
 import { calculateQuote } from "../pricing";
 
 const UNSPLASH_KEY = "5TVaxXdJqOFIlK8vkA10aeg_cN6spqAWH1zntE8gX6c";
-const GOOGLE_KEY = "AIzaSyD4c8Gs15mvWYKOWFXB8viJggDLRn-OtQY";
+const ORS_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdjZWRkNmIwOTdmYTQyNWQ5MmNiMzQ0NzVmNDQ0ZTkzIiwiaCI6Im11cm11cjY0In0=";
 
 const MODEL_TO_TYPE = {
   // Sedans
@@ -29,13 +29,13 @@ const MODEL_TO_TYPE = {
 
 async function getCityState(zip) {
   const res = await fetch(
-    `https://maps.googleapis.com/maps/api/geocode/json?address=${zip}&components=country:US&key=${GOOGLE_KEY}`
+    `https://api.openrouteservice.org/geocode/search?api_key=${ORS_KEY}&text=${zip}&boundary.country=USA&size=1`
   );
   const data = await res.json();
-  if (!data.results || data.results.length === 0) return null;
-  const components = data.results[0].address_components;
-  const city = components.find((c) => c.types.includes("locality"))?.long_name || "";
-  const state = components.find((c) => c.types.includes("administrative_area_level_1"))?.short_name || "";
+  if (!data.features || data.features.length === 0) return null;
+  const props = data.features[0].properties;
+  const city = props.locality || props.county || "";
+  const state = props.region_a || props.region || "";
   return city && state ? `${city}, ${state}` : null;
 }
 
