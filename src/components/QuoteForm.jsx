@@ -157,9 +157,13 @@ async function fetchVehicleImage(make, model, year) {
 }
 
 // Lightweight confetti burst — no external library needed.
+// Launches from the bottom-left and bottom-right corners toward the center.
 function fireConfetti() {
-  const count = 120;
-  const colors = ["#2563eb", "#16a34a", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+  const perSide = 80;
+  const colors = [
+    "#ff0a54", "#ff477e", "#ff7096", "#ffd000", "#ffea00",
+    "#00e0ff", "#00ff8f", "#7b2ff7", "#ff8c00", "#3a86ff",
+  ];
   const container = document.createElement("div");
   container.style.cssText =
     "position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden";
@@ -169,27 +173,45 @@ function fireConfetti() {
   if (!document.getElementById("confetti-style")) {
     const style = document.createElement("style");
     style.id = "confetti-style";
-    style.textContent =
-      "@keyframes confetti-fall{to{transform:translateY(105vh) rotate(720deg);opacity:0}}";
+    style.textContent = `
+      @keyframes confetti-left {
+        0%   { transform: translate(0,0) rotate(0deg); opacity: 1; }
+        100% { transform: translate(70vw, -60vh) rotate(720deg); opacity: 0; }
+      }
+      @keyframes confetti-right {
+        0%   { transform: translate(0,0) rotate(0deg); opacity: 1; }
+        100% { transform: translate(-70vw, -60vh) rotate(-720deg); opacity: 0; }
+      }`;
     document.head.appendChild(style);
   }
 
-  for (let i = 0; i < count; i++) {
-    const piece = document.createElement("div");
-    const size = 6 + Math.random() * 6;
-    const left = Math.random() * 100;
-    const bg = colors[Math.floor(Math.random() * colors.length)];
-    const duration = 2000 + Math.random() * 1500;
-    const delay = Math.random() * 400;
-    piece.style.cssText =
-      `position:absolute;top:-20px;left:${left}vw;width:${size}px;height:${size * 0.4}px;` +
-      `background:${bg};opacity:0.9;border-radius:2px;` +
-      `transform:rotate(${Math.random() * 360}deg);` +
-      `animation:confetti-fall ${duration}ms ${delay}ms ease-in forwards`;
-    container.appendChild(piece);
-  }
+  const launch = (side) => {
+    for (let i = 0; i < perSide; i++) {
+      const piece = document.createElement("div");
+      const size = 8 + Math.random() * 8;
+      const bg = colors[Math.floor(Math.random() * colors.length)];
+      const duration = 1400 + Math.random() * 1200;
+      const delay = Math.random() * 250;
+      const spread = (Math.random() - 0.5) * 40; // vertical spread at launch
+      const base =
+        `position:absolute;bottom:${10 + spread}vh;width:${size}px;height:${size * 0.5}px;` +
+        `background:${bg};border-radius:2px;box-shadow:0 0 6px ${bg};` +
+        `transform:rotate(${Math.random() * 360}deg);`;
+      if (side === "left") {
+        piece.style.cssText =
+          base + `left:-20px;animation:confetti-left ${duration}ms ${delay}ms cubic-bezier(.2,.6,.4,1) forwards`;
+      } else {
+        piece.style.cssText =
+          base + `right:-20px;animation:confetti-right ${duration}ms ${delay}ms cubic-bezier(.2,.6,.4,1) forwards`;
+      }
+      container.appendChild(piece);
+    }
+  };
 
-  setTimeout(() => container.remove(), 4200);
+  launch("left");
+  launch("right");
+
+  setTimeout(() => container.remove(), 3200);
 }
 
 function Spinner() {
