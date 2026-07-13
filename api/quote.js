@@ -38,11 +38,11 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: "RATE_LIMITED" });
   }
 
-  const ORS_KEY = process.env.ORS_KEY;
-  const EMAILJS_SERVICE = process.env.EMAILJS_SERVICE_ID;
-  const EMAILJS_TEMPLATE = process.env.EMAILJS_TEMPLATE_ID;
-  const EMAILJS_PUBLIC = process.env.EMAILJS_PUBLIC_KEY;
-  const EMAILJS_PRIVATE = process.env.EMAILJS_PRIVATE_KEY;
+  const ORS_KEY = (process.env.ORS_KEY || "").trim();
+  const EMAILJS_SERVICE = (process.env.EMAILJS_SERVICE_ID || "").trim();
+  const EMAILJS_TEMPLATE = (process.env.EMAILJS_TEMPLATE_ID || "").trim();
+  const EMAILJS_PUBLIC = (process.env.EMAILJS_PUBLIC_KEY || "").trim();
+  const EMAILJS_PRIVATE = (process.env.EMAILJS_PRIVATE_KEY || "").trim();
 
   if (!ORS_KEY) {
     return res.status(500).json({ error: "Server not configured (missing ORS key)" });
@@ -152,7 +152,18 @@ export default async function handler(req, res) {
         const text = await emailRes.text();
         console.error("EmailJS error:", text);
         // Temporarily expose the reason so we can debug from the browser
-        return res.status(200).json({ quote, emailSent: false, emailError: text });
+        return res.status(200).json({
+          quote,
+          emailSent: false,
+          emailError: text,
+          debug: {
+            templateLen: EMAILJS_TEMPLATE.length,
+            serviceLen: EMAILJS_SERVICE.length,
+            publicLen: EMAILJS_PUBLIC.length,
+            privateLen: EMAILJS_PRIVATE.length,
+            templateValue: EMAILJS_TEMPLATE,
+          },
+        });
       }
     }
 
