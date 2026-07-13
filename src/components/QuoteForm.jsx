@@ -241,6 +241,7 @@ export default function QuoteForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [quote, setQuote] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
 
   const [pickupCity, setPickupCity] = useState("");
   const [deliveryCity, setDeliveryCity] = useState("");
@@ -343,13 +344,8 @@ export default function QuoteForm() {
     try {
       const data = await submitQuote(formData); // server: geocode + route + price + email
       setQuote(data.quote);
-      if (data.emailSent) {
-        setMessage({ type: "success", text: "🎉 Your quote request has been sent successfully!" });
-        fireConfetti();
-      } else {
-        setMessage({ type: "success", text: "🎉 Here's your quote! (We'll follow up shortly.)" });
-        fireConfetti();
-      }
+      setSubmitted(true);
+      fireConfetti();
       setTimeout(() => quoteRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
     } catch (err) {
       console.error(err);
@@ -368,9 +364,67 @@ export default function QuoteForm() {
     }
   };
 
+  const resetForm = () => {
+    setFormData(initialForm);
+    setQuote(null);
+    setSubmitted(false);
+    setMessage({ type: "", text: "" });
+    setPickupCity("");
+    setDeliveryCity("");
+    setVehicleImage(null);
+    setAllModels([]);
+  };
+
   return (
     <section id="quote-form" className="max-w-6xl mx-auto px-4 sm:px-6 -mt-10 relative z-10">
       <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8">
+        {submitted ? (
+          <div ref={quoteRef} className="max-w-2xl mx-auto text-center py-6">
+            {/* Checkmark */}
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+              <svg className="h-8 w-8 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+
+            <h2 className="text-3xl font-bold mb-2">Request received!</h2>
+            <p className="text-gray-600 mb-6">
+              Thanks{formData.name ? `, ${formData.name.split(" ")[0]}` : ""}! One of our agents will
+              contact you <span className="font-semibold text-gray-800">within 1 hour</span> by
+              phone or email to finalize your booking.
+            </p>
+
+            {/* Estimated price recap */}
+            {quote && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6 inline-block min-w-[260px]">
+                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Your Estimated Quote</div>
+                <div className="text-4xl font-bold text-blue-700">${quote.price}</div>
+                <div className="text-sm text-gray-500 mt-1">{quote.distance} · {quote.duration}</div>
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+              <a
+                href="tel:+18657227114"
+                className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-lg transition-colors"
+              >
+                📞 Call us now: (865) 722-7114
+              </a>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="w-full sm:w-auto text-blue-600 hover:text-blue-800 font-medium px-6 py-3"
+              >
+                Submit another quote
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-400 mt-6">
+              A confirmation has been sent to our team. We can't wait to help you ship your vehicle safely.
+            </p>
+          </div>
+        ) : (
+        <>
         <h2 className="text-3xl font-bold text-center mb-2">
           Get Your Free Car Shipping Quote
         </h2>
@@ -539,33 +593,6 @@ export default function QuoteForm() {
             {loading ? "Calculating…" : "Get My Free Quote"}
           </button>
 
-          {quote && (
-            <div
-              ref={quoteRef}
-              className="md:col-span-2 bg-blue-50 border border-blue-200 rounded-xl p-5"
-            >
-              <h3 className="text-xl font-bold mb-3">Estimated Quote</h3>
-              <div className="grid grid-cols-3 gap-3 text-sm text-gray-700 mb-4">
-                <div className="bg-white rounded-lg p-3 text-center shadow-sm">
-                  <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Distance</div>
-                  <div className="font-semibold">{quote.distance}</div>
-                </div>
-                <div className="bg-white rounded-lg p-3 text-center shadow-sm">
-                  <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Miles</div>
-                  <div className="font-semibold">{quote.miles}</div>
-                </div>
-                <div className="bg-white rounded-lg p-3 text-center shadow-sm">
-                  <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Transit</div>
-                  <div className="font-semibold">{quote.duration}</div>
-                </div>
-              </div>
-              <p className="text-3xl font-bold text-blue-700">${quote.price}</p>
-              <p className="text-sm text-gray-500 mt-1">
-                Final price may vary slightly depending on carrier availability.
-              </p>
-            </div>
-          )}
-
           {message.text && (
             <div
               className={`md:col-span-2 text-center font-medium ${
@@ -576,6 +603,8 @@ export default function QuoteForm() {
             </div>
           )}
         </form>
+        </>
+        )}
       </div>
     </section>
   );
