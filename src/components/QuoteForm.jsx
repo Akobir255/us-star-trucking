@@ -156,6 +156,42 @@ async function fetchVehicleImage(make, model, year) {
   return null;
 }
 
+// Lightweight confetti burst — no external library needed.
+function fireConfetti() {
+  const count = 120;
+  const colors = ["#2563eb", "#16a34a", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+  const container = document.createElement("div");
+  container.style.cssText =
+    "position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden";
+  document.body.appendChild(container);
+
+  // Inject the keyframes once
+  if (!document.getElementById("confetti-style")) {
+    const style = document.createElement("style");
+    style.id = "confetti-style";
+    style.textContent =
+      "@keyframes confetti-fall{to{transform:translateY(105vh) rotate(720deg);opacity:0}}";
+    document.head.appendChild(style);
+  }
+
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement("div");
+    const size = 6 + Math.random() * 6;
+    const left = Math.random() * 100;
+    const bg = colors[Math.floor(Math.random() * colors.length)];
+    const duration = 2000 + Math.random() * 1500;
+    const delay = Math.random() * 400;
+    piece.style.cssText =
+      `position:absolute;top:-20px;left:${left}vw;width:${size}px;height:${size * 0.4}px;` +
+      `background:${bg};opacity:0.9;border-radius:2px;` +
+      `transform:rotate(${Math.random() * 360}deg);` +
+      `animation:confetti-fall ${duration}ms ${delay}ms ease-in forwards`;
+    container.appendChild(piece);
+  }
+
+  setTimeout(() => container.remove(), 4200);
+}
+
 function Spinner() {
   return (
     <svg className="animate-spin h-4 w-4 text-blue-500" viewBox="0 0 24 24" fill="none">
@@ -350,9 +386,23 @@ export default function QuoteForm() {
     setMessage({ type: "", text: "" });
     setQuote(null);
 
+    let result;
     try {
-      // Calculate the quote only when the customer submits
-      const result = await getDistance(formData.pickup, formData.delivery);
+      // Validate ZIPs / calculate the route. Throws "Invalid ZIP Code" if a ZIP is wrong.
+      result = await getDistance(formData.pickup, formData.delivery);
+    } catch (err) {
+      console.error(err);
+      const msg = String(err?.message || "");
+      if (msg.includes("ZIP")) {
+        setMessage({ type: "error", text: "❌ One of the ZIP codes is incorrect. Please check and try again." });
+      } else {
+        setMessage({ type: "error", text: "❌ We couldn't calculate a route for those ZIP codes. Please check them and try again." });
+      }
+      setLoading(false);
+      return; // Stop here — do NOT send the email
+    }
+
+    try {
       const price = calculateQuote(result.miles, formData.vehicle, formData.condition, formData.transport);
       const quoteData = {
         miles: result.miles,
@@ -361,7 +411,7 @@ export default function QuoteForm() {
         price,
       };
 
-      // Send the quote request by email first
+      // Send the quote request by email
       await emailjs.send(
         "service_7iyk46o",
         "template_hip0ibn",
@@ -376,11 +426,12 @@ export default function QuoteForm() {
 
       // Show the quote and success message together, after the email is sent
       setQuote(quoteData);
-      setMessage({ type: "success", text: "✅ Your quote request has been sent successfully!" });
+      setMessage({ type: "success", text: "🎉 Your quote request has been sent successfully!" });
+      fireConfetti();
       setTimeout(() => quoteRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
     } catch (error) {
       console.error(error);
-      setMessage({ type: "error", text: "❌ Something went wrong. Please try again." });
+      setMessage({ type: "error", text: "❌ Something went wrong sending your request. Please try again." });
     } finally {
       setLoading(false);
     }
@@ -579,7 +630,7 @@ export default function QuoteForm() {
               </div>
               <p className="text-3xl font-bold text-blue-700">${quote.price}</p>
               <p className="text-sm text-gray-500 mt-1">
-                Total price may vary slightly depending on carrier availability.
+                Final price may vary slightly depending on carrier availability.
               </p>
             </div>
           )}
