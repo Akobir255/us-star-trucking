@@ -38,10 +38,23 @@ async function getCityState(zip) {
   return city && state ? `${city}, ${state}` : null;
 }
 
+const VEHICLE_MAKES = [
+  "Acura", "Alfa Romeo", "Aston Martin", "Audi", "Bentley", "BMW", "Buick",
+  "Cadillac", "Chevrolet", "Chrysler", "Dodge", "Ferrari", "Fiat", "Ford",
+  "Genesis", "GMC", "Honda", "Hyundai", "Infiniti", "Jaguar", "Jeep", "Kia",
+  "Lamborghini", "Land Rover", "Lexus", "Lincoln", "Lucid", "Maserati",
+  "Mazda", "McLaren", "Mercedes-Benz", "Mini", "Mitsubishi", "Nissan",
+  "Polestar", "Porsche", "Ram", "Rivian", "Rolls-Royce", "Subaru", "Tesla",
+  "Toyota", "Volkswagen", "Volvo",
+  // Motorcycles
+  "Harley-Davidson", "Ducati", "Kawasaki", "Yamaha", "Suzuki", "Triumph",
+  "KTM", "Indian", "Royal Enfield", "Aprilia",
+].sort();
+
 async function fetchMakes() {
-  const res = await fetch("https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json");
-  const data = await res.json();
-  return data.Results.map((r) => r.Make_Name).sort();
+  // Curated list of real vehicle manufacturers (avoids NHTSA's thousands of
+  // trailer/parts/industrial company entries).
+  return VEHICLE_MAKES;
 }
 
 async function fetchModels(make) {
@@ -49,7 +62,9 @@ async function fetchModels(make) {
     `https://vpic.nhtsa.dot.gov/api/vehicles/getmodelsformake/${encodeURIComponent(make)}?format=json`
   );
   const data = await res.json();
-  return data.Results.map((r) => r.Model_Name).sort();
+  // Dedupe and sort the model names
+  const names = data.Results.map((r) => r.Model_Name);
+  return [...new Set(names)].sort();
 }
 
 async function fetchVehicleImage(make, model, year) {
@@ -453,7 +468,7 @@ export default function QuoteForm() {
                 <img
                   src={vehicleImage}
                   alt={`${formData.make} ${formData.model}`}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                 />
               )}
             </div>
