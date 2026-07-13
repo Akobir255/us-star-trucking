@@ -1,36 +1,61 @@
-const API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdjZWRkNmIwOTdmYTQyNWQ5MmNiMzQ0NzVmNDQ0ZTkzIiwiaCI6Im11cm11cjY0In0=";
+const ORS_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdjZWRkNmIwOTdmYTQyNWQ5MmNiMzQ0NzVmNDQ0ZTkzIiwiaCI6Im11cm11cjY0In0=";
+const GOOGLE_KEY = "AIzaSyD4c8Gs15mvWYKOWFXB8viJggDLRn-OtQY";
 
+// Fetch with automatic retry for transient network failures
+async function fetchWithRetry(url, options, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url, options);
+      return res;
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      await new Promise((r) => setTimeout(r, 500 * (i + 1)));
+    }
+  }
+}
+
+// Use Google Geocoding (no CORS issues) to turn a ZIP into coordinates + city/state.
+// ORS expects [longitude, latitude] order.
 async function getLocation(zip) {
-  const res = await fetch(
-    `https://api.openrouteservice.org/geocode/search?api_key=${API_KEY}&text=${zip}&boundary.country=USA&size=1`
+  const res = await fetchWithRetry(
+    `https://maps.googleapis.com/maps/api/geocode/json?address=${zip}&components=country:US&key=${GOOGLE_KEY}`
   );
 
   const data = await res.json();
 
-  if (!data.features || data.features.length === 0) {
+  if (!data.results || data.results.length === 0) {
     throw new Error("Invalid ZIP Code");
   }
 
-  const feature = data.features[0];
-  const coordinates = feature.geometry.coordinates;
-  const props = feature.properties;
+  const result = data.results[0];
+  const { lat, lng } = result.geometry.location;
+  const components = result.address_components;
 
-  const city = props.locality || props.county || props.region || "";
-  const state = props.region_a || props.region || "";
+  const city =
+    components.find((c) => c.types.includes("locality"))?.long_name ||
+    components.find((c) => c.types.includes("sublocality"))?.long_name ||
+    "";
 
-  return { coordinates, city, state };
+  const state =
+    components.find((c) => c.types.includes("administrative_area_level_1"))?.short_name || "";
+
+  return {
+    coordinates: [lng, lat], // ORS wants [lon, lat]
+    city,
+    state,
+  };
 }
 
 export async function getDistance(originZip, destinationZip) {
   const origin = await getLocation(originZip);
   const destination = await getLocation(destinationZip);
 
-  const response = await fetch(
+  const response = await fetchWithRetry(
     "https://api.openrouteservice.org/v2/directions/driving-car",
     {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${API_KEY}`,
+        "Authorization": `Bearer ${ORS_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -38,6 +63,7 @@ export async function getDistance(originZip, destinationZip) {
           origin.coordinates,
           destination.coordinates,
         ],
+        radiuses: [-1, -1],
       }),
     }
   );
