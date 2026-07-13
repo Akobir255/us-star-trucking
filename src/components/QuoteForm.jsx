@@ -258,11 +258,12 @@ export default function QuoteForm() {
 
   const quoteRef = useRef(null);
 
-  // Scroll to the form if opened with #quote-form OR ?quote in the URL
+  // Scroll to the form if opened with /quote-form, #quote-form, or ?quote in the URL
   useEffect(() => {
     const hasHash = window.location.hash === "#quote-form";
     const hasParam = new URLSearchParams(window.location.search).has("quote");
-    if (hasHash || hasParam) {
+    const hasPath = window.location.pathname.replace(/\/$/, "") === "/quote-form";
+    if (hasHash || hasParam || hasPath) {
       const t = setTimeout(() => {
         document.getElementById("quote-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 300);
