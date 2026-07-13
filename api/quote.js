@@ -151,19 +151,8 @@ export default async function handler(req, res) {
       if (!emailRes.ok) {
         const text = await emailRes.text();
         console.error("EmailJS error:", text);
-        // Temporarily expose the reason so we can debug from the browser
-        return res.status(200).json({
-          quote,
-          emailSent: false,
-          emailError: text,
-          debug: {
-            templateLen: EMAILJS_TEMPLATE.length,
-            serviceLen: EMAILJS_SERVICE.length,
-            publicLen: EMAILJS_PUBLIC.length,
-            privateLen: EMAILJS_PRIVATE.length,
-            templateValue: EMAILJS_TEMPLATE,
-          },
-        });
+        // Still return the quote — customer sees their price even if email fails.
+        return res.status(200).json({ quote, emailSent: false });
       }
     }
 
