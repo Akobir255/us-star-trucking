@@ -54,10 +54,17 @@ async function fetchModels(make) {
 
 async function fetchVehicleImage(make, model, year) {
   // Search Wikimedia Commons (free, no key, CORS-enabled) for a photo of the vehicle.
-  // Try the most specific query first, then fall back to broader ones.
+  // Grab several results and pick the one most likely to be a full exterior shot.
   const queries = [
     `${year} ${make} ${model}`.trim(),
     `${make} ${model}`.trim(),
+  ];
+
+  // Words in a filename that usually mean it's NOT a clean full-car photo.
+  const badWords = [
+    "badge", "logo", "emblem", "interior", "dashboard", "dash", "engine",
+    "wheel", "steering", "seat", "gauge", "detail", "closeup", "close-up",
+    "trunk", "headlight", "taillight", "rim", "tire", "grille", "mirror",
   ];
 
   for (const q of queries) {
@@ -66,7 +73,7 @@ async function fetchVehicleImage(make, model, year) {
         "https://commons.wikimedia.org/w/api.php" +
         "?action=query&generator=search&gsrnamespace=6" +
         `&gsrsearch=${encodeURIComponent(q)}` +
-        "&gsrlimit=1&prop=imageinfo&iiprop=url&iiurlwidth=800" +
+        "&gsrlimit=15&prop=imageinfo&iiprop=url&iiurlwidth=800" +
         "&format=json&origin=*";
 
       const res = await fetch(url);
@@ -74,10 +81,18 @@ async function fetchVehicleImage(make, model, year) {
       const pages = data.query?.pages;
       if (!pages) continue;
 
-      const first = Object.values(pages)[0];
-      const info = first?.imageinfo?.[0];
-      const imageUrl = info?.thumburl || info?.url;
-      if (imageUrl) return imageUrl;
+      const items = Object.values(pages)
+        .map((p) => {
+          const info = p?.imageinfo?.[0];
+          return info ? { title: (p.title || "").toLowerCase(), url: info.thumburl || info.url } : null;
+        })
+        .filter((x) => x && x.url && /\.(jpe?g)$/i.test(x.url)); // photos only, no svg/png diagrams
+
+      if (items.length === 0) continue;
+
+      // Prefer a result whose filename has none of the "bad" words.
+      const clean = items.find((it) => !badWords.some((w) => it.title.includes(w)));
+      return (clean || items[0]).url;
     } catch (e) {
       console.error(e);
     }
