@@ -26,6 +26,33 @@ const MODEL_TO_TYPE = {
   "CBR500R": "Motorcycle", "R1250GS": "Motorcycle",
 };
 
+const MOTORCYCLE_MAKES = [
+  "harley-davidson", "ducati", "kawasaki", "yamaha", "suzuki", "triumph",
+  "ktm", "indian", "royal enfield", "aprilia",
+];
+
+// Detect the vehicle type from make + model using keywords and a lookup map.
+function detectVehicleType(make, model) {
+  const mk = (make || "").toLowerCase();
+  const md = (model || "").toLowerCase();
+
+  // Motorcycle brands are always motorcycles
+  if (MOTORCYCLE_MAKES.includes(mk)) return "Motorcycle";
+
+  // Keyword hints in the model name
+  if (/\b(truck|pickup|silverado|sierra|f-?150|f-?250|f-?350|ram|tundra|tacoma|frontier|ranger|colorado|ridgeline|titan|gladiator|canyon)\b/.test(md))
+    return "Pickup Truck";
+  if (/\b(van|transit|sprinter|express|savana|promaster|metris|nv200|caravan|odyssey|sienna|pacifica)\b/.test(md))
+    return "Van";
+  if (/\b(suv|explorer|tahoe|suburban|expedition|highlander|pilot|rav4|cr-?v|equinox|rogue|escape|tucson|santa fe|4runner|wrangler|cherokee|bronco|blazer|traverse|telluride|palisade|pathfinder|durango|edge|xterra|armada|sequoia|land cruiser|q5|q7|x3|x5|x7|glc|gle|gls)\b/.test(md))
+    return "SUV";
+  if (/\b(sedan|camry|corolla|civic|accord|altima|malibu|fusion|sonata|elantra|jetta|passat|maxima|impala|charger|300|a4|a6|3-?series|5-?series|c-?class|e-?class|model 3|model s)\b/.test(md))
+    return "Sedan";
+
+  // Fall back to the explicit map, else empty
+  return MODEL_TO_TYPE[model] || "";
+}
+
 async function getCityState(zip) {
   const res = await fetch(
     `https://api.openrouteservice.org/geocode/search?api_key=${ORS_KEY}&text=${zip}&boundary.country=USA&size=1`
@@ -301,7 +328,7 @@ export default function QuoteForm() {
   };
 
   const handleModelSelect = async (model) => {
-    const detectedType = MODEL_TO_TYPE[model] || "";
+    const detectedType = detectVehicleType(formData.make, model);
     setFormData((p) => ({ ...p, model, vehicle: detectedType }));
     setModelSuggestions([]);
     if (formData.make && model) {
