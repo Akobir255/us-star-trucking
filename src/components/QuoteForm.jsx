@@ -198,26 +198,6 @@ export default function QuoteForm() {
     }
   }, [formData.delivery]);
 
-  // Auto quote whenever required fields are ready
-  useEffect(() => {
-    if (
-      formData.pickup.length === 5 &&
-      formData.delivery.length === 5 &&
-      formData.vehicle &&
-      formData.condition &&
-      formData.transport
-    ) {
-      getDistance(formData.pickup, formData.delivery)
-        .then((result) => {
-          const price = calculateQuote(result.miles, formData.vehicle, formData.condition, formData.transport);
-          setQuote({ miles: result.miles, distance: result.distance, duration: result.duration, price });
-          setTimeout(() => quoteRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
-        })
-        .catch(console.error);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.pickup, formData.delivery, formData.vehicle, formData.condition, formData.transport]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((p) => ({ ...p, [name]: value }));
@@ -275,15 +255,24 @@ export default function QuoteForm() {
     e.preventDefault();
     setLoading(true);
     setMessage({ type: "", text: "" });
+    setQuote(null);
 
     try {
-      let quoteData = quote;
-      if (!quoteData) {
-        const result = await getDistance(formData.pickup, formData.delivery);
-        const price = calculateQuote(result.miles, formData.vehicle, formData.condition, formData.transport);
-        quoteData = { miles: result.miles, distance: result.distance, duration: result.duration, price };
-      }
+      // Calculate the quote only when the customer submits
+      const result = await getDistance(formData.pickup, formData.delivery);
+      const price = calculateQuote(result.miles, formData.vehicle, formData.condition, formData.transport);
+      const quoteData = {
+        miles: result.miles,
+        distance: result.distance,
+        duration: result.duration,
+        price,
+      };
 
+      // Show the quote to the customer
+      setQuote(quoteData);
+      setTimeout(() => quoteRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
+
+      // Send the quote request by email
       await emailjs.send(
         "service_7iyk46o",
         "template_hip0ibn",
@@ -297,12 +286,6 @@ export default function QuoteForm() {
       );
 
       setMessage({ type: "success", text: "✅ Your quote request has been sent successfully!" });
-      setFormData(initialForm);
-      setQuote(null);
-      setPickupCity("");
-      setDeliveryCity("");
-      setVehicleImage(null);
-      setAllModels([]);
     } catch (error) {
       console.error(error);
       setMessage({ type: "error", text: "❌ Something went wrong. Please try again." });
@@ -470,7 +453,18 @@ export default function QuoteForm() {
             required
           />
 
-          {/* Quote card */}
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            className={`md:col-span-2 py-3 rounded-lg font-bold text-white transition-colors ${
+              loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+            }`}
+          >
+            {loading ? "Calculating…" : "Get My Free Quote"}
+          </button>
+
+          {/* Quote card — shown only after the customer clicks the button */}
           {quote && (
             <div
               ref={quoteRef}
@@ -497,17 +491,6 @@ export default function QuoteForm() {
               </p>
             </div>
           )}
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className={`md:col-span-2 py-3 rounded-lg font-bold text-white transition-colors ${
-              loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-            }`}
-          >
-            {loading ? "Sending…" : "Get My Free Quote"}
-          </button>
 
           {message.text && (
             <div
