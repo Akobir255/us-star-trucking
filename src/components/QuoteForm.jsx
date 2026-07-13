@@ -1,69 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import emailjs from "@emailjs/browser";
-import { getDistance } from "../googleDistance";
-import { calculateQuote } from "../pricing";
-
-const ORS_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdjZWRkNmIwOTdmYTQyNWQ5MmNiMzQ0NzVmNDQ0ZTkzIiwiaCI6Im11cm11cjY0In0=";
-
-const MODEL_TO_TYPE = {
-  // Sedans
-  Camry: "Sedan", Corolla: "Sedan", Civic: "Sedan", Accord: "Sedan",
-  Altima: "Sedan", Malibu: "Sedan", Fusion: "Sedan", Sonata: "Sedan",
-  Elantra: "Sedan", Jetta: "Sedan",
-  // SUVs
-  RAV4: "SUV", "CR-V": "SUV", Equinox: "SUV", Explorer: "SUV",
-  Rogue: "SUV", Escape: "SUV", Tucson: "SUV", Pilot: "SUV",
-  Highlander: "SUV", Tahoe: "SUV",
-  // Pickup Trucks
-  "F-150": "Pickup Truck", Silverado: "Pickup Truck", "Ram 1500": "Pickup Truck",
-  Tundra: "Pickup Truck", Tacoma: "Pickup Truck", Colorado: "Pickup Truck",
-  Ranger: "Pickup Truck", Sierra: "Pickup Truck", Frontier: "Pickup Truck", Ridgeline: "Pickup Truck",
-  // Vans
-  Odyssey: "Van", Sienna: "Van", Pacifica: "Van", Caravan: "Van",
-  Transit: "Van", Sprinter: "Van", Metris: "Van",
-  // Motorcycles
-  Sportster: "Motorcycle", "Street Glide": "Motorcycle", "Ninja 650": "Motorcycle",
-  "CBR500R": "Motorcycle", "R1250GS": "Motorcycle",
-};
+import { submitQuote, getCityState } from "../googleDistance";
 
 const MOTORCYCLE_MAKES = [
   "harley-davidson", "ducati", "kawasaki", "yamaha", "suzuki", "triumph",
   "ktm", "indian", "royal enfield", "aprilia",
 ];
-
-// Detect the vehicle type from make + model using keywords and a lookup map.
-function detectVehicleType(make, model) {
-  const mk = (make || "").toLowerCase();
-  const md = (model || "").toLowerCase();
-
-  // Motorcycle brands are always motorcycles
-  if (MOTORCYCLE_MAKES.includes(mk)) return "Motorcycle";
-
-  // Keyword hints in the model name
-  if (/\b(truck|pickup|silverado|sierra|f-?150|f-?250|f-?350|ram|tundra|tacoma|frontier|ranger|colorado|ridgeline|titan|gladiator|canyon)\b/.test(md))
-    return "Pickup Truck";
-  if (/\b(van|transit|sprinter|express|savana|promaster|metris|nv200|caravan|odyssey|sienna|pacifica)\b/.test(md))
-    return "Van";
-  if (/\b(suv|explorer|tahoe|suburban|expedition|highlander|pilot|rav4|cr-?v|equinox|rogue|escape|tucson|santa fe|4runner|wrangler|cherokee|bronco|blazer|traverse|telluride|palisade|pathfinder|durango|edge|xterra|armada|sequoia|land cruiser|q5|q7|x3|x5|x7|glc|gle|gls)\b/.test(md))
-    return "SUV";
-  if (/\b(sedan|camry|corolla|civic|accord|altima|malibu|fusion|sonata|elantra|jetta|passat|maxima|impala|charger|300|a4|a6|3-?series|5-?series|c-?class|e-?class|model 3|model s)\b/.test(md))
-    return "Sedan";
-
-  // Fall back to the explicit map, else empty
-  return MODEL_TO_TYPE[model] || "";
-}
-
-async function getCityState(zip) {
-  const res = await fetch(
-    `https://api.openrouteservice.org/geocode/search?api_key=${ORS_KEY}&text=${zip}&boundary.country=USA&size=1`
-  );
-  const data = await res.json();
-  if (!data.features || data.features.length === 0) return null;
-  const props = data.features[0].properties;
-  const city = props.locality || props.county || "";
-  const state = props.region_a || props.region || "";
-  return city && state ? `${city}, ${state}` : null;
-}
 
 const VEHICLE_MAKES = [
   "Acura", "Alfa Romeo", "Aston Martin", "Audi", "Bentley", "BMW", "Buick",
@@ -73,15 +14,39 @@ const VEHICLE_MAKES = [
   "Mazda", "McLaren", "Mercedes-Benz", "Mini", "Mitsubishi", "Nissan",
   "Polestar", "Porsche", "Ram", "Rivian", "Rolls-Royce", "Subaru", "Tesla",
   "Toyota", "Volkswagen", "Volvo",
-  // Motorcycles
   "Harley-Davidson", "Ducati", "Kawasaki", "Yamaha", "Suzuki", "Triumph",
   "KTM", "Indian", "Royal Enfield", "Aprilia",
 ].sort();
 
-async function fetchMakes() {
-  // Curated list of real vehicle manufacturers (avoids NHTSA's thousands of
-  // trailer/parts/industrial company entries).
-  return VEHICLE_MAKES;
+const MODEL_TO_TYPE = {
+  Camry: "Sedan", Corolla: "Sedan", Civic: "Sedan", Accord: "Sedan",
+  Altima: "Sedan", Malibu: "Sedan", Fusion: "Sedan", Sonata: "Sedan",
+  Elantra: "Sedan", Jetta: "Sedan",
+  RAV4: "SUV", "CR-V": "SUV", Equinox: "SUV", Explorer: "SUV",
+  Rogue: "SUV", Escape: "SUV", Tucson: "SUV", Pilot: "SUV",
+  Highlander: "SUV", Tahoe: "SUV",
+  "F-150": "Pickup Truck", Silverado: "Pickup Truck", "Ram 1500": "Pickup Truck",
+  Tundra: "Pickup Truck", Tacoma: "Pickup Truck", Colorado: "Pickup Truck",
+  Ranger: "Pickup Truck", Sierra: "Pickup Truck", Frontier: "Pickup Truck", Ridgeline: "Pickup Truck",
+  Odyssey: "Van", Sienna: "Van", Pacifica: "Van", Caravan: "Van",
+  Transit: "Van", Sprinter: "Van", Metris: "Van",
+  Sportster: "Motorcycle", "Street Glide": "Motorcycle", "Ninja 650": "Motorcycle",
+  "CBR500R": "Motorcycle", "R1250GS": "Motorcycle",
+};
+
+function detectVehicleType(make, model) {
+  const mk = (make || "").toLowerCase();
+  const md = (model || "").toLowerCase();
+  if (MOTORCYCLE_MAKES.includes(mk)) return "Motorcycle";
+  if (/\b(truck|pickup|silverado|sierra|f-?150|f-?250|f-?350|ram|tundra|tacoma|frontier|ranger|colorado|ridgeline|titan|gladiator|canyon)\b/.test(md))
+    return "Pickup Truck";
+  if (/\b(van|transit|sprinter|express|savana|promaster|metris|nv200|caravan|odyssey|sienna|pacifica)\b/.test(md))
+    return "Van";
+  if (/\b(suv|explorer|tahoe|suburban|expedition|highlander|pilot|rav4|cr-?v|equinox|rogue|escape|tucson|santa fe|4runner|wrangler|cherokee|bronco|blazer|traverse|telluride|palisade|pathfinder|durango|edge|xterra|armada|sequoia|land cruiser|q5|q7|x3|x5|x7|glc|gle|gls)\b/.test(md))
+    return "SUV";
+  if (/\b(sedan|camry|corolla|civic|accord|altima|malibu|fusion|sonata|elantra|jetta|passat|maxima|impala|charger|300|a4|a6|3-?series|5-?series|c-?class|e-?class|model 3|model s)\b/.test(md))
+    return "Sedan";
+  return MODEL_TO_TYPE[model] || "";
 }
 
 async function fetchModels(make) {
@@ -89,31 +54,25 @@ async function fetchModels(make) {
     `https://vpic.nhtsa.dot.gov/api/vehicles/getmodelsformake/${encodeURIComponent(make)}?format=json`
   );
   const data = await res.json();
-  // Dedupe and sort the model names
   const names = data.Results.map((r) => r.Model_Name);
   return [...new Set(names)].sort();
 }
 
 async function fetchVehicleImage(make, model, year) {
-  // Search Wikimedia Commons (free, no key, CORS-enabled) for a photo of the vehicle.
-  // Grab several results and pick the one most likely to be a full exterior shot.
   const queries = [
     `${year} ${make} ${model}`.trim(),
     `${make} ${model} car`.trim(),
     `${make} ${model}`.trim(),
   ];
-
-  // Words in a filename that usually mean it's NOT a clean full-car photo.
   const badWords = [
     "badge", "logo", "emblem", "interior", "dashboard", "dash", "engine",
     "wheel", "steering", "seat", "gauge", "detail", "closeup", "close-up",
     "trunk", "headlight", "taillight", "rim", "tire", "grille", "mirror",
-    // non-vehicle junk
     "document", "supreme", "court", "map", "diagram", "chart", "patent",
     "manual", "brochure", "advertisement", "poster", "stamp", "coin",
     "flag", "seal", "sign", "plate", "text", "page", "book", "letter",
+    "reports", "united states",
   ];
-
   for (const q of queries) {
     try {
       const url =
@@ -122,30 +81,20 @@ async function fetchVehicleImage(make, model, year) {
         `&gsrsearch=${encodeURIComponent(q)}` +
         "&gsrlimit=20&prop=imageinfo&iiprop=url|mime&iiurlwidth=900" +
         "&format=json&origin=*";
-
       const res = await fetch(url);
       const data = await res.json();
       const pages = data.query?.pages;
       if (!pages) continue;
-
       const items = Object.values(pages)
         .map((p) => {
           const info = p?.imageinfo?.[0];
-          return info
-            ? { title: (p.title || "").toLowerCase(), url: info.thumburl || info.url }
-            : null;
+          return info ? { title: (p.title || "").toLowerCase(), url: info.thumburl || info.url } : null;
         })
-        .filter((x) => x && x.url && /\.(jpe?g)$/i.test(x.url)); // photos only
-
+        .filter((x) => x && x.url && /\.(jpe?g)$/i.test(x.url));
       if (items.length === 0) continue;
-
-      // Require the make name to appear in the filename — guarantees the photo
-      // is actually about this vehicle (blocks unrelated documents/maps/etc.)
       const makeWord = make.toLowerCase().split(" ")[0];
       const relevant = items.filter((it) => it.title.includes(makeWord));
       if (relevant.length === 0) continue;
-
-      // Among relevant photos, prefer one with none of the "bad" words.
       const clean = relevant.find((it) => !badWords.some((w) => it.title.includes(w)));
       if (clean) return clean.url;
       return relevant[0].url;
@@ -156,8 +105,7 @@ async function fetchVehicleImage(make, model, year) {
   return null;
 }
 
-// Lightweight confetti burst — no external library needed.
-// Launches from the bottom-left and bottom-right corners toward the center.
+// Two-sided confetti burst — no external library.
 function fireConfetti() {
   const perSide = 80;
   const colors = [
@@ -169,18 +117,17 @@ function fireConfetti() {
     "position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden";
   document.body.appendChild(container);
 
-  // Inject the keyframes once
   if (!document.getElementById("confetti-style")) {
     const style = document.createElement("style");
     style.id = "confetti-style";
     style.textContent = `
       @keyframes confetti-left {
-        0%   { transform: translate(0,0) rotate(0deg); opacity: 1; }
-        100% { transform: translate(70vw, -60vh) rotate(720deg); opacity: 0; }
+        0%{transform:translate(0,0) rotate(0deg);opacity:1}
+        100%{transform:translate(70vw,-60vh) rotate(720deg);opacity:0}
       }
       @keyframes confetti-right {
-        0%   { transform: translate(0,0) rotate(0deg); opacity: 1; }
-        100% { transform: translate(-70vw, -60vh) rotate(-720deg); opacity: 0; }
+        0%{transform:translate(0,0) rotate(0deg);opacity:1}
+        100%{transform:translate(-70vw,-60vh) rotate(-720deg);opacity:0}
       }`;
     document.head.appendChild(style);
   }
@@ -192,25 +139,21 @@ function fireConfetti() {
       const bg = colors[Math.floor(Math.random() * colors.length)];
       const duration = 1400 + Math.random() * 1200;
       const delay = Math.random() * 250;
-      const spread = (Math.random() - 0.5) * 40; // vertical spread at launch
+      const spread = (Math.random() - 0.5) * 40;
       const base =
         `position:absolute;bottom:${10 + spread}vh;width:${size}px;height:${size * 0.5}px;` +
         `background:${bg};border-radius:2px;box-shadow:0 0 6px ${bg};` +
         `transform:rotate(${Math.random() * 360}deg);`;
-      if (side === "left") {
-        piece.style.cssText =
-          base + `left:-20px;animation:confetti-left ${duration}ms ${delay}ms cubic-bezier(.2,.6,.4,1) forwards`;
-      } else {
-        piece.style.cssText =
-          base + `right:-20px;animation:confetti-right ${duration}ms ${delay}ms cubic-bezier(.2,.6,.4,1) forwards`;
-      }
+      piece.style.cssText =
+        base +
+        (side === "left"
+          ? `left:-20px;animation:confetti-left ${duration}ms ${delay}ms cubic-bezier(.2,.6,.4,1) forwards`
+          : `right:-20px;animation:confetti-right ${duration}ms ${delay}ms cubic-bezier(.2,.6,.4,1) forwards`);
       container.appendChild(piece);
     }
   };
-
   launch("left");
   launch("right");
-
   setTimeout(() => container.remove(), 3200);
 }
 
@@ -249,7 +192,6 @@ function ZipInput({ label, name, value, onChange, cityState, loading }) {
 function Autocomplete({ placeholder, value, onChange, suggestions, onSelect, loading }) {
   const [open, setOpen] = useState(false);
   const ref = useRef();
-
   useEffect(() => {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
@@ -257,7 +199,6 @@ function Autocomplete({ placeholder, value, onChange, suggestions, onSelect, loa
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
-
   return (
     <div className="relative" ref={ref}>
       <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
@@ -305,10 +246,7 @@ export default function QuoteForm() {
   const [zipLoadingPickup, setZipLoadingPickup] = useState(false);
   const [zipLoadingDelivery, setZipLoadingDelivery] = useState(false);
 
-  const [allMakes, setAllMakes] = useState([]);
   const [makeSuggestions, setMakeSuggestions] = useState([]);
-  const [makesLoading, setMakesLoading] = useState(false);
-
   const [allModels, setAllModels] = useState([]);
   const [modelSuggestions, setModelSuggestions] = useState([]);
   const [modelsLoading, setModelsLoading] = useState(false);
@@ -318,13 +256,6 @@ export default function QuoteForm() {
 
   const quoteRef = useRef(null);
 
-  // Load makes on mount
-  useEffect(() => {
-    setMakesLoading(true);
-    fetchMakes().then(setAllMakes).catch(console.error).finally(() => setMakesLoading(false));
-  }, []);
-
-  // ZIP → city/state
   useEffect(() => {
     if (formData.pickup.length === 5) {
       setZipLoadingPickup(true);
@@ -359,7 +290,7 @@ export default function QuoteForm() {
     setAllModels([]);
     setModelSuggestions([]);
     setVehicleImage(null);
-    const filtered = allMakes.filter((m) => m.toLowerCase().startsWith(val.toLowerCase())).slice(0, 8);
+    const filtered = VEHICLE_MAKES.filter((m) => m.toLowerCase().startsWith(val.toLowerCase())).slice(0, 8);
     setMakeSuggestions(filtered);
   };
 
@@ -408,52 +339,27 @@ export default function QuoteForm() {
     setMessage({ type: "", text: "" });
     setQuote(null);
 
-    let result;
     try {
-      // Validate ZIPs / calculate the route. Throws "Invalid ZIP Code" if a ZIP is wrong.
-      result = await getDistance(formData.pickup, formData.delivery);
+      const data = await submitQuote(formData); // server: geocode + route + price + email
+      setQuote(data.quote);
+      if (data.emailSent) {
+        setMessage({ type: "success", text: "🎉 Your quote request has been sent successfully!" });
+        fireConfetti();
+      } else {
+        setMessage({ type: "success", text: "🎉 Here's your quote! (We'll follow up shortly.)" });
+        fireConfetti();
+      }
+      setTimeout(() => quoteRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
     } catch (err) {
       console.error(err);
-      const msg = String(err?.message || "");
-      if (msg.includes("ZIP")) {
+      const code = err.code || "SERVER_ERROR";
+      if (code === "INVALID_ZIP") {
         setMessage({ type: "error", text: "❌ One of the ZIP codes is incorrect. Please check and try again." });
+      } else if (code === "NO_ROUTE") {
+        setMessage({ type: "error", text: "❌ We couldn't calculate a route for those ZIP codes. Please check them." });
       } else {
-        setMessage({ type: "error", text: "❌ We couldn't calculate a route for those ZIP codes. Please check them and try again." });
+        setMessage({ type: "error", text: "❌ Something went wrong. Please try again." });
       }
-      setLoading(false);
-      return; // Stop here — do NOT send the email
-    }
-
-    try {
-      const price = calculateQuote(result.miles, formData.vehicle, formData.condition, formData.transport);
-      const quoteData = {
-        miles: result.miles,
-        distance: result.distance,
-        duration: result.duration,
-        price,
-      };
-
-      // Send the quote request by email
-      await emailjs.send(
-        "service_7iyk46o",
-        "template_hip0ibn",
-        {
-          ...formData,
-          distance: quoteData.distance,
-          miles: quoteData.miles,
-          estimated_price: `$${quoteData.price}`,
-        },
-        "VmOz4fwe7AtHA_Xjf"
-      );
-
-      // Show the quote and success message together, after the email is sent
-      setQuote(quoteData);
-      setMessage({ type: "success", text: "🎉 Your quote request has been sent successfully!" });
-      fireConfetti();
-      setTimeout(() => quoteRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
-    } catch (error) {
-      console.error(error);
-      setMessage({ type: "error", text: "❌ Something went wrong sending your request. Please try again." });
     } finally {
       setLoading(false);
     }
@@ -470,8 +376,6 @@ export default function QuoteForm() {
         </p>
 
         <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-4">
-
-          {/* ZIP Codes */}
           <ZipInput
             label="Pickup ZIP Code"
             name="pickup"
@@ -496,7 +400,6 @@ export default function QuoteForm() {
             loading={zipLoadingDelivery}
           />
 
-          {/* Year */}
           <input
             type="text"
             name="year"
@@ -507,17 +410,15 @@ export default function QuoteForm() {
             required
           />
 
-          {/* Make autocomplete */}
           <Autocomplete
             placeholder="Vehicle Make (e.g. Toyota)"
             value={formData.make}
             onChange={handleMakeChange}
             suggestions={makeSuggestions}
             onSelect={handleMakeSelect}
-            loading={makesLoading}
+            loading={false}
           />
 
-          {/* Model autocomplete */}
           <Autocomplete
             placeholder="Vehicle Model (e.g. Camry)"
             value={formData.model}
@@ -527,7 +428,6 @@ export default function QuoteForm() {
             loading={modelsLoading}
           />
 
-          {/* Vehicle Type — auto-detected or manual override */}
           <select
             name="vehicle"
             value={formData.vehicle}
@@ -543,7 +443,6 @@ export default function QuoteForm() {
             <option value="Motorcycle">Motorcycle</option>
           </select>
 
-          {/* Condition */}
           <select
             name="condition"
             value={formData.condition}
@@ -556,7 +455,6 @@ export default function QuoteForm() {
             <option value="Non-Running">Non-Running</option>
           </select>
 
-          {/* Transport */}
           <select
             name="transport"
             value={formData.transport}
@@ -569,7 +467,6 @@ export default function QuoteForm() {
             <option value="Enclosed">Enclosed Transport</option>
           </select>
 
-          {/* Vehicle image preview */}
           {(imageLoading || vehicleImage) && (
             <div className="md:col-span-2 rounded-xl overflow-hidden h-72 sm:h-96 bg-gray-100 flex items-center justify-center">
               {imageLoading ? (
@@ -587,7 +484,6 @@ export default function QuoteForm() {
             </div>
           )}
 
-          {/* Contact */}
           <input
             type="text"
             name="name"
@@ -618,7 +514,6 @@ export default function QuoteForm() {
             required
           />
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
@@ -629,7 +524,6 @@ export default function QuoteForm() {
             {loading ? "Calculating…" : "Get My Free Quote"}
           </button>
 
-          {/* Quote card — shown only after the customer clicks the button */}
           {quote && (
             <div
               ref={quoteRef}
