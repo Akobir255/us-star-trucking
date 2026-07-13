@@ -3,7 +3,6 @@ import emailjs from "@emailjs/browser";
 import { getDistance } from "../googleDistance";
 import { calculateQuote } from "../pricing";
 
-const UNSPLASH_KEY = "5TVaxXdJqOFIlK8vkA10aeg_cN6spqAWH1zntE8gX6c";
 const ORS_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjdjZWRkNmIwOTdmYTQyNWQ5MmNiMzQ0NzVmNDQ0ZTkzIiwiaCI6Im11cm11cjY0In0=";
 
 const MODEL_TO_TYPE = {
@@ -53,14 +52,37 @@ async function fetchModels(make) {
   return data.Results.map((r) => r.Model_Name).sort();
 }
 
-async function fetchVehicleImage(make, model) {
-  const query = `${make} ${model} car`;
-  const res = await fetch(
-    `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`,
-    { headers: { Authorization: `Client-ID ${UNSPLASH_KEY}` } }
-  );
-  const data = await res.json();
-  return data.results?.[0]?.urls?.regular || null;
+async function fetchVehicleImage(make, model, year) {
+  // Search Wikimedia Commons (free, no key, CORS-enabled) for a photo of the vehicle.
+  // Try the most specific query first, then fall back to broader ones.
+  const queries = [
+    `${year} ${make} ${model}`.trim(),
+    `${make} ${model}`.trim(),
+  ];
+
+  for (const q of queries) {
+    try {
+      const url =
+        "https://commons.wikimedia.org/w/api.php" +
+        "?action=query&generator=search&gsrnamespace=6" +
+        `&gsrsearch=${encodeURIComponent(q)}` +
+        "&gsrlimit=1&prop=imageinfo&iiprop=url&iiurlwidth=800" +
+        "&format=json&origin=*";
+
+      const res = await fetch(url);
+      const data = await res.json();
+      const pages = data.query?.pages;
+      if (!pages) continue;
+
+      const first = Object.values(pages)[0];
+      const info = first?.imageinfo?.[0];
+      const imageUrl = info?.thumburl || info?.url;
+      if (imageUrl) return imageUrl;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  return null;
 }
 
 function Spinner() {
@@ -241,7 +263,7 @@ export default function QuoteForm() {
     if (formData.make && model) {
       setImageLoading(true);
       try {
-        const img = await fetchVehicleImage(formData.make, model);
+        const img = await fetchVehicleImage(formData.make, model, formData.year);
         setVehicleImage(img);
       } catch (e) {
         console.error(e);
