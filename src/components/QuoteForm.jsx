@@ -361,11 +361,7 @@ export default function QuoteForm() {
         price,
       };
 
-      // Show the quote to the customer
-      setQuote(quoteData);
-      setTimeout(() => quoteRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
-
-      // Send the quote request by email
+      // Send the quote request by email first
       await emailjs.send(
         "service_7iyk46o",
         "template_hip0ibn",
@@ -378,7 +374,10 @@ export default function QuoteForm() {
         "VmOz4fwe7AtHA_Xjf"
       );
 
+      // Show the quote and success message together, after the email is sent
+      setQuote(quoteData);
       setMessage({ type: "success", text: "✅ Your quote request has been sent successfully!" });
+      setTimeout(() => quoteRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
     } catch (error) {
       console.error(error);
       setMessage({ type: "error", text: "❌ Something went wrong. Please try again." });
@@ -580,7 +579,7 @@ export default function QuoteForm() {
               </div>
               <p className="text-3xl font-bold text-blue-700">${quote.price}</p>
               <p className="text-sm text-gray-500 mt-1">
-                Final price may vary slightly depending on carrier availability.
+                Total price may vary slightly depending on carrier availability.
               </p>
             </div>
           )}
