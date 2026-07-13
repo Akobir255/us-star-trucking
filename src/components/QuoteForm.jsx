@@ -453,7 +453,7 @@ export default function QuoteForm() {
                 <img
                   src={vehicleImage}
                   alt={`${formData.make} ${formData.model}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               )}
             </div>
