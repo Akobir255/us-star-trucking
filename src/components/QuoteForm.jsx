@@ -458,7 +458,7 @@ export default function QuoteForm() {
 
           {/* Vehicle image preview */}
           {(imageLoading || vehicleImage) && (
-            <div className="md:col-span-2 rounded-xl overflow-hidden h-52 bg-gray-100 flex items-center justify-center">
+            <div className="md:col-span-2 rounded-xl overflow-hidden h-72 sm:h-96 bg-gray-100 flex items-center justify-center">
               {imageLoading ? (
                 <div className="flex flex-col items-center gap-2 text-gray-400">
                   <Spinner />
@@ -468,7 +468,7 @@ export default function QuoteForm() {
                 <img
                   src={vehicleImage}
                   alt={`${formData.make} ${formData.model}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               )}
             </div>
