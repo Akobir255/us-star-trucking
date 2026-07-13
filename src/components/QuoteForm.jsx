@@ -234,6 +234,7 @@ export default function QuoteForm() {
   const initialForm = {
     pickup: "", delivery: "", year: "", make: "", model: "",
     vehicle: "", condition: "", transport: "", name: "", phone: "", email: "",
+    website: "", // honeypot — must stay empty
   };
 
   const [formData, setFormData] = useState(initialForm);
@@ -357,6 +358,8 @@ export default function QuoteForm() {
         setMessage({ type: "error", text: "❌ One of the ZIP codes is incorrect. Please check and try again." });
       } else if (code === "NO_ROUTE") {
         setMessage({ type: "error", text: "❌ We couldn't calculate a route for those ZIP codes. Please check them." });
+      } else if (code === "RATE_LIMITED") {
+        setMessage({ type: "error", text: "❌ Too many requests. Please wait a minute and try again." });
       } else {
         setMessage({ type: "error", text: "❌ Something went wrong. Please try again." });
       }
@@ -376,6 +379,18 @@ export default function QuoteForm() {
         </p>
 
         <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-4">
+          {/* Honeypot — hidden from humans, bots fill it and get silently rejected */}
+          <input
+            type="text"
+            name="website"
+            value={formData.website}
+            onChange={handleChange}
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0 }}
+          />
+
           <ZipInput
             label="Pickup ZIP Code"
             name="pickup"
