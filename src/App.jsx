@@ -18,7 +18,7 @@ function App() {
     <div className="min-h-screen bg-slate-50 pt-20">
       <Navbar />
       <Hero />
-      <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-blue-900 pb-20">
+      <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-blue-900 pt-10 pb-32">
         <TrustBar />
         <QuoteForm />
       </div>

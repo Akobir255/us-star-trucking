@@ -512,7 +512,7 @@ export default function QuoteForm() {
   };
 
   return (
-    <section id="quote-form" className="max-w-6xl mx-auto px-4 sm:px-6 -mt-10 relative z-10">
+    <section id="quote-form" className="max-w-6xl mx-auto px-4 sm:px-6 -mt-20 relative z-10">
       <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8">
         {submitted ? (
           <div ref={quoteRef} className="max-w-2xl mx-auto text-center py-6">
