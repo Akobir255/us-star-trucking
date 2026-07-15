@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { submitQuote, getCityState } from "../googleDistance";
 
+const PROMO_CODES = {
+  USSTAR50: { discount: 50, label: "$50 off your first shipment" },
+  USSTAR100: { discount: 100, label: "$100 off your second shipment" },
+  REFER50: { discount: 50, label: "$50 off for referring a friend" },
+};
+
 const MOTORCYCLE_MAKES = [
   "harley-davidson", "ducati", "kawasaki", "yamaha", "suzuki", "triumph",
   "ktm", "indian", "royal enfield", "aprilia",
@@ -105,7 +111,6 @@ async function fetchVehicleImage(make, model, year) {
   return null;
 }
 
-// Two-sided confetti burst — no external library.
 function fireConfetti() {
   const perSide = 80;
   const colors = [
@@ -235,17 +240,9 @@ function makeEmptyVehicle() {
   vehicleIdCounter += 1;
   return {
     id: `v${vehicleIdCounter}-${Date.now()}`,
-    year: "",
-    make: "",
-    model: "",
-    vehicle: "",
-    condition: "",
-    image: null,
-    imageLoading: false,
-    makeSuggestions: [],
-    modelSuggestions: [],
-    allModels: [],
-    modelsLoading: false,
+    year: "", make: "", model: "", vehicle: "", condition: "",
+    image: null, imageLoading: false,
+    makeSuggestions: [], modelSuggestions: [], allModels: [], modelsLoading: false,
   };
 }
 
@@ -255,16 +252,11 @@ function VehicleCard({ vehicle, index, canRemove, onRemove, onFieldChange, onMak
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-bold text-gray-700">Vehicle {index + 1}</h3>
         {canRemove && (
-          <button
-            type="button"
-            onClick={onRemove}
-            className="text-sm text-red-500 hover:text-red-700 font-medium"
-          >
-            ✕ Remove
+          <button type="button" onClick={onRemove} className="text-sm text-red-500 hover:text-red-700 font-medium">
+            Remove
           </button>
         )}
       </div>
-
       <div className="grid md:grid-cols-2 gap-4">
         <input
           type="text"
@@ -274,7 +266,6 @@ function VehicleCard({ vehicle, index, canRemove, onRemove, onFieldChange, onMak
           className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
-
         <Autocomplete
           placeholder="Vehicle Make (e.g. Toyota)"
           value={vehicle.make}
@@ -283,7 +274,6 @@ function VehicleCard({ vehicle, index, canRemove, onRemove, onFieldChange, onMak
           onSelect={onMakeSelect}
           loading={false}
         />
-
         <Autocomplete
           placeholder="Vehicle Model (e.g. Camry)"
           value={vehicle.model}
@@ -292,7 +282,6 @@ function VehicleCard({ vehicle, index, canRemove, onRemove, onFieldChange, onMak
           onSelect={onModelSelect}
           loading={vehicle.modelsLoading}
         />
-
         <select
           value={vehicle.vehicle}
           onChange={(e) => onFieldChange("vehicle", e.target.value)}
@@ -306,7 +295,6 @@ function VehicleCard({ vehicle, index, canRemove, onRemove, onFieldChange, onMak
           <option value="Van">Van</option>
           <option value="Motorcycle">Motorcycle</option>
         </select>
-
         <select
           value={vehicle.condition}
           onChange={(e) => onFieldChange("condition", e.target.value)}
@@ -317,20 +305,15 @@ function VehicleCard({ vehicle, index, canRemove, onRemove, onFieldChange, onMak
           <option value="Running">Running</option>
           <option value="Non-Running">Non-Running</option>
         </select>
-
         {(vehicle.imageLoading || vehicle.image) && (
           <div className="md:col-span-2 rounded-xl overflow-hidden h-60 sm:h-72 bg-gray-100 flex items-center justify-center">
             {vehicle.imageLoading ? (
               <div className="flex flex-col items-center gap-2 text-gray-400">
                 <Spinner />
-                <span className="text-sm">Loading vehicle image…</span>
+                <span className="text-sm">Loading vehicle image...</span>
               </div>
             ) : (
-              <img
-                src={vehicle.image}
-                alt={`${vehicle.make} ${vehicle.model}`}
-                className="w-full h-full object-contain"
-              />
+              <img src={vehicle.image} alt={`${vehicle.make} ${vehicle.model}`} className="w-full h-full object-contain" />
             )}
           </div>
         )}
@@ -343,15 +326,18 @@ export default function QuoteForm() {
   const initialForm = {
     pickup: "", delivery: "", transport: "",
     name: "", phone: "", email: "",
-    website: "", // honeypot — must stay empty
+    promoCode: "",
+    website: "",
   };
 
   const [formData, setFormData] = useState(initialForm);
   const [vehicles, setVehicles] = useState([makeEmptyVehicle()]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [promoMessage, setPromoMessage] = useState({ type: "", text: "" });
   const [quote, setQuote] = useState(null);
   const [submitted, setSubmitted] = useState(false);
+  const [appliedPromo, setAppliedPromo] = useState(null);
 
   const [pickupCity, setPickupCity] = useState("");
   const [deliveryCity, setDeliveryCity] = useState("");
@@ -360,7 +346,6 @@ export default function QuoteForm() {
 
   const quoteRef = useRef(null);
 
-  // Scroll to the form if opened with /quote-form, #quote-form, or ?quote in the URL
   useEffect(() => {
     const hasHash = window.location.hash === "#quote-form";
     const hasParam = new URLSearchParams(window.location.search).has("quote");
@@ -397,34 +382,43 @@ export default function QuoteForm() {
     }
   }, [formData.delivery]);
 
+  // Check promo code as user types
+  useEffect(() => {
+    const code = formData.promoCode.toUpperCase().trim();
+    if (!code) {
+      setPromoMessage({ type: "", text: "" });
+      setAppliedPromo(null);
+      return;
+    }
+    if (PROMO_CODES[code]) {
+      setPromoMessage({ type: "success", text: `Promo applied! ${PROMO_CODES[code].label}` });
+      setAppliedPromo(PROMO_CODES[code]);
+    } else {
+      setPromoMessage({ type: "error", text: "Invalid promo code." });
+      setAppliedPromo(null);
+    }
+  }, [formData.promoCode]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((p) => ({ ...p, [name]: value }));
   };
 
-  // ---- vehicle list helpers ----
   const patchVehicle = (id, patch) => {
     setVehicles((prev) => prev.map((v) => (v.id === id ? { ...v, ...patch } : v)));
   };
 
-  const addVehicle = () => {
-    setVehicles((prev) => [...prev, makeEmptyVehicle()]);
-  };
+  const addVehicle = () => setVehicles((prev) => [...prev, makeEmptyVehicle()]);
 
   const removeVehicle = (id) => {
     setVehicles((prev) => (prev.length > 1 ? prev.filter((v) => v.id !== id) : prev));
   };
 
-  const handleVehicleField = (id, field, value) => {
-    patchVehicle(id, { [field]: value });
-  };
+  const handleVehicleField = (id, field, value) => patchVehicle(id, { [field]: value });
 
   const handleVehicleMakeChange = (id, val) => {
     const filtered = VEHICLE_MAKES.filter((m) => m.toLowerCase().startsWith(val.toLowerCase())).slice(0, 8);
-    patchVehicle(id, {
-      make: val, model: "", vehicle: "", image: null,
-      allModels: [], modelSuggestions: [], makeSuggestions: filtered,
-    });
+    patchVehicle(id, { make: val, model: "", vehicle: "", image: null, allModels: [], modelSuggestions: [], makeSuggestions: filtered });
   };
 
   const handleVehicleMakeSelect = async (id, make) => {
@@ -466,10 +460,10 @@ export default function QuoteForm() {
 
     const payload = {
       ...formData,
+      promoCode: formData.promoCode.toUpperCase(),
       vehicles: vehicles.map(({ year, make, model, vehicle, condition }) => ({
         year, make, model, vehicle, condition,
       })),
-      // legacy single-vehicle fields for backwards compatibility with older backends
       year: vehicles[0]?.year,
       make: vehicles[0]?.make,
       model: vehicles[0]?.model,
@@ -478,8 +472,13 @@ export default function QuoteForm() {
     };
 
     try {
-      const data = await submitQuote(payload); // server: geocode + route + price + email
-      setQuote(data.quote);
+      const data = await submitQuote(payload);
+      // Apply discount to the price
+      let finalPrice = data.quote.price;
+      if (appliedPromo) {
+        finalPrice = Math.max(0, parseInt(finalPrice.toString().replace(/[^0-9]/g, "")) - appliedPromo.discount);
+      }
+      setQuote({ ...data.quote, originalPrice: data.quote.price, price: finalPrice });
       setSubmitted(true);
       fireConfetti();
       setTimeout(() => quoteRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
@@ -487,13 +486,13 @@ export default function QuoteForm() {
       console.error(err);
       const code = err.code || "SERVER_ERROR";
       if (code === "INVALID_ZIP") {
-        setMessage({ type: "error", text: "❌ One of the ZIP codes is incorrect. Please check and try again." });
+        setMessage({ type: "error", text: "One of the ZIP codes is incorrect. Please check and try again." });
       } else if (code === "NO_ROUTE") {
-        setMessage({ type: "error", text: "❌ We couldn't calculate a route for those ZIP codes. Please check them." });
+        setMessage({ type: "error", text: "We couldn't calculate a route for those ZIP codes. Please check them." });
       } else if (code === "RATE_LIMITED") {
-        setMessage({ type: "error", text: "❌ Too many requests. Please wait a minute and try again." });
+        setMessage({ type: "error", text: "Too many requests. Please wait a minute and try again." });
       } else {
-        setMessage({ type: "error", text: "❌ Something went wrong. Please try again." });
+        setMessage({ type: "error", text: "Something went wrong. Please try again." });
       }
     } finally {
       setLoading(false);
@@ -506,6 +505,8 @@ export default function QuoteForm() {
     setQuote(null);
     setSubmitted(false);
     setMessage({ type: "", text: "" });
+    setPromoMessage({ type: "", text: "" });
+    setAppliedPromo(null);
     setPickupCity("");
     setDeliveryCity("");
   };
@@ -515,7 +516,6 @@ export default function QuoteForm() {
       <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8">
         {submitted ? (
           <div ref={quoteRef} className="max-w-2xl mx-auto text-center py-6">
-            {/* Checkmark */}
             <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
               <svg className="h-8 w-8 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -529,21 +529,28 @@ export default function QuoteForm() {
               phone or email to finalize your booking.
             </p>
 
-            {/* Estimated price recap */}
             {quote && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6 inline-block min-w-[260px]">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-4 inline-block min-w-[260px]">
                 <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Your Estimated Quote</div>
+                {appliedPromo && (
+                  <div className="text-sm text-gray-400 line-through mb-1">${quote.originalPrice}</div>
+                )}
                 <div className="text-4xl font-bold text-blue-700">${quote.price}</div>
                 <div className="text-sm text-gray-500 mt-1">{quote.distance} · {quote.duration}</div>
+                {appliedPromo && (
+                  <div className="mt-2 text-green-600 font-semibold text-sm">
+                    You saved ${appliedPromo.discount} with code {formData.promoCode.toUpperCase()}!
+                  </div>
+                )}
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mt-4">
               <a
                 href="tel:+18657227114"
                 className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-lg transition-colors"
               >
-                📞 Call us now: (865) 722-7114
+                Call us now: (865) 722-7114
               </a>
               <button
                 type="button"
@@ -555,148 +562,159 @@ export default function QuoteForm() {
             </div>
 
             <p className="text-xs text-gray-400 mt-6">
-              A confirmation has been sent to our team. We can't wait to help you ship your vehicle safely.
+              A confirmation has been sent to our team. We look forward to helping you ship your vehicle safely.
             </p>
           </div>
         ) : (
-        <>
-        <h2 className="text-3xl font-bold text-center mb-2">
-          Get Your Free Car Shipping Quote
-        </h2>
-        <p className="text-center text-gray-500 mb-8">
-          Fast · Safe · Door-to-Door Auto Transport
-        </p>
+          <>
+            <h2 className="text-3xl font-bold text-center mb-2">Get Your Free Car Shipping Quote</h2>
+            <p className="text-center text-gray-500 mb-8">Fast · Safe · Door-to-Door Auto Transport</p>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Honeypot — hidden from humans, bots fill it and get silently rejected */}
-          <input
-            type="text"
-            name="website"
-            value={formData.website}
-            onChange={handleChange}
-            tabIndex={-1}
-            autoComplete="off"
-            aria-hidden="true"
-            style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0 }}
-          />
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <ZipInput
-              label="Pickup ZIP Code"
-              name="pickup"
-              value={formData.pickup}
-              onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, "").slice(0, 5);
-                setFormData((p) => ({ ...p, pickup: value }));
-              }}
-              cityState={pickupCity}
-              loading={zipLoadingPickup}
-            />
-
-            <ZipInput
-              label="Delivery ZIP Code"
-              name="delivery"
-              value={formData.delivery}
-              onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, "").slice(0, 5);
-                setFormData((p) => ({ ...p, delivery: value }));
-              }}
-              cityState={deliveryCity}
-              loading={zipLoadingDelivery}
-            />
-          </div>
-
-          {/* Vehicles */}
-          <div className="flex flex-col gap-4">
-            {vehicles.map((v, i) => (
-              <VehicleCard
-                key={v.id}
-                vehicle={v}
-                index={i}
-                canRemove={vehicles.length > 1}
-                onRemove={() => removeVehicle(v.id)}
-                onFieldChange={(field, value) => handleVehicleField(v.id, field, value)}
-                onMakeChange={(val) => handleVehicleMakeChange(v.id, val)}
-                onMakeSelect={(make) => handleVehicleMakeSelect(v.id, make)}
-                onModelChange={(val) => handleVehicleModelChange(v.id, val, v.allModels)}
-                onModelSelect={(model) => handleVehicleModelSelect(v.id, v.make, model)}
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <input
+                type="text"
+                name="website"
+                value={formData.website}
+                onChange={handleChange}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0 }}
               />
-            ))}
-          </div>
 
-          <button
-            type="button"
-            onClick={addVehicle}
-            className="self-start flex items-center gap-2 text-blue-600 hover:text-blue-800 font-semibold px-2 py-1"
-          >
-            <span className="text-xl leading-none">+</span> Add another vehicle
-          </button>
+              <div className="grid md:grid-cols-2 gap-4">
+                <ZipInput
+                  label="Pickup ZIP Code"
+                  name="pickup"
+                  value={formData.pickup}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "").slice(0, 5);
+                    setFormData((p) => ({ ...p, pickup: value }));
+                  }}
+                  cityState={pickupCity}
+                  loading={zipLoadingPickup}
+                />
+                <ZipInput
+                  label="Delivery ZIP Code"
+                  name="delivery"
+                  value={formData.delivery}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "").slice(0, 5);
+                    setFormData((p) => ({ ...p, delivery: value }));
+                  }}
+                  cityState={deliveryCity}
+                  loading={zipLoadingDelivery}
+                />
+              </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <select
-              name="transport"
-              value={formData.transport}
-              onChange={handleChange}
-              className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-2"
-              required
-            >
-              <option value="">Transport Type</option>
-              <option value="Open">Open Transport</option>
-              <option value="Enclosed">Enclosed Transport</option>
-            </select>
+              <div className="flex flex-col gap-4">
+                {vehicles.map((v, i) => (
+                  <VehicleCard
+                    key={v.id}
+                    vehicle={v}
+                    index={i}
+                    canRemove={vehicles.length > 1}
+                    onRemove={() => removeVehicle(v.id)}
+                    onFieldChange={(field, value) => handleVehicleField(v.id, field, value)}
+                    onMakeChange={(val) => handleVehicleMakeChange(v.id, val)}
+                    onMakeSelect={(make) => handleVehicleMakeSelect(v.id, make)}
+                    onModelChange={(val) => handleVehicleModelChange(v.id, val, v.allModels)}
+                    onModelSelect={(model) => handleVehicleModelSelect(v.id, v.make, model)}
+                  />
+                ))}
+              </div>
 
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Full Name"
-              className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
+              <button
+                type="button"
+                onClick={addVehicle}
+                className="self-start flex items-center gap-2 text-blue-600 hover:text-blue-800 font-semibold px-2 py-1"
+              >
+                <span className="text-xl leading-none">+</span> Add another vehicle
+              </button>
 
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="Phone Number"
-              className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
+              <div className="grid md:grid-cols-2 gap-4">
+                <select
+                  name="transport"
+                  value={formData.transport}
+                  onChange={handleChange}
+                  className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-2"
+                  required
+                >
+                  <option value="">Transport Type</option>
+                  <option value="Open">Open Transport</option>
+                  <option value="Enclosed">Enclosed Transport</option>
+                </select>
 
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Email Address"
-              className="border border-gray-300 p-3 rounded-lg md:col-span-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Full Name"
+                  className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`py-3 rounded-lg font-bold text-white transition-colors ${
-              loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-            }`}
-          >
-            {loading ? "Calculating…" : `Get My Free Quote${vehicles.length > 1 ? ` (${vehicles.length} Vehicles)` : ""}`}
-          </button>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="Phone Number"
+                  className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
 
-          {message.text && (
-            <div
-              className={`text-center font-medium ${
-                message.type === "success" ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
-        </form>
-        </>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email Address"
+                  className="border border-gray-300 p-3 rounded-lg md:col-span-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+
+                <div className="md:col-span-2">
+                  <input
+                    type="text"
+                    name="promoCode"
+                    value={formData.promoCode}
+                    onChange={handleChange}
+                    placeholder="Promo Code (optional) — e.g. USSTAR50"
+                    className={`border p-3 rounded-lg w-full focus:outline-none focus:ring-2 uppercase tracking-widest ${
+                      promoMessage.type === "success"
+                        ? "border-green-400 focus:ring-green-500 bg-green-50"
+                        : promoMessage.type === "error"
+                        ? "border-red-400 focus:ring-red-500"
+                        : "border-gray-300 focus:ring-green-500"
+                    }`}
+                  />
+                  {promoMessage.text && (
+                    <p className={`mt-1 text-sm font-medium ${promoMessage.type === "success" ? "text-green-600" : "text-red-500"}`}>
+                      {promoMessage.type === "success" ? "✅" : "❌"} {promoMessage.text}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className={`py-3 rounded-lg font-bold text-white transition-colors ${
+                  loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                {loading ? "Calculating..." : `Get My Free Quote${vehicles.length > 1 ? ` (${vehicles.length} Vehicles)` : ""}${appliedPromo ? ` (-$${appliedPromo.discount})` : ""}`}
+              </button>
+
+              {message.text && (
+                <div className={`text-center font-medium ${message.type === "success" ? "text-green-600" : "text-red-600"}`}>
+                  {message.text}
+                </div>
+              )}
+            </form>
+          </>
         )}
       </div>
     </section>

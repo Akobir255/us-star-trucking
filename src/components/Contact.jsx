@@ -20,7 +20,7 @@ function Contact() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
 
-          {/* Phone */}
+          {/*  */}
 
           <div className="bg-slate-800 rounded-3xl p-8 shadow-xl hover:shadow-2xl transition">
             <div className="text-5xl mb-5">📞</div>

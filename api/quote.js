@@ -2,19 +2,15 @@
 // Endpoint: POST /api/quote
 // Includes: in-memory rate limiting + honeypot spam protection.
 
-// --- Simple in-memory rate limiter (per IP) ---
-// Note: resets whenever the function cold-starts / redeploys. Good enough to
-// stop casual abuse and accidental loops without any external service.
-const RATE_LIMIT = 5;            // max requests
-const RATE_WINDOW_MS = 60_000;   // per 60 seconds
-const hits = new Map();          // ip -> [timestamps]
+const RATE_LIMIT = 5;
+const RATE_WINDOW_MS = 60_000;
+const hits = new Map();
 
 function isRateLimited(ip) {
   const now = Date.now();
   const arr = (hits.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
   arr.push(now);
   hits.set(ip, arr);
-  // Occasionally clean up old IPs to avoid unbounded growth
   if (hits.size > 5000) {
     for (const [k, v] of hits) {
       if (v.every((t) => now - t > RATE_WINDOW_MS)) hits.delete(k);
@@ -23,12 +19,18 @@ function isRateLimited(ip) {
   return arr.length > RATE_LIMIT;
 }
 
+// Promo codes and their discounts
+const PROMO_CODES = {
+  USSTAR50: { discount: 50, label: "$50 off first shipment" },
+  USSTAR100: { discount: 100, label: "$100 off second shipment" },
+  REFER50: { discount: 50, label: "$50 off referral" },
+};
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  // Identify the caller by IP (Vercel sets x-forwarded-for)
   const ip =
     (req.headers["x-forwarded-for"] || "").split(",")[0].trim() ||
     req.socket?.remoteAddress ||
@@ -51,23 +53,21 @@ export default async function handler(req, res) {
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
 
-    // --- Honeypot: bots fill hidden fields, humans never do ---
+    // Honeypot
     if (body.website || body.company_url) {
-      // Pretend success so the bot doesn't retry, but do nothing.
       return res.status(200).json({ quote: null, emailSent: false, ignored: true });
     }
 
-    const { pickup, delivery, vehicle, condition, transport } = body;
+    const { pickup, delivery, vehicle, condition, transport, promoCode } = body;
     if (!pickup || !delivery || !vehicle || !condition || !transport) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Basic input sanity (5-digit ZIPs)
     if (!/^\d{5}$/.test(String(pickup)) || !/^\d{5}$/.test(String(delivery))) {
       return res.status(422).json({ error: "INVALID_ZIP" });
     }
 
-    // 1. Geocode both ZIPs via ORS
+    // 1. Geocode both ZIPs
     const geocode = async (zip) => {
       const r = await fetch(
         `https://api.openrouteservice.org/geocode/search?api_key=${ORS_KEY}&text=${encodeURIComponent(zip)}&boundary.country=USA&size=1`
@@ -114,20 +114,37 @@ export default async function handler(req, res) {
     const summary = routeData.routes[0].summary;
     const miles = Math.round(summary.distance * 0.000621371);
     const hours = summary.duration / 3600;
-    const price = calculateQuote(miles, vehicle, condition, transport);
+
+    // 3. Calculate base price
+    let basePrice = calculateQuote(miles, vehicle, condition, transport);
+
+    // 4. Apply promo code discount
+    const code = (promoCode || "").toString().toUpperCase().trim();
+    const promo = PROMO_CODES[code] || null;
+    let finalPrice = basePrice;
+    let discountApplied = 0;
+
+    if (promo) {
+      discountApplied = promo.discount;
+      finalPrice = Math.max(0, basePrice - discountApplied);
+    }
 
     const quote = {
       miles,
       distance: `${miles} miles`,
       duration: `${hours.toFixed(1)} hours`,
-      price,
+      price: finalPrice,
+      originalPrice: basePrice,
+      discountApplied,
+      promoCode: promo ? code : null,
+      promoLabel: promo ? promo.label : null,
       pickupCity: origin.city,
       pickupState: origin.state,
       deliveryCity: destination.city,
       deliveryState: destination.state,
     };
 
-    // 3. Send email via EmailJS REST API (server-side)
+    // 5. Send email via EmailJS
     if (EMAILJS_SERVICE && EMAILJS_TEMPLATE && EMAILJS_PUBLIC) {
       const emailPayload = {
         service_id: EMAILJS_SERVICE,
@@ -138,6 +155,8 @@ export default async function handler(req, res) {
           distance: quote.distance,
           miles: quote.miles,
           estimated_price: `$${quote.price}`,
+          original_price: `$${quote.originalPrice}`,
+          discount_applied: discountApplied > 0 ? `$${discountApplied} off (${code})` : "None",
         },
       };
       if (EMAILJS_PRIVATE) emailPayload.accessToken = EMAILJS_PRIVATE;
@@ -151,7 +170,6 @@ export default async function handler(req, res) {
       if (!emailRes.ok) {
         const text = await emailRes.text();
         console.error("EmailJS error:", text);
-        // Still return the quote — customer sees their price even if email fails.
         return res.status(200).json({ quote, emailSent: false });
       }
     }

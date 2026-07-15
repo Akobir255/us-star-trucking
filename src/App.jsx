@@ -11,6 +11,7 @@ import TrustBar from "./components/TrustBar";
 import Contact from "./components/Contact";
 import Stats from "./components/Stats";
 import Reviews from "./components/Reviews";
+import Promotions from "./components/Promotions";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
       <WhyChooseUs />
       <Reviews />
       <FAQ />
+      <Promotions />
       <Contact />
       <Footer />
 
