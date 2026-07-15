@@ -18,8 +18,10 @@ function App() {
     <div className="min-h-screen bg-slate-50 pt-20">
       <Navbar />
       <Hero />
-      <TrustBar />
-      <QuoteForm />
+      <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-blue-900 pb-20">
+        <TrustBar />
+        <QuoteForm />
+      </div>
       <Services />
       <HowItWorks />
       <Stats />
@@ -29,8 +31,6 @@ function App() {
       <Promotions />
       <Contact />
       <Footer />
-
-      {/* Floating Contact Buttons */}
       <FloatingButtons />
     </div>
   );
