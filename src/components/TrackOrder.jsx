@@ -162,6 +162,14 @@ export default function TrackOrder() {
                 <span>{order.transport || "—"}</span>
               </div>
               <div className="flex justify-between border-b border-white/10 pb-2">
+                <span className="text-slate-400 font-semibold">Carrier</span>
+                <span>{order.carrierCompany || "—"}</span>
+              </div>
+              <div className="flex justify-between border-b border-white/10 pb-2">
+                <span className="text-slate-400 font-semibold">Driver</span>
+                <span>{order.driverName || "—"}</span>
+              </div>
+              <div className="flex justify-between border-b border-white/10 pb-2">
                 <span className="text-slate-400 font-semibold">Estimated delivery</span>
                 <span>{order.eta || "To be confirmed"}</span>
               </div>

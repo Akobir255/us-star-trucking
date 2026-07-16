@@ -73,6 +73,11 @@ export default async function handler(req, res) {
             status: ALLOWED_STATUSES.includes(body.status) ? body.status : "Booked",
             eta: body.eta || null,
             note: body.note || null,
+            carrier_company: body.carrier_company || null,
+            driver_name: body.driver_name || null,
+            driver_license: body.driver_license || null,
+            insurance_provider: body.insurance_provider || null,
+            insurance_policy: body.insurance_policy || null,
           }),
         });
         if (r.ok) {
@@ -103,7 +108,7 @@ export default async function handler(req, res) {
         }
         patch.status = body.status;
       }
-      for (const field of ["eta", "note", "customer_phone", "customer_email", "vehicle", "transport", "pickup", "delivery", "customer_name"]) {
+      for (const field of ["eta", "note", "customer_phone", "customer_email", "vehicle", "transport", "pickup", "delivery", "customer_name", "carrier_company", "driver_name", "driver_license", "insurance_provider", "insurance_policy"]) {
         if (field in body) patch[field] = body[field];
       }
 

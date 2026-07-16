@@ -21,6 +21,11 @@ export default function AdminOrders() {
     transport: "",
     eta: "",
     note: "",
+    carrier_company: "",
+    driver_name: "",
+    driver_license: "",
+    insurance_provider: "",
+    insurance_policy: "",
   });
   const [creating, setCreating] = useState(false);
   const [createMsg, setCreateMsg] = useState("");
@@ -111,6 +116,11 @@ export default function AdminOrders() {
         transport: "",
         eta: "",
         note: "",
+        carrier_company: "",
+        driver_name: "",
+        driver_license: "",
+        insurance_provider: "",
+        insurance_policy: "",
       });
       loadOrders();
     } catch {
@@ -237,6 +247,45 @@ export default function AdminOrders() {
               className="sm:col-span-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows={2}
             />
+
+            <div className="sm:col-span-2 pt-4 mt-2 border-t border-white/10">
+              <p className="text-sm font-semibold text-blue-300 mb-1">Carrier & Driver</p>
+              <p className="text-xs text-slate-400 mb-4">
+                Driver name & carrier company are shown to the customer on /track. License and
+                insurance details are internal only and never shown publicly.
+              </p>
+            </div>
+            <input
+              placeholder="Carrier company (shown to customer)"
+              value={form.carrier_company}
+              onChange={(e) => setForm({ ...form, carrier_company: e.target.value })}
+              className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              placeholder="Driver name (shown to customer)"
+              value={form.driver_name}
+              onChange={(e) => setForm({ ...form, driver_name: e.target.value })}
+              className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              placeholder="Driver license # (internal only)"
+              value={form.driver_license}
+              onChange={(e) => setForm({ ...form, driver_license: e.target.value })}
+              className="rounded-xl border border-yellow-500/30 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            />
+            <input
+              placeholder="Insurance provider (internal only)"
+              value={form.insurance_provider}
+              onChange={(e) => setForm({ ...form, insurance_provider: e.target.value })}
+              className="rounded-xl border border-yellow-500/30 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            />
+            <input
+              placeholder="Insurance policy # (internal only)"
+              value={form.insurance_policy}
+              onChange={(e) => setForm({ ...form, insurance_policy: e.target.value })}
+              className="rounded-xl border border-yellow-500/30 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            />
+
             <button
               type="submit"
               disabled={creating}
@@ -286,6 +335,17 @@ export default function AdminOrders() {
                   <p>To: {o.delivery}</p>
                   {o.vehicle && <p>Vehicle: {o.vehicle}</p>}
                   {o.transport && <p>Transport: {o.transport}</p>}
+                  {o.carrier_company && <p>Carrier: {o.carrier_company}</p>}
+                  {o.driver_name && <p>Driver: {o.driver_name}</p>}
+                  {o.driver_license && (
+                    <p className="text-yellow-400/80">License: {o.driver_license}</p>
+                  )}
+                  {o.insurance_provider && (
+                    <p className="text-yellow-400/80">Insurance: {o.insurance_provider}</p>
+                  )}
+                  {o.insurance_policy && (
+                    <p className="text-yellow-400/80">Policy #: {o.insurance_policy}</p>
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {STATUSES.map((s) => (

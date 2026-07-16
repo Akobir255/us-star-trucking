@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   try {
     const r = await fetch(
       `${SUPABASE_URL}/rest/v1/orders?order_number=eq.${encodeURIComponent(order)}` +
-        `&select=order_number,customer_name,pickup,delivery,vehicle,transport,status,eta,note,updated_at`,
+        `&select=order_number,customer_name,pickup,delivery,vehicle,transport,status,eta,note,updated_at,carrier_company,driver_name`,
       {
         headers: {
           apikey: SUPABASE_KEY,
@@ -46,6 +46,8 @@ export default async function handler(req, res) {
         delivery: o.delivery,
         vehicle: o.vehicle,
         transport: o.transport,
+        carrierCompany: o.carrier_company,
+        driverName: o.driver_name,
         status: o.status,
         eta: o.eta,
         note: o.note,
