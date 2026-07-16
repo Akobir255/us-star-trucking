@@ -1,6 +1,7 @@
 // Vercel Serverless Function — admin order management (password protected).
 // Endpoint: /api/admin-orders
-//   GET    -> list all orders (newest first)
+//   GET    -> list all orders (newest first), with temporary signed URLs for
+//             any uploaded driver license / insurance documents
 //   POST   -> create order  { customer_name, pickup, delivery, ... }
 //   PATCH  -> update order  { order_number, status?, eta?, note?, ... }
 // Every request must include header:  x-admin-password: <ADMIN_PASSWORD env>
@@ -8,6 +9,8 @@
 const SUPABASE_URL = (process.env.SUPABASE_URL || "").trim();
 const SUPABASE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
 const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || "").trim();
+
+const BUCKET = "driver-documents";
 
 const ALLOWED_STATUSES = [
   "Booked",
@@ -29,6 +32,31 @@ const sb = (path, options = {}) =>
     },
   });
 
+// Generate a short-lived signed URL for a private storage object.
+// Returns null if there's no path, or if signing fails (e.g. file was deleted).
+async function signUrl(path) {
+  if (!path) return null;
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/storage/v1/object/sign/${BUCKET}/${encodeURIComponent(path)}`,
+      {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ expiresIn: 3600 }), // 1 hour
+      }
+    );
+    if (!r.ok) return null;
+    const data = await r.json();
+    return data.signedURL ? `${SUPABASE_URL}/storage/v1${data.signedURL}` : null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function handler(req, res) {
   if (!SUPABASE_URL || !SUPABASE_KEY || !ADMIN_PASSWORD) {
     return res.status(500).json({ error: "Server not configured" });
@@ -44,7 +72,14 @@ export default async function handler(req, res) {
     if (req.method === "GET") {
       const r = await sb("orders?select=*&order=created_at.desc&limit=200");
       const data = await r.json();
-      return res.status(200).json({ orders: data });
+      const withUrls = await Promise.all(
+        (Array.isArray(data) ? data : []).map(async (o) => ({
+          ...o,
+          driver_license_url: await signUrl(o.driver_license_path),
+          insurance_url: await signUrl(o.insurance_path),
+        }))
+      );
+      return res.status(200).json({ orders: withUrls });
     }
 
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
@@ -75,9 +110,6 @@ export default async function handler(req, res) {
             note: body.note || null,
             carrier_company: body.carrier_company || null,
             driver_name: body.driver_name || null,
-            driver_license: body.driver_license || null,
-            insurance_provider: body.insurance_provider || null,
-            insurance_policy: body.insurance_policy || null,
           }),
         });
         if (r.ok) {
@@ -108,7 +140,7 @@ export default async function handler(req, res) {
         }
         patch.status = body.status;
       }
-      for (const field of ["eta", "note", "customer_phone", "customer_email", "vehicle", "transport", "pickup", "delivery", "customer_name", "carrier_company", "driver_name", "driver_license", "insurance_provider", "insurance_policy"]) {
+      for (const field of ["eta", "note", "customer_phone", "customer_email", "vehicle", "transport", "pickup", "delivery", "customer_name", "carrier_company", "driver_name"]) {
         if (field in body) patch[field] = body[field];
       }
 

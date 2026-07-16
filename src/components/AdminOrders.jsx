@@ -2,6 +2,28 @@ import { useState, useEffect } from "react";
 
 const STATUSES = ["Booked", "Driver Assigned", "Picked Up", "In Transit", "Delivered"];
 
+const EDIT_FIELDS = [
+  { key: "customer_name", label: "Customer name" },
+  { key: "customer_phone", label: "Phone" },
+  { key: "customer_email", label: "Email" },
+  { key: "pickup", label: "Pickup" },
+  { key: "delivery", label: "Delivery" },
+  { key: "vehicle", label: "Vehicle" },
+  { key: "transport", label: "Transport" },
+  { key: "eta", label: "ETA" },
+  { key: "carrier_company", label: "Carrier company" },
+  { key: "driver_name", label: "Driver name" },
+  { key: "note", label: "Note", full: true },
+];
+
+const fileToBase64 = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
 export default function AdminOrders() {
   const [password, setPassword] = useState("");
   const [authed, setAuthed] = useState(false);
@@ -23,12 +45,20 @@ export default function AdminOrders() {
     note: "",
     carrier_company: "",
     driver_name: "",
-    driver_license: "",
-    insurance_provider: "",
-    insurance_policy: "",
   });
+  const [licenseFile, setLicenseFile] = useState(null);
+  const [insuranceFile, setInsuranceFile] = useState(null);
   const [creating, setCreating] = useState(false);
   const [createMsg, setCreateMsg] = useState("");
+
+  // Which order's document is currently uploading, e.g. "US-123456:license"
+  const [uploadingKey, setUploadingKey] = useState("");
+
+  // Editing an existing order
+  const [editingOrder, setEditingOrder] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editMsg, setEditMsg] = useState("");
 
   const headers = {
     "Content-Type": "application/json",
@@ -86,6 +116,30 @@ export default function AdminOrders() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authed]);
 
+  const uploadDocument = async (order_number, doc_type, file) => {
+    if (!file) return true;
+    setUploadingKey(`${order_number}:${doc_type}`);
+    try {
+      const file_base64 = await fileToBase64(file);
+      const r = await fetch("/api/upload-document", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          order_number,
+          doc_type,
+          filename: file.name,
+          content_type: file.type,
+          file_base64,
+        }),
+      });
+      return r.ok;
+    } catch {
+      return false;
+    } finally {
+      setUploadingKey("");
+    }
+  };
+
   const handleCreate = async (e) => {
     e.preventDefault();
     setCreateMsg("");
@@ -105,7 +159,17 @@ export default function AdminOrders() {
         setCreateMsg("Failed to create order.");
         return;
       }
-      setCreateMsg(`✅ Order created: ${data.order.order_number}`);
+      const orderNumber = data.order.order_number;
+
+      let docsOk = true;
+      if (licenseFile) docsOk = (await uploadDocument(orderNumber, "license", licenseFile)) && docsOk;
+      if (insuranceFile) docsOk = (await uploadDocument(orderNumber, "insurance", insuranceFile)) && docsOk;
+
+      setCreateMsg(
+        docsOk
+          ? `✅ Order created: ${orderNumber}`
+          : `✅ Order created: ${orderNumber} — but a document failed to upload. Try re-uploading it below.`
+      );
       setForm({
         customer_name: "",
         customer_phone: "",
@@ -118,10 +182,9 @@ export default function AdminOrders() {
         note: "",
         carrier_company: "",
         driver_name: "",
-        driver_license: "",
-        insurance_provider: "",
-        insurance_policy: "",
       });
+      setLicenseFile(null);
+      setInsuranceFile(null);
       loadOrders();
     } catch {
       setCreateMsg("Failed to create order.");
@@ -144,6 +207,52 @@ export default function AdminOrders() {
       loadOrders();
     } catch {
       setListError("Failed to update status.");
+    }
+  };
+
+  const handleReplaceDoc = async (order_number, doc_type, file) => {
+    if (!file) return;
+    const ok = await uploadDocument(order_number, doc_type, file);
+    if (!ok) setListError("Document upload failed. Please try again.");
+    loadOrders();
+  };
+
+  const startEdit = (o) => {
+    setEditingOrder(o.order_number);
+    setEditMsg("");
+    const initial = {};
+    EDIT_FIELDS.forEach(({ key }) => {
+      initial[key] = o[key] || "";
+    });
+    setEditForm(initial);
+  };
+
+  const cancelEdit = () => {
+    setEditingOrder(null);
+    setEditForm({});
+    setEditMsg("");
+  };
+
+  const saveEdit = async (order_number) => {
+    setSavingEdit(true);
+    setEditMsg("");
+    try {
+      const r = await fetch("/api/admin-orders", {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ order_number, ...editForm }),
+      });
+      if (!r.ok) {
+        setEditMsg("Failed to save changes.");
+        return;
+      }
+      setEditingOrder(null);
+      setEditForm({});
+      loadOrders();
+    } catch {
+      setEditMsg("Failed to save changes.");
+    } finally {
+      setSavingEdit(false);
     }
   };
 
@@ -251,8 +360,8 @@ export default function AdminOrders() {
             <div className="sm:col-span-2 pt-4 mt-2 border-t border-white/10">
               <p className="text-sm font-semibold text-blue-300 mb-1">Carrier & Driver</p>
               <p className="text-xs text-slate-400 mb-4">
-                Driver name & carrier company are shown to the customer on /track. License and
-                insurance details are internal only and never shown publicly.
+                Driver name & carrier company are shown to the customer on /track. Uploaded
+                documents are private — only visible here in admin, via a temporary link.
               </p>
             </div>
             <input
@@ -267,24 +376,32 @@ export default function AdminOrders() {
               onChange={(e) => setForm({ ...form, driver_name: e.target.value })}
               className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <input
-              placeholder="Driver license # (internal only)"
-              value={form.driver_license}
-              onChange={(e) => setForm({ ...form, driver_license: e.target.value })}
-              className="rounded-xl border border-yellow-500/30 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-            />
-            <input
-              placeholder="Insurance provider (internal only)"
-              value={form.insurance_provider}
-              onChange={(e) => setForm({ ...form, insurance_provider: e.target.value })}
-              className="rounded-xl border border-yellow-500/30 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-            />
-            <input
-              placeholder="Insurance policy # (internal only)"
-              value={form.insurance_policy}
-              onChange={(e) => setForm({ ...form, insurance_policy: e.target.value })}
-              className="rounded-xl border border-yellow-500/30 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-            />
+
+            <label className="rounded-xl border border-dashed border-yellow-500/40 bg-white/5 px-4 py-3 text-sm text-slate-300 cursor-pointer hover:bg-white/10 transition">
+              <span className="block text-xs text-yellow-400/80 mb-1">
+                Driver license (file, internal only)
+              </span>
+              {licenseFile ? licenseFile.name : "Choose file..."}
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                className="hidden"
+                onChange={(e) => setLicenseFile(e.target.files[0] || null)}
+              />
+            </label>
+
+            <label className="rounded-xl border border-dashed border-yellow-500/40 bg-white/5 px-4 py-3 text-sm text-slate-300 cursor-pointer hover:bg-white/10 transition">
+              <span className="block text-xs text-yellow-400/80 mb-1">
+                Insurance document (file, internal only)
+              </span>
+              {insuranceFile ? insuranceFile.name : "Choose file..."}
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                className="hidden"
+                onChange={(e) => setInsuranceFile(e.target.files[0] || null)}
+              />
+            </label>
 
             <button
               type="submit"
@@ -328,25 +445,135 @@ export default function AdminOrders() {
                     <p className="font-mono font-bold text-lg">{o.order_number}</p>
                     <p className="text-sm text-slate-400">{o.customer_name}</p>
                   </div>
-                  <span className="text-sm font-semibold text-green-400">{o.status}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold text-green-400">{o.status}</span>
+                    {editingOrder !== o.order_number && (
+                      <button
+                        onClick={() => startEdit(o)}
+                        className="text-xs text-blue-300 hover:text-white transition"
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div className="grid sm:grid-cols-2 gap-x-8 gap-y-1 text-sm text-slate-300 mb-4">
-                  <p>From: {o.pickup}</p>
-                  <p>To: {o.delivery}</p>
-                  {o.vehicle && <p>Vehicle: {o.vehicle}</p>}
-                  {o.transport && <p>Transport: {o.transport}</p>}
-                  {o.carrier_company && <p>Carrier: {o.carrier_company}</p>}
-                  {o.driver_name && <p>Driver: {o.driver_name}</p>}
-                  {o.driver_license && (
-                    <p className="text-yellow-400/80">License: {o.driver_license}</p>
-                  )}
-                  {o.insurance_provider && (
-                    <p className="text-yellow-400/80">Insurance: {o.insurance_provider}</p>
-                  )}
-                  {o.insurance_policy && (
-                    <p className="text-yellow-400/80">Policy #: {o.insurance_policy}</p>
-                  )}
+
+                {editingOrder === o.order_number ? (
+                  <div className="mb-4">
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {EDIT_FIELDS.map(({ key, label, full }) =>
+                        full ? (
+                          <textarea
+                            key={key}
+                            placeholder={label}
+                            value={editForm[key] || ""}
+                            onChange={(e) => setEditForm({ ...editForm, [key]: e.target.value })}
+                            className="sm:col-span-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            rows={2}
+                          />
+                        ) : (
+                          <input
+                            key={key}
+                            placeholder={label}
+                            value={editForm[key] || ""}
+                            onChange={(e) => setEditForm({ ...editForm, [key]: e.target.value })}
+                            className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        )
+                      )}
+                    </div>
+                    {editMsg && <p className="mt-2 text-sm text-red-400">{editMsg}</p>}
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        onClick={() => saveEdit(o.order_number)}
+                        disabled={savingEdit}
+                        className={`text-sm font-semibold rounded-lg px-4 py-2 transition ${
+                          savingEdit ? "bg-gray-500 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                        }`}
+                      >
+                        {savingEdit ? "Saving..." : "Save Changes"}
+                      </button>
+                      <button
+                        onClick={cancelEdit}
+                        className="text-sm rounded-lg px-4 py-2 bg-white/10 text-slate-300 hover:bg-white/20 transition"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid sm:grid-cols-2 gap-x-8 gap-y-1 text-sm text-slate-300 mb-4">
+                    <p>From: {o.pickup}</p>
+                    <p>To: {o.delivery}</p>
+                    {o.vehicle && <p>Vehicle: {o.vehicle}</p>}
+                    {o.transport && <p>Transport: {o.transport}</p>}
+                    {o.carrier_company && <p>Carrier: {o.carrier_company}</p>}
+                    {o.driver_name && <p>Driver: {o.driver_name}</p>}
+                    {o.note && <p className="sm:col-span-2">Note: {o.note}</p>}
+                  </div>
+                )}
+
+                {/* Documents */}
+                <div className="grid sm:grid-cols-2 gap-3 mb-4">
+                  <div className="rounded-xl border border-yellow-500/20 bg-white/5 p-3 flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-xs text-yellow-400/80 mb-1">Driver license</p>
+                      {o.driver_license_url ? (
+                        <a
+                          href={o.driver_license_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm text-blue-300 hover:text-white transition"
+                        >
+                          View file
+                        </a>
+                      ) : (
+                        <p className="text-sm text-slate-500">Not uploaded</p>
+                      )}
+                    </div>
+                    <label className="text-xs text-slate-300 cursor-pointer hover:text-white transition">
+                      {uploadingKey === `${o.order_number}:license` ? "Uploading..." : "Upload / Replace"}
+                      <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        className="hidden"
+                        onChange={(e) =>
+                          handleReplaceDoc(o.order_number, "license", e.target.files[0])
+                        }
+                      />
+                    </label>
+                  </div>
+
+                  <div className="rounded-xl border border-yellow-500/20 bg-white/5 p-3 flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-xs text-yellow-400/80 mb-1">Insurance document</p>
+                      {o.insurance_url ? (
+                        <a
+                          href={o.insurance_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm text-blue-300 hover:text-white transition"
+                        >
+                          View file
+                        </a>
+                      ) : (
+                        <p className="text-sm text-slate-500">Not uploaded</p>
+                      )}
+                    </div>
+                    <label className="text-xs text-slate-300 cursor-pointer hover:text-white transition">
+                      {uploadingKey === `${o.order_number}:insurance` ? "Uploading..." : "Upload / Replace"}
+                      <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        className="hidden"
+                        onChange={(e) =>
+                          handleReplaceDoc(o.order_number, "insurance", e.target.files[0])
+                        }
+                      />
+                    </label>
+                  </div>
                 </div>
+
                 <div className="flex flex-wrap gap-2">
                   {STATUSES.map((s) => (
                     <button
