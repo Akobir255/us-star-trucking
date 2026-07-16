@@ -15,7 +15,7 @@ import Promotions from "./components/Promotions";
 
 function App() {
   return (
-    <div className="min-h-screen bg-slate-50 pt-20">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-slate-100 to-blue-100 pt-20">
       <Navbar />
       <Hero />
       <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-blue-900 pt-10 pb-32">
