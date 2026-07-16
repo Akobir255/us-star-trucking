@@ -52,7 +52,7 @@ function Stats() {
   ];
 
   return (
-    <section ref={ref} className="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-20">
+    <section ref={ref} className="bg-gradient-to-r from-[#04356A] to-[#001D3F] text-white py-20">
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="text-center mb-14">

@@ -39,7 +39,7 @@ function FAQ() {
   return (
     <section
       id="faq"
-      className="bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 py-24"
+      className="bg-gradient-to-br from-[#001D3F] via-[#04356A] to-[#001D3F] py-24"
     >
       <div className="max-w-5xl mx-auto px-6">
 
@@ -47,7 +47,7 @@ function FAQ() {
           <h2 className="text-5xl font-extrabold text-white">
             Frequently Asked Questions
           </h2>
-          <p className="mt-5 text-xl text-purple-300">
+          <p className="mt-5 text-xl text-blue-300">
             Everything you need to know about shipping your vehicle.
           </p>
         </div>
@@ -56,7 +56,7 @@ function FAQ() {
           {faqs.map((faq, index) => (
             <div
               key={index}
-              className="bg-white/10 backdrop-blur border border-purple-400/30 rounded-2xl overflow-hidden"
+              className="bg-white/10 backdrop-blur border border-blue-400/30 rounded-2xl overflow-hidden"
             >
               <button
                 onClick={() => setOpen(open === index ? null : index)}
@@ -65,13 +65,13 @@ function FAQ() {
                 <span className="text-xl font-semibold text-white">
                   {faq.question}
                 </span>
-                <span className="text-3xl text-purple-400 font-bold">
+                <span className="text-3xl text-blue-400 font-bold">
                   {open === index ? "−" : "+"}
                 </span>
               </button>
 
               {open === index && (
-                <div className="px-6 pb-6 text-purple-200 leading-7">
+                <div className="px-6 pb-6 text-blue-200 leading-7">
                   {faq.answer}
                 </div>
               )}

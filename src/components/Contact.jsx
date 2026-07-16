@@ -2,7 +2,7 @@ function Contact() {
   return (
     <section
       id="contact"
-      className="bg-slate-900 text-white py-24"
+      className="bg-[#001D3F] text-white py-24"
     >
       <div className="max-w-7xl mx-auto px-6">
 
@@ -22,7 +22,7 @@ function Contact() {
 
           {/*  */}
 
-          <div className="bg-slate-800 rounded-3xl p-8 shadow-xl hover:shadow-2xl transition">
+          <div className="bg-[#04356A]/60 rounded-3xl p-8 shadow-xl hover:shadow-2xl transition">
             <div className="text-5xl mb-5">📞</div>
 
             <h3 className="text-2xl font-bold mb-4">
@@ -45,7 +45,7 @@ function Contact() {
 
           {/* Email */}
 
-          <div className="bg-slate-800 rounded-3xl p-8 shadow-xl hover:shadow-2xl transition">
+          <div className="bg-[#04356A]/60 rounded-3xl p-8 shadow-xl hover:shadow-2xl transition">
             <div className="text-5xl mb-5">📧</div>
 
             <h3 className="text-2xl font-bold mb-4">
@@ -68,7 +68,7 @@ function Contact() {
 
           {/* Office */}
 
-          <div className="bg-slate-800 rounded-3xl p-8 shadow-xl hover:shadow-2xl transition">
+          <div className="bg-[#04356A]/60 rounded-3xl p-8 shadow-xl hover:shadow-2xl transition">
             <div className="text-5xl mb-5">📍</div>
 
             <h3 className="text-2xl font-bold mb-4">
@@ -86,7 +86,7 @@ function Contact() {
 
           {/* Authority */}
 
-          <div className="bg-slate-800 rounded-3xl p-8 shadow-xl hover:shadow-2xl transition">
+          <div className="bg-[#04356A]/60 rounded-3xl p-8 shadow-xl hover:shadow-2xl transition">
             <div className="text-5xl mb-5">🛡️</div>
 
             <h3 className="text-2xl font-bold mb-4">

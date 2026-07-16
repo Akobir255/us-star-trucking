@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import Navbar from "./components/Navbar";
 import FAQ from "./components/FAQ";
 import FloatingButtons from "./components/FloatingButtons";
@@ -24,20 +23,6 @@ import { getStateBySlug } from "./data/states";
 import { getServiceBySlug } from "./data/services";
 
 function App() {
-  // Scroll to anchor sections, then remove the "#..." from the address bar
-  useEffect(() => {
-    const handleHash = () => {
-      const hash = window.location.hash;
-      if (!hash) return;
-      const el = document.getElementById(hash.slice(1));
-      if (el) el.scrollIntoView({ behavior: "smooth" });
-      window.history.replaceState(null, "", window.location.pathname + window.location.search);
-    };
-    handleHash(); // on first load (e.g. arriving at /#quote-form from a service page)
-    window.addEventListener("hashchange", handleHash);
-    return () => window.removeEventListener("hashchange", handleHash);
-  }, []);
-
   // Simple path-based routing (no router library needed)
   const path = window.location.pathname.replace(/\/$/, "");
 
@@ -64,31 +49,31 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-blue-100 pt-28">
+    <div className="min-h-screen bg-[#000919] pt-28">
       <Navbar />
       <Hero />
-      <div className="bg-gradient-to-b from-blue-900 to-slate-950">
+      <div className="bg-gradient-to-b from-[#04356A] to-[#000919]">
         <TrustBar />
         <div className="pb-24">
           <QuoteForm />
         </div>
       </div>
-      <div className="bg-blue-100">
+      <div className="bg-[#000919]">
         <Services />
       </div>
-      <div className="bg-blue-200">
+      <div className="bg-[#001D3F]">
         <HowItWorks />
       </div>
-      <div className="bg-blue-100">
+      <div className="bg-[#000919]">
         <Stats />
       </div>
-      <div className="bg-blue-200">
+      <div className="bg-[#001D3F]">
         <WhyChooseUs />
       </div>
-      <div className="bg-blue-100">
+      <div className="bg-[#000919]">
         <Reviews />
       </div>
-      <div className="bg-blue-200">
+      <div className="bg-[#001D3F]">
         <FAQ />
       </div>
       <Promotions />

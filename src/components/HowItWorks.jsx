@@ -7,7 +7,7 @@ function HowItWorks() {
       link: "#quote-form",
       description:
         "Complete our simple online form or give us a call. We'll provide a fast, accurate, no-obligation quote.",
-      gradient: "from-blue-500 to-blue-700",
+      gradient: "from-[#0A6ED3] to-[#054E98]",
     },
     {
       number: "02",
@@ -16,7 +16,7 @@ function HowItWorks() {
       link: "#quote-form",
       description:
         "Choose your preferred pickup date and transport option. We'll match you with a licensed and insured carrier.",
-      gradient: "from-purple-500 to-purple-700",
+      gradient: "from-[#054E98] to-[#04356A]",
     },
     {
       number: "03",
@@ -25,7 +25,7 @@ function HowItWorks() {
       link: "/door-to-door-auto-transport",
       description:
         "Your vehicle is carefully inspected and picked up by a professional carrier at your chosen location.",
-      gradient: "from-orange-500 to-orange-700",
+      gradient: "from-[#04356A] to-[#001D3F]",
     },
     {
       number: "04",
@@ -34,7 +34,7 @@ function HowItWorks() {
       link: "/track",
       description:
         "Your vehicle is delivered safely to its destination. A final inspection ensures everything arrives in excellent condition.",
-      gradient: "from-green-500 to-green-700",
+      gradient: "from-[#0A6ED3] to-[#04356A]",
     },
   ];
 

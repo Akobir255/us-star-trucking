@@ -6,7 +6,7 @@ function WhyChooseUs() {
       link: "https://safer.fmcsa.dot.gov/query.asp?searchtype=ANY&query_type=queryCarrierSnapshot&query_param=USDOT&query_string=3205543",
       description:
         "Every shipment is handled by fully licensed FMCSA-compliant carriers with cargo insurance for complete peace of mind.",
-      gradient: "from-blue-500 to-blue-700",
+      gradient: "from-[#0A6ED3] to-[#054E98]",
     },
     {
       icon: "🚚",
@@ -14,7 +14,7 @@ function WhyChooseUs() {
       link: "/door-to-door-auto-transport",
       description:
         "We pick up and deliver your vehicle as close to your preferred locations as safely possible.",
-      gradient: "from-purple-500 to-purple-700",
+      gradient: "from-[#054E98] to-[#04356A]",
     },
     {
       icon: "💰",
@@ -22,7 +22,7 @@ function WhyChooseUs() {
       link: "/#quote-form",
       description:
         "No hidden fees. No surprise charges. Get competitive pricing with an instant online estimate.",
-      gradient: "from-green-500 to-green-700",
+      gradient: "from-[#04356A] to-[#054E98]",
     },
     {
       icon: "📍",
@@ -30,7 +30,7 @@ function WhyChooseUs() {
       link: "/car-shipping-california",
       description:
         "We transport cars, SUVs, trucks, motorcycles, and luxury vehicles anywhere in the continental United States.",
-      gradient: "from-orange-500 to-orange-700",
+      gradient: "from-[#04356A] to-[#001D3F]",
     },
     {
       icon: "⭐",
@@ -38,7 +38,7 @@ function WhyChooseUs() {
       link: "/#reviews",
       description:
         "Our experienced shipping coordinators keep you informed from pickup to delivery.",
-      gradient: "from-yellow-500 to-yellow-600",
+      gradient: "from-[#054E98] to-[#001D3F]",
     },
     {
       icon: "⏰",
@@ -46,7 +46,7 @@ function WhyChooseUs() {
       link: "/expedited-auto-transport",
       description:
         "Most vehicles are picked up within 1–3 business days depending on carrier availability.",
-      gradient: "from-red-500 to-red-700",
+      gradient: "from-[#0A6ED3] to-[#04356A]",
     },
   ];
 

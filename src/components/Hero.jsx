@@ -1,4 +1,4 @@
-import heroImage from "../assets/hero.webp";
+import heroImage from "../assets/hero.jpg";
 
 function Hero() {
   const scrollToQuote = () => {
@@ -11,7 +11,7 @@ function Hero() {
   return (
     <section
       id="home"
-      className="bg-gradient-to-br from-slate-950 via-slate-900 to-blue-900 text-white overflow-hidden"
+      className="bg-gradient-to-br from-[#000919] via-[#001D3F] to-[#04356A] text-white overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-6 py-24 lg:py-32 grid lg:grid-cols-2 gap-16 items-center">
 

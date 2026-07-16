@@ -26,8 +26,8 @@ function ReviewTicker({ reviews }) {
 
       <div className="ticker-viewport relative overflow-hidden">
         {/* Edge fade masks — match the section background */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-slate-900 to-transparent sm:w-24" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-slate-900 to-transparent sm:w-24" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-[#000919] to-transparent sm:w-24" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-[#000919] to-transparent sm:w-24" />
 
         <div className="ticker-track flex w-max gap-5 pr-5">
           {doubled.map((review, i) => (
@@ -110,7 +110,7 @@ function Reviews() {
   return (
     <section
       id="reviews"
-      className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 py-24"
+      className="bg-gradient-to-br from-[#000919] via-[#001D3F] to-[#000919] py-24"
     >
       <div className="max-w-7xl mx-auto px-6">
 

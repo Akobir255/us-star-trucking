@@ -1,7 +1,7 @@
-import openTransport from "../assets/opentrailer.webp";
-import enclosedTransport from "../assets/enclosed.webp";
-import expeditedShipping from "../assets/expedited.webp";
-import doorToDoor from "../assets/doortodoor.webp";
+import openTransport from "../assets/opentrailer.jpg";
+import enclosedTransport from "../assets/enclosed.jpg";
+import expeditedShipping from "../assets/expedited.jpg";
+import doorToDoor from "../assets/doortodoor.jpg";
 
 function Services() {
   const services = [
@@ -52,7 +52,7 @@ function Services() {
   return (
     <section
       id="services"
-      className="bg-gradient-to-b from-slate-800 to-slate-900 py-24"
+      className="bg-gradient-to-b from-[#001D3F] to-[#000919] py-24"
     >
       <div className="max-w-7xl mx-auto px-6">
 
@@ -73,7 +73,7 @@ function Services() {
             <a
               href={service.link}
               key={service.title}
-              className="block bg-slate-700 rounded-3xl shadow-lg hover:shadow-2xl transition duration-300 border border-slate-600 hover:border-blue-500 hover:-translate-y-2 overflow-hidden cursor-pointer"
+              className="block bg-[#04356A]/60 rounded-3xl shadow-lg hover:shadow-2xl transition duration-300 border border-[#054E98]/40 hover:border-[#0A6ED3] hover:-translate-y-2 overflow-hidden cursor-pointer"
             >
               <img
                 src={service.image}
