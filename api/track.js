@@ -92,22 +92,11 @@ function matchesCustomer(verify, customerEmail, customerName) {
   return false;
 }
 
-// Build the common format variants a US phone number may be stored as,
-// so lookup works no matter how it was typed into the admin panel.
-function phoneVariants(digits10) {
-  const a = digits10.slice(0, 3);
-  const b = digits10.slice(3, 6);
-  const c = digits10.slice(6);
-  return [
-    digits10,
-    `1${digits10}`,
-    `+1${digits10}`,
-    `(${a}) ${b}-${c}`,
-    `${a}-${b}-${c}`,
-    `${a} ${b} ${c}`,
-    `+1 ${a} ${b} ${c}`,
-    `+1-${a}-${b}-${c}`,
-  ];
+// Normalize any phone string down to its 10 significant digits.
+function normalizePhone(value) {
+  let d = (value || "").toString().replace(/\D/g, "");
+  if (d.length === 11 && d.startsWith("1")) d = d.slice(1);
+  return d;
 }
 
 const SELECT_FIELDS =
@@ -166,16 +155,23 @@ export default async function handler(req, res) {
       if (isRateLimited("phone", ip)) {
         return res.status(429).json({ error: "RATE_LIMITED" });
       }
-      const orFilter = phoneVariants(digits)
-        .map((v) => `customer_phone.eq.${encodeURIComponent(v)}`)
-        .join(",");
+      // Loose search: digits in order with anything between the groups
+      // (matches "(346) 381-9554", "346.381.9554", "+1 3463819554", ...).
+      // Exact digit comparison happens below in JS.
+      const pattern = `*${digits.slice(0, 3)}*${digits.slice(3, 6)}*${digits.slice(6)}*`;
       queryUrl =
-        `${SUPABASE_URL}/rest/v1/orders?or=(${orFilter})` +
-        `&select=${SELECT_FIELDS}&order=created_at.desc&limit=1`;
+        `${SUPABASE_URL}/rest/v1/orders?customer_phone=ilike.${encodeURIComponent(pattern)}` +
+        `&select=${SELECT_FIELDS}&order=created_at.desc&limit=10`;
     }
 
     const r = await fetch(queryUrl, { headers });
-    const data = await r.json();
+    let data = await r.json();
+
+    // For phone lookups, keep only rows whose digits match exactly.
+    if (!orderParam && Array.isArray(data)) {
+      const digits = normalizePhone(phoneParam);
+      data = data.filter((row) => normalizePhone(row.customer_phone) === digits);
+    }
 
     if (!Array.isArray(data) || data.length === 0) {
       return res.status(404).json({ error: "NOT_FOUND" });
