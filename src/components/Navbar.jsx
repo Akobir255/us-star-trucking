@@ -17,6 +17,7 @@ function Navbar() {
   const links = [
     { name: "Services", href: "#services" },
     { name: "How It Works", href: "#how-it-works" },
+    { name: "Special Offers", href: "#promotions", accent: true },
     { name: "FAQ", href: "#faq" },
     { name: "Contact", href: "#contact" },
   ];
@@ -46,7 +47,7 @@ function Navbar() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="w-full px-4 sm:px-6">
         <div className="flex items-center justify-between h-20 gap-6">
 
           {/* Left: brand (links home) */}
@@ -69,7 +70,11 @@ function Navbar() {
                 key={item.name}
                 href={item.href}
                 className={`font-semibold text-sm whitespace-nowrap transition ${
-                  scrolled
+                  item.accent
+                    ? scrolled
+                      ? "text-green-600 hover:text-green-700"
+                      : "text-green-300 hover:text-green-200"
+                    : scrolled
                     ? "text-gray-700 hover:text-blue-700"
                     : "text-blue-100 hover:text-white"
                 }`}
@@ -151,7 +156,11 @@ function Navbar() {
                 href={item.href}
                 onClick={() => setMenuOpen(false)}
                 className={`block font-semibold px-4 py-2 rounded-lg transition ${
-                  scrolled ? "text-gray-800 bg-gray-100" : "text-white bg-white/15"
+                  item.accent
+                    ? "text-green-700 bg-green-50"
+                    : scrolled
+                    ? "text-gray-800 bg-gray-100"
+                    : "text-white bg-white/15"
                 }`}
               >
                 {item.name}
