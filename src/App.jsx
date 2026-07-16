@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Navbar from "./components/Navbar";
 import FAQ from "./components/FAQ";
 import FloatingButtons from "./components/FloatingButtons";
@@ -23,6 +24,20 @@ import { getStateBySlug } from "./data/states";
 import { getServiceBySlug } from "./data/services";
 
 function App() {
+  // Scroll to anchor sections, then remove the "#..." from the address bar
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash;
+      if (!hash) return;
+      const el = document.getElementById(hash.slice(1));
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    };
+    handleHash(); // on first load (e.g. arriving at /#quote-form from a service page)
+    window.addEventListener("hashchange", handleHash);
+    return () => window.removeEventListener("hashchange", handleHash);
+  }, []);
+
   // Simple path-based routing (no router library needed)
   const path = window.location.pathname.replace(/\/$/, "");
 
