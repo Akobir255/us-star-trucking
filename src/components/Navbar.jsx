@@ -94,7 +94,7 @@ function Navbar() {
                     : "text-white bg-white/15 hover:bg-white/30"
                 }`}
               >
-                📍 Ship To
+                 Ship To
                 <span className="text-xs">{statesOpen ? "▲" : "▼"}</span>
               </button>
 
@@ -127,7 +127,7 @@ function Navbar() {
                     : "text-green-300 bg-green-500/20 hover:bg-green-500/40"
                 }`}
               >
-                🎁 Special Offers
+                 Special Offers
                 <span className="text-xs">{offersOpen ? "▲" : "▼"}</span>
               </button>
 
