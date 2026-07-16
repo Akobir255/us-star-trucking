@@ -12,16 +12,9 @@ function Modal({ title, onClose, children }) {
       >
         <div className="flex justify-between items-center p-6 border-b sticky top-0 bg-white">
           <h2 className="text-2xl font-bold text-slate-900">{title}</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-3xl font-bold"
-          >
-            ✕
-          </button>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-3xl font-bold">✕</button>
         </div>
-        <div className="p-6 text-gray-600 leading-7 text-sm">
-          {children}
-        </div>
+        <div className="p-6 text-gray-600 leading-7 text-sm">{children}</div>
       </div>
     </div>
   );
@@ -51,7 +44,6 @@ function Footer() {
       {showTerms && (
         <Modal title="Terms & Conditions" onClose={() => setShowTerms(false)}>
           <p className="mb-4"><strong>US Star Trucking LLC — MC# 206532</strong></p>
-
           <h3 className="font-bold text-slate-900 mb-2">Additional Information and Cancellation Fees</h3>
           <ul className="list-disc pl-5 mb-4 space-y-2">
             <li>Once the vehicle is picked up, the deposit amount is due and charged to the credit card on file.</li>
@@ -65,28 +57,22 @@ function Footer() {
             <li>Pricing may change at the time of assigning a Carrier due to mechanical failure, weather, carrier schedule, or Acts of God.</li>
             <li>The Customer agrees to pay the price as quoted/revised at the time of assigning a Carrier and will not seek a chargeback/refund.</li>
           </ul>
-
           <h3 className="font-bold text-slate-900 mb-2">Terms and Conditions</h3>
           <ul className="list-decimal pl-5 mb-4 space-y-2">
-            <li>US Star Trucking LLC is a registered and bonded property broker (MC-206532). This agreement is between the Customer, US Star Trucking LLC (Broker), and the Carrier Company.</li>
+            <li>US Star Trucking LLC is a registered and bonded property broker (MC-206532).</li>
             <li>The Carrier will pick up and deliver as close to your door as legally and safely possible.</li>
-            <li>Estimated pickup and delivery dates are not guaranteed. Delays may occur due to weather, road conditions, or mechanical problems. Broker is not liable for delays.</li>
-            <li>The Customer must prepare the vehicle for transport. All loose parts, fragile accessories, and low-hanging spoilers must be removed or secured.</li>
+            <li>Estimated pickup and delivery dates are not guaranteed. Delays may occur due to weather, road conditions, or mechanical problems.</li>
+            <li>The Customer must prepare the vehicle for transport. All loose parts must be removed or secured.</li>
             <li>The Customer must disarm any alarm system or provide proper instructions.</li>
-            <li>Personal property in the trunk must not exceed 100 lbs. No explosives, guns, ammunition, flammable products, narcotics, live pets, or unlawful contraband.</li>
+            <li>Personal property in the trunk must not exceed 100 lbs. No explosives, guns, ammunition, live pets, or unlawful contraband.</li>
             <li>If the vehicle is inoperable or oversized, an additional fee of $200.00 applies.</li>
             <li>Once a carrier is assigned, the Broker will contact the Customer to confirm the schedule.</li>
             <li>If the Customer cancels after a Carrier is assigned, the reservation will NOT be refunded.</li>
-            <li>Exotic, Restored, Classic, Antique, or Specialty vehicles may be excluded from the carrier's standard cargo insurance. Customers must obtain their own coverage.</li>
-            <li>On pickup and delivery, both Customer and Carrier will inspect the vehicle and sign the Bill of Lading. All damage must be noted at delivery.</li>
-            <li>The Broker is not responsible for any damage or loss during transport. All claims must be filed with the Carrier within 24 hours of delivery.</li>
-            <li>The Broker is not responsible for damage caused by Acts of God, hail, storm damage, or worn/broken vehicle parts.</li>
-            <li>All payments to the Carrier must be in Cash, Cashier's Check, or Money Order. Personal checks or credit cards are not accepted for the remaining balance unless agreed in writing.</li>
+            <li>All claims must be filed with the Carrier within 24 hours of delivery.</li>
+            <li>All payments to the Carrier must be in Cash, Cashier's Check, or Money Order.</li>
           </ul>
-
           <h3 className="font-bold text-slate-900 mb-2">Governing Law</h3>
-          <p className="mb-4">This Agreement shall be governed by the laws of the State of Tennessee. Any disputes shall be held in Tennessee where US Star Trucking LLC is headquartered.</p>
-
+          <p className="mb-4">This Agreement shall be governed by the laws of the State of Tennessee.</p>
           <h3 className="font-bold text-slate-900 mb-2">Contact</h3>
           <p>US Star Trucking LLC | (865) 722-7114 | leo@usstrucking.org | MC# 206532</p>
         </Modal>
@@ -99,12 +85,42 @@ function Footer() {
             <h2 className="text-3xl font-bold text-white mb-5">US Star Trucking LLC</h2>
             <p className="leading-7 text-slate-400">
               Reliable nationwide vehicle shipping with licensed and insured
-              carriers. We provide safe, affordable door-to-door auto transport
-              across all 50 states.
+              carriers. Safe, affordable door-to-door auto transport across all 50 states.
             </p>
             <div className="flex gap-3 mt-6">
               <span className="bg-blue-600 px-3 py-1 rounded-full text-sm text-white">Licensed</span>
               <span className="bg-green-600 px-3 py-1 rounded-full text-sm text-white">Insured</span>
+            </div>
+
+            {/* Social Media */}
+            <div className="flex gap-3 mt-6">
+              <a
+                href="https://www.facebook.com/groups/carshipment"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 rounded-full flex items-center justify-center text-lg transition"
+                title="Facebook"
+              >
+                f
+              </a>
+              <a
+                href="https://www.instagram.com/usstartrucking/?hl=en"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white w-10 h-10 rounded-full flex items-center justify-center text-lg transition"
+                title="Instagram"
+              >
+                📷
+              </a>
+              <a
+                href="https://www.linkedin.com/company/usstartruckingllc"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-blue-700 hover:bg-blue-800 text-white w-10 h-10 rounded-full flex items-center justify-center text-lg transition"
+                title="LinkedIn"
+              >
+                in
+              </a>
             </div>
           </div>
 
@@ -113,6 +129,7 @@ function Footer() {
             <ul className="space-y-3">
               <li><a href="#" className="hover:text-blue-400">Home</a></li>
               <li><a href="#quote-form" className="hover:text-blue-400">Free Quote</a></li>
+              <li><a href="#services" className="hover:text-blue-400">Services</a></li>
               <li><a href="#reviews" className="hover:text-blue-400">Reviews</a></li>
               <li><a href="#faq" className="hover:text-blue-400">FAQ</a></li>
               <li><a href="#contact" className="hover:text-blue-400">Contact</a></li>
@@ -145,7 +162,25 @@ function Footer() {
             <p className="mb-2"><strong>USDOT:</strong> 3205543</p>
             <p className="mb-2"><strong>MC:</strong> 206532</p>
             <p className="mb-2">Nationwide Auto Transport</p>
-            <p className="text-green-400 font-semibold mt-5">✓ Fully Licensed & Insured</p>
+            <p className="text-green-400 font-semibold mt-3">✓ Fully Licensed & Insured</p>
+            <div className="mt-5 space-y-2">
+              <a
+                href="https://safer.fmcsa.dot.gov/query.asp?searchtype=ANY&query_type=queryCarrierSnapshot&query_param=USDOT&query_string=3205543"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-blue-400 hover:text-blue-300 text-sm"
+              >
+                🏛️ Verify FMCSA License →
+              </a>
+              <a
+                href="https://www.facebook.com/groups/carshipment"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-blue-400 hover:text-blue-300 text-sm"
+              >
+                👥 Join our Facebook Group →
+              </a>
+            </div>
           </div>
 
         </div>

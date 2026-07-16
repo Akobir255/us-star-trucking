@@ -14,12 +14,18 @@ export default function FloatingButtons() {
           0%, 100% { background-color: #f97316; box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.7); }
           50% { background-color: #ea580c; box-shadow: 0 0 0 10px rgba(249, 115, 22, 0); }
         }
+        @keyframes pulse-whatsapp {
+          0%, 100% { background-color: #25d366; box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+          50% { background-color: #128c7e; box-shadow: 0 0 0 10px rgba(37, 211, 102, 0); }
+        }
         .btn-green { animation: pulse-green 2s infinite; }
         .btn-blue { animation: pulse-blue 2s infinite; animation-delay: 0.4s; }
         .btn-orange { animation: pulse-orange 2s infinite; animation-delay: 0.8s; }
+        .btn-whatsapp { animation: pulse-whatsapp 2s infinite; animation-delay: 1.2s; }
       `}</style>
 
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-4">
+      {/* bottom-28 leaves room for the Tidio chat bubble below the stack */}
+      <div className="fixed bottom-28 right-6 z-50 flex flex-col gap-4">
 
         {/* Call */}
         <a
@@ -27,6 +33,16 @@ export default function FloatingButtons() {
           className="btn-green text-white rounded-full shadow-2xl px-6 py-4 font-bold flex items-center justify-center gap-3 transition duration-300 hover:scale-105 whitespace-nowrap"
         >
           📞 Call Now
+        </a>
+
+        {/* WhatsApp */}
+        <a
+          href="https://wa.me/998953766577"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-whatsapp text-white rounded-full shadow-2xl px-6 py-4 font-bold flex items-center justify-center gap-3 transition duration-300 hover:scale-105 whitespace-nowrap"
+        >
+          💬 WhatsApp
         </a>
 
         {/* Email */}

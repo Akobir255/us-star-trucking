@@ -473,12 +473,8 @@ export default function QuoteForm() {
 
     try {
       const data = await submitQuote(payload);
-      // Apply discount to the price
-      let finalPrice = data.quote.price;
-      if (appliedPromo) {
-        finalPrice = Math.max(0, parseInt(finalPrice.toString().replace(/[^0-9]/g, "")) - appliedPromo.discount);
-      }
-      setQuote({ ...data.quote, originalPrice: data.quote.price, price: finalPrice });
+      // Server already applied the promo discount — use its prices directly
+      setQuote(data.quote);
       setSubmitted(true);
       fireConfetti();
       setTimeout(() => quoteRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);

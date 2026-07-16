@@ -5,6 +5,7 @@ function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [offersOpen, setOffersOpen] = useState(false);
+  const [bannerVisible, setBannerVisible] = useState(true);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -32,6 +33,26 @@ function Navbar() {
         scrolled ? "bg-white shadow-lg" : "bg-slate-900"
       }`}
     >
+      {/* Announcement banner — stacked above the nav inside the same fixed header */}
+      {bannerVisible && (
+        <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 text-white text-sm py-2 px-4 flex items-center justify-center gap-3">
+          <span className="animate-pulse">🎉</span>
+          <span className="font-semibold">
+            First shipment <strong>$50 off</strong> — use code{" "}
+            <span className="bg-white text-blue-600 font-bold px-2 py-0.5 rounded-full font-mono">USSTAR50</span>
+            {" "}· Second shipment <strong>$100 off</strong> — use code{" "}
+            <span className="bg-white text-blue-600 font-bold px-2 py-0.5 rounded-full font-mono">USSTAR100</span>
+          </span>
+          <button
+            onClick={() => setBannerVisible(false)}
+            aria-label="Close announcement"
+            className="ml-4 text-white/70 hover:text-white text-lg font-bold"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex justify-between items-center h-20">
 

@@ -1,3 +1,72 @@
+function ReviewTicker({ reviews }) {
+  // Render the list twice; animating the track by -50% makes the loop seamless.
+  const doubled = [...reviews, ...reviews];
+
+  return (
+    <div aria-label="Scrolling customer reviews" className="relative mb-16">
+      {/* Scoped keyframes — no tailwind.config changes needed */}
+      <style>{`
+        @keyframes ticker-scroll {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+        .ticker-track {
+          animation: ticker-scroll 40s linear infinite;
+          will-change: transform;
+        }
+        .ticker-viewport:hover .ticker-track,
+        .ticker-viewport:focus-within .ticker-track {
+          animation-play-state: paused;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ticker-track { animation: none; }
+          .ticker-viewport { overflow-x: auto; }
+        }
+      `}</style>
+
+      <div className="ticker-viewport relative overflow-hidden">
+        {/* Edge fade masks — match the section background */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-slate-900 to-transparent sm:w-24" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-slate-900 to-transparent sm:w-24" />
+
+        <div className="ticker-track flex w-max gap-5 pr-5">
+          {doubled.map((review, i) => (
+            <figure
+              key={i}
+              aria-hidden={i >= reviews.length ? "true" : undefined}
+              className="flex w-[300px] shrink-0 flex-col rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur sm:w-[340px]"
+            >
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                <span className="rounded-full bg-blue-500/20 px-3 py-1 text-xs font-medium text-blue-300">
+                  {review.location}
+                </span>
+              </div>
+
+              <blockquote className="text-sm leading-6 text-blue-200">
+                "{review.text}"
+              </blockquote>
+
+              <figcaption className="mt-auto flex items-center gap-3 pt-4">
+                <span
+                  aria-hidden="true"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 text-sm font-bold text-white"
+                >
+                  {review.name.charAt(0)}
+                </span>
+                <div className="leading-tight">
+                  <p className="text-sm font-bold text-white">{review.name}</p>
+                  <p className="text-xs text-emerald-400">✓ Verified shipment</p>
+                </div>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Reviews() {
   const reviews = [
     {
@@ -53,6 +122,9 @@ function Reviews() {
             Customer satisfaction is at the heart of everything we do.
           </p>
         </div>
+
+        {/* Auto-scrolling review ticker */}
+        <ReviewTicker reviews={reviews} />
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {reviews.map((review) => (

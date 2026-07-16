@@ -1,6 +1,9 @@
 // Vercel Serverless Function — runs on the server, keeps API keys secret.
 // Endpoint: POST /api/quote
 // Includes: in-memory rate limiting + honeypot spam protection.
+// Sends two emails via EmailJS:
+//   1. Lead notification to the business (EMAILJS_TEMPLATE_ID)
+//   2. Quote confirmation to the customer (EMAILJS_CUSTOMER_TEMPLATE_ID)
 
 const RATE_LIMIT = 5;
 const RATE_WINDOW_MS = 60_000;
@@ -43,6 +46,7 @@ export default async function handler(req, res) {
   const ORS_KEY = (process.env.ORS_KEY || "").trim();
   const EMAILJS_SERVICE = (process.env.EMAILJS_SERVICE_ID || "").trim();
   const EMAILJS_TEMPLATE = (process.env.EMAILJS_TEMPLATE_ID || "").trim();
+  const EMAILJS_CUSTOMER_TEMPLATE = (process.env.EMAILJS_CUSTOMER_TEMPLATE_ID || "").trim();
   const EMAILJS_PUBLIC = (process.env.EMAILJS_PUBLIC_KEY || "").trim();
   const EMAILJS_PRIVATE = (process.env.EMAILJS_PRIVATE_KEY || "").trim();
 
@@ -144,37 +148,65 @@ export default async function handler(req, res) {
       deliveryState: destination.state,
     };
 
-    // 5. Send email via EmailJS
-    if (EMAILJS_SERVICE && EMAILJS_TEMPLATE && EMAILJS_PUBLIC) {
-      const emailPayload = {
+    // Helper — send one email via EmailJS, returns true/false
+    const sendEmail = async (templateId, templateParams) => {
+      const payload = {
         service_id: EMAILJS_SERVICE,
-        template_id: EMAILJS_TEMPLATE,
+        template_id: templateId,
         user_id: EMAILJS_PUBLIC,
-        template_params: {
-          ...body,
-          distance: quote.distance,
-          miles: quote.miles,
-          estimated_price: `$${quote.price}`,
-          original_price: `$${quote.originalPrice}`,
-          discount_applied: discountApplied > 0 ? `$${discountApplied} off (${code})` : "None",
-        },
+        template_params: templateParams,
       };
-      if (EMAILJS_PRIVATE) emailPayload.accessToken = EMAILJS_PRIVATE;
+      if (EMAILJS_PRIVATE) payload.accessToken = EMAILJS_PRIVATE;
 
-      const emailRes = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+      const r = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(emailPayload),
+        body: JSON.stringify(payload),
       });
-
-      if (!emailRes.ok) {
-        const text = await emailRes.text();
-        console.error("EmailJS error:", text);
-        return res.status(200).json({ quote, emailSent: false });
+      if (!r.ok) {
+        const text = await r.text();
+        console.error(`EmailJS error (template ${templateId}):`, text);
+        return false;
       }
+      return true;
+    };
+
+    const sharedParams = {
+      ...body,
+      distance: quote.distance,
+      duration: quote.duration,
+      miles: quote.miles,
+      route: `${origin.city}, ${origin.state} (${pickup}) → ${destination.city}, ${destination.state} (${delivery})`,
+      estimated_price: `$${quote.price}`,
+      original_price: `$${quote.originalPrice}`,
+      discount_applied: discountApplied > 0 ? `$${discountApplied} off (${code})` : "None",
+    };
+
+    // 5. Send lead notification to the business
+    let emailSent = false;
+    if (EMAILJS_SERVICE && EMAILJS_TEMPLATE && EMAILJS_PUBLIC) {
+      emailSent = await sendEmail(EMAILJS_TEMPLATE, sharedParams);
     }
 
-    return res.status(200).json({ quote, emailSent: true });
+    // 6. Send confirmation to the customer (only if they gave an email)
+    let customerEmailSent = false;
+    const customerEmail = (body.email || "").toString().trim();
+    const looksLikeEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail);
+
+    if (
+      EMAILJS_SERVICE &&
+      EMAILJS_CUSTOMER_TEMPLATE &&
+      EMAILJS_PUBLIC &&
+      looksLikeEmail
+    ) {
+      customerEmailSent = await sendEmail(EMAILJS_CUSTOMER_TEMPLATE, {
+        ...sharedParams,
+        customer_email: customerEmail,
+        customer_name: (body.name || "there").toString().trim() || "there",
+      });
+    }
+
+    return res.status(200).json({ quote, emailSent, customerEmailSent });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "SERVER_ERROR" });

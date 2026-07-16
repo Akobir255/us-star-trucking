@@ -12,10 +12,11 @@ import Contact from "./components/Contact";
 import Stats from "./components/Stats";
 import Reviews from "./components/Reviews";
 import Promotions from "./components/Promotions";
+import CookieConsent from "./components/CookieConsent";
 
 function App() {
   return (
-    <div className="min-h-screen bg-blue-100 pt-20">
+    <div className="min-h-screen bg-blue-100 pt-28">
       <Navbar />
       <Hero />
       <div className="bg-gradient-to-b from-blue-900 to-slate-950">
@@ -46,6 +47,7 @@ function App() {
       <Contact />
       <Footer />
       <FloatingButtons />
+      <CookieConsent />
     </div>
   );
 }

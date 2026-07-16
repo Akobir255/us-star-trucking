@@ -1,36 +1,64 @@
+import { useEffect, useRef, useState } from "react";
+
+function useCountUp(target, duration = 2000, start = false) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!start || isNaN(target)) return;
+    let startTime = null;
+    const step = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      setCount(Math.floor(progress * target));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [target, duration, start]);
+  return count;
+}
+
+function StatCard({ number, suffix, title, description, isText, started }) {
+  const numericTarget = isText ? 0 : parseInt(number.replace(/\D/g, "")) || 0;
+  const count = useCountUp(numericTarget, 2000, started);
+
+  return (
+    <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 text-center border border-white/20 hover:bg-white/20 transition duration-300 hover:-translate-y-2">
+      <h3 className="text-5xl font-extrabold mb-4">
+        {isText ? number : `${count}${suffix}`}
+      </h3>
+      <h4 className="text-xl font-bold mb-3">{title}</h4>
+      <p className="text-blue-100">{description}</p>
+    </div>
+  );
+}
+
 function Stats() {
+  const [started, setStarted] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setStarted(true); },
+      { threshold: 0.3 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
   const stats = [
-    {
-      number: "50",
-      title: "States Served",
-      description: "Nationwide vehicle shipping across the U.S.",
-    },
-    {
-      number: "100%",
-      title: "Licensed & Insured",
-      description: "Professional carriers for every shipment.",
-    },
-    {
-      number: "24/7",
-      title: "Customer Support",
-      description: "We're here to assist you throughout the process.",
-    },
-    {
-      number: "Door-to-Door",
-      title: "Service Available",
-      description: "Convenient pickup and delivery whenever accessible.",
-    },
+    { number: "500", suffix: "+", title: "Vehicles Shipped", description: "Successfully transported across the United States.", isText: false },
+    { number: "50", suffix: "", title: "States Served", description: "Nationwide vehicle shipping across all 50 states.", isText: false },
+    { number: "100", suffix: "%", title: "Licensed & Insured", description: "Professional carriers for every shipment.", isText: false },
+    { number: "24/7", suffix: "", title: "Customer Support", description: "We're here to assist you throughout the process.", isText: true },
   ];
 
   return (
-    <section className="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-20">
+    <section ref={ref} className="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-20">
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="text-center mb-14">
           <h2 className="text-5xl font-extrabold">
             Why Customers Choose US Star Trucking LLC
           </h2>
-
           <p className="mt-5 text-xl text-blue-100">
             Reliable nationwide vehicle transportation backed by professional
             service and transparent communication.
@@ -38,27 +66,11 @@ function Stats() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-
           {stats.map((item) => (
-            <div
-              key={item.title}
-              className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 text-center border border-white/20 hover:bg-white/20 transition duration-300"
-            >
-              <h3 className="text-4xl font-extrabold mb-4">
-                {item.number}
-              </h3>
-
-              <h4 className="text-xl font-bold mb-3">
-                {item.title}
-              </h4>
-
-              <p className="text-blue-100">
-                {item.description}
-              </p>
-            </div>
+            <StatCard key={item.title} {...item} started={started} />
           ))}
-
         </div>
+
       </div>
     </section>
   );
