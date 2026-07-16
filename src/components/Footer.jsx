@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { STATES } from "../data/states";
+import { SERVICES } from "../data/services";
 
 function Modal({ title, onClose, children }) {
   return (
@@ -189,6 +190,19 @@ function Footer() {
 
         {/* Popular shipping destinations — state SEO pages */}
         <div className="mt-14 pt-10 border-t border-slate-800">
+          <h3 className="text-xl font-bold text-white mb-5">Our Services</h3>
+          <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm mb-10">
+            {SERVICES.map((s) => (
+              <a
+                key={s.slug}
+                href={`/${s.slug}`}
+                className="hover:text-blue-400 transition"
+              >
+                {s.emoji} {s.name}
+              </a>
+            ))}
+          </div>
+
           <h3 className="text-xl font-bold text-white mb-5">Popular Shipping Destinations</h3>
           <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm">
             {STATES.map((s) => (

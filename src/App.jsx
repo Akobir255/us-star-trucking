@@ -16,7 +16,9 @@ import CookieConsent from "./components/CookieConsent";
 import TrackOrder from "./components/TrackOrder";
 import AdminOrders from "./components/AdminOrders";
 import StatePage from "./components/StatePage";
+import ServicePage from "./components/ServicePage";
 import { getStateBySlug } from "./data/states";
+import { getServiceBySlug } from "./data/services";
 
 function App() {
   // Simple path-based routing (no router library needed)
@@ -31,6 +33,10 @@ function App() {
     const state = getStateBySlug(stateMatch[1]);
     if (state) return <StatePage state={state} />;
   }
+
+  // Service SEO pages: /door-to-door-auto-transport, /motorcycle-shipping, ...
+  const service = getServiceBySlug(path.slice(1));
+  if (service) return <ServicePage service={service} />;
 
   return (
     <div className="min-h-screen bg-blue-100 pt-28">
