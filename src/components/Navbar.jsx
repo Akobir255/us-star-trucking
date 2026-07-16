@@ -139,6 +139,16 @@ function Navbar() {
               (865) 722-7114
             </a>
             <a
+              href="/track"
+              className={`font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-1.5 ${
+                scrolled
+                  ? "text-blue-700 bg-blue-50 hover:bg-blue-100"
+                  : "text-white bg-white/15 hover:bg-white/30"
+              }`}
+            >
+              📦 Track Shipment
+            </a>
+            <a
               href="#quote-form"
               className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-bold text-sm transition"
             >
@@ -185,6 +195,13 @@ function Navbar() {
 
             <a href="tel:+18657227114" className="block text-blue-700 font-bold px-4 py-2">
               📞 (865) 722-7114
+            </a>
+            <a
+              href="/track"
+              onClick={() => setMenuOpen(false)}
+              className="block text-blue-700 font-bold px-4 py-2"
+            >
+              📦 Track Shipment
             </a>
             <a
               href="#quote-form"
