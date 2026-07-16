@@ -16,6 +16,13 @@ const BUCKET = "driver-documents";
 // inflates file size by ~33%, so keep the raw file comfortably under that.
 const MAX_BYTES = 3 * 1024 * 1024; // 3MB raw file size
 
+// Encode each path segment individually so real "/" folder separators are
+// preserved (encodeURIComponent alone turns "/" into "%2F", which breaks
+// Supabase's signature matching between upload-time and sign-time).
+function encodePath(path) {
+  return path.split("/").map(encodeURIComponent).join("/");
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -55,7 +62,7 @@ export default async function handler(req, res) {
     const path = `${orderNumber}/${doc_type}-${Date.now()}-${safeName}`;
 
     const uploadRes = await fetch(
-      `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${encodeURIComponent(path)}`,
+      `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${encodePath(path)}`,
       {
         method: "POST",
         headers: {

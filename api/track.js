@@ -11,11 +11,18 @@ const SUPABASE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
 
 const BUCKET = "driver-documents";
 
+// Encode each path segment individually so real "/" folder separators are
+// preserved (encodeURIComponent alone turns "/" into "%2F", which breaks
+// Supabase's signature matching between sign-time and redemption-time).
+function encodePath(path) {
+  return path.split("/").map(encodeURIComponent).join("/");
+}
+
 async function signUrl(path) {
   if (!path) return null;
   try {
     const r = await fetch(
-      `${SUPABASE_URL}/storage/v1/object/sign/${BUCKET}/${encodeURIComponent(path)}`,
+      `${SUPABASE_URL}/storage/v1/object/sign/${BUCKET}/${encodePath(path)}`,
       {
         method: "POST",
         headers: {

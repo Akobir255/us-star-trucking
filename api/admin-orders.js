@@ -34,11 +34,15 @@ const sb = (path, options = {}) =>
 
 // Generate a short-lived signed URL for a private storage object.
 // Returns null if there's no path, or if signing fails (e.g. file was deleted).
+function encodePath(path) {
+  return path.split("/").map(encodeURIComponent).join("/");
+}
+
 async function signUrl(path) {
   if (!path) return null;
   try {
     const r = await fetch(
-      `${SUPABASE_URL}/storage/v1/object/sign/${BUCKET}/${encodeURIComponent(path)}`,
+      `${SUPABASE_URL}/storage/v1/object/sign/${BUCKET}/${encodePath(path)}`,
       {
         method: "POST",
         headers: {
