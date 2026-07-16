@@ -1,18 +1,30 @@
-import { useState } from "react";
-
 export default function FloatingButtons() {
-  const [open, setOpen] = useState(false);
-
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <>
+      <style>{`
+        @keyframes pulse-green {
+          0%, 100% { background-color: #16a34a; box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+          50% { background-color: #15803d; box-shadow: 0 0 0 10px rgba(22, 163, 74, 0); }
+        }
+        @keyframes pulse-blue {
+          0%, 100% { background-color: #2563eb; box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
+          50% { background-color: #1d4ed8; box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+        }
+        @keyframes pulse-orange {
+          0%, 100% { background-color: #f97316; box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.7); }
+          50% { background-color: #ea580c; box-shadow: 0 0 0 10px rgba(249, 115, 22, 0); }
+        }
+        .btn-green { animation: pulse-green 2s infinite; }
+        .btn-blue { animation: pulse-blue 2s infinite; animation-delay: 0.4s; }
+        .btn-orange { animation: pulse-orange 2s infinite; animation-delay: 0.8s; }
+      `}</style>
 
-      {/* Collapsible buttons */}
-      <div className={`flex flex-col gap-3 transition-all duration-300 ${open ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 translate-y-4 pointer-events-none"}`}>
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-4">
 
         {/* Call */}
         <a
           href="tel:+18657227114"
-          className="bg-green-600 hover:bg-green-700 text-white rounded-full shadow-2xl px-6 py-4 font-bold flex items-center justify-center gap-3 transition duration-300 hover:scale-105 whitespace-nowrap"
+          className="btn-green text-white rounded-full shadow-2xl px-6 py-4 font-bold flex items-center justify-center gap-3 transition duration-300 hover:scale-105 whitespace-nowrap"
         >
           📞 Call Now
         </a>
@@ -20,7 +32,7 @@ export default function FloatingButtons() {
         {/* Email */}
         <a
           href="mailto:leo@usstrucking.org"
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl px-6 py-4 font-bold flex items-center justify-center gap-3 transition duration-300 hover:scale-105 whitespace-nowrap"
+          className="btn-blue text-white rounded-full shadow-2xl px-6 py-4 font-bold flex items-center justify-center gap-3 transition duration-300 hover:scale-105 whitespace-nowrap"
         >
           ✉️ Email
         </a>
@@ -28,22 +40,12 @@ export default function FloatingButtons() {
         {/* Quote */}
         <a
           href="#quote-form"
-          onClick={() => setOpen(false)}
-          className="bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-2xl px-6 py-4 font-bold flex items-center justify-center gap-3 transition duration-300 hover:scale-105 whitespace-nowrap"
+          className="btn-orange text-white rounded-full shadow-2xl px-6 py-4 font-bold flex items-center justify-center gap-3 transition duration-300 hover:scale-105 whitespace-nowrap"
         >
           🚗 Get Quote
         </a>
 
       </div>
-
-      {/* Toggle button */}
-      <button
-        onClick={() => setOpen(!open)}
-        className="bg-slate-900 hover:bg-slate-700 text-white rounded-full shadow-2xl w-14 h-14 flex items-center justify-center text-2xl transition duration-300 hover:scale-105"
-      >
-        {open ? "✕" : "💬"}
-      </button>
-
-    </div>
+    </>
   );
 }
