@@ -12,7 +12,9 @@ const SUPABASE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
 const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || "").trim();
 
 const BUCKET = "driver-documents";
-const MAX_BYTES = 8 * 1024 * 1024; // 8MB
+// Vercel serverless functions cap request bodies around 4.5MB. Base64 encoding
+// inflates file size by ~33%, so keep the raw file comfortably under that.
+const MAX_BYTES = 3 * 1024 * 1024; // 3MB raw file size
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -42,7 +44,10 @@ export default async function handler(req, res) {
 
     const buffer = Buffer.from(file_base64, "base64");
     if (buffer.length > MAX_BYTES) {
-      return res.status(400).json({ error: "FILE_TOO_LARGE" });
+      return res.status(400).json({
+        error: "FILE_TOO_LARGE",
+        detail: `File is ${(buffer.length / (1024 * 1024)).toFixed(1)}MB. Max is 3MB — please use a smaller photo or a compressed scan.`,
+      });
     }
 
     const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
@@ -66,7 +71,7 @@ export default async function handler(req, res) {
     if (!uploadRes.ok) {
       const text = await uploadRes.text();
       console.error("Storage upload error:", text);
-      return res.status(500).json({ error: "UPLOAD_FAILED" });
+      return res.status(500).json({ error: "UPLOAD_FAILED", detail: text });
     }
 
     const column = doc_type === "license" ? "driver_license_path" : "insurance_path";

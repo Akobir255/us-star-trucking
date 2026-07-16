@@ -55,8 +55,10 @@ export default function TrackOrder() {
     setOrder(null);
 
     const cleaned = orderNumber.trim().toUpperCase();
-    if (!/^US-\d{6}$/.test(cleaned)) {
-      setError("Please enter a valid order number, e.g. US-123456");
+    const NEW_FORMAT = /^\d{8}-?US0{0,4}$/;
+    const OLD_FORMAT = /^US-\d{6}$/;
+    if (!NEW_FORMAT.test(cleaned) && !OLD_FORMAT.test(cleaned)) {
+      setError("Please enter a valid order number, e.g. 12345678-US");
       return;
     }
 
@@ -107,7 +109,7 @@ export default function TrackOrder() {
             type="text"
             value={orderNumber}
             onChange={(e) => setOrderNumber(e.target.value)}
-            placeholder="Order number, e.g. US-123456"
+            placeholder="Order number, e.g. 12345678-US"
             className="flex-1 rounded-xl border border-white/20 bg-white/10 px-5 py-4 text-white placeholder-slate-400 uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button

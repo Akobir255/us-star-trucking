@@ -91,9 +91,9 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "customer_name, pickup and delivery are required" });
       }
 
-      // Generate a unique order number like US-483920 (retry on rare collision)
+      // Generate a unique order number like 48293042-US (retry on rare collision)
       for (let attempt = 0; attempt < 5; attempt++) {
-        const orderNumber = "US-" + Math.floor(100000 + Math.random() * 900000);
+        const orderNumber = String(Math.floor(10000000 + Math.random() * 90000000)) + "-US";
         const r = await sb("orders", {
           method: "POST",
           body: JSON.stringify({

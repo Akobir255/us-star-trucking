@@ -43,7 +43,11 @@ export default async function handler(req, res) {
   }
 
   const order = (req.query.order || "").toString().trim().toUpperCase();
-  if (!/^US-\d{6}$/.test(order)) {
+  // New format: 8 digits + optional dash + US + optional trailing zeros (e.g. 12345678-US, 12345678US0)
+  // Old format kept for backward compatibility with existing orders: US-123456
+  const NEW_FORMAT = /^\d{8}-?US0{0,4}$/;
+  const OLD_FORMAT = /^US-\d{6}$/;
+  if (!NEW_FORMAT.test(order) && !OLD_FORMAT.test(order)) {
     return res.status(400).json({ error: "INVALID_ORDER_NUMBER" });
   }
 

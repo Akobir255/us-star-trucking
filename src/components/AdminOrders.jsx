@@ -120,7 +120,13 @@ export default function AdminOrders() {
   }, [authed]);
 
   const uploadDocument = async (order_number, doc_type, file) => {
-    if (!file) return true;
+    if (!file) return { ok: true };
+    if (file.size > 3 * 1024 * 1024) {
+      return {
+        ok: false,
+        detail: `"${file.name}" is ${(file.size / (1024 * 1024)).toFixed(1)}MB. Max is 3MB — please use a smaller photo or a compressed scan.`,
+      };
+    }
     setUploadingKey(`${order_number}:${doc_type}`);
     try {
       const file_base64 = await fileToBase64(file);
@@ -135,9 +141,10 @@ export default function AdminOrders() {
           file_base64,
         }),
       });
-      return r.ok;
+      const data = await r.json().catch(() => ({}));
+      return { ok: r.ok, detail: data.detail || (r.ok ? "" : "Upload failed.") };
     } catch {
-      return false;
+      return { ok: false, detail: "Upload failed — network error." };
     } finally {
       setUploadingKey("");
     }
@@ -164,14 +171,20 @@ export default function AdminOrders() {
       }
       const orderNumber = data.order.order_number;
 
-      let docsOk = true;
-      if (licenseFile) docsOk = (await uploadDocument(orderNumber, "license", licenseFile)) && docsOk;
-      if (insuranceFile) docsOk = (await uploadDocument(orderNumber, "insurance", insuranceFile)) && docsOk;
+      const docErrors = [];
+      if (licenseFile) {
+        const res1 = await uploadDocument(orderNumber, "license", licenseFile);
+        if (!res1.ok) docErrors.push(`License: ${res1.detail}`);
+      }
+      if (insuranceFile) {
+        const res2 = await uploadDocument(orderNumber, "insurance", insuranceFile);
+        if (!res2.ok) docErrors.push(`Insurance: ${res2.detail}`);
+      }
 
       setCreateMsg(
-        docsOk
+        docErrors.length === 0
           ? `✅ Order created: ${orderNumber}`
-          : `✅ Order created: ${orderNumber} — but a document failed to upload. Try re-uploading it below.`
+          : `✅ Order created: ${orderNumber} — but: ${docErrors.join(" | ")} You can re-upload it below.`
       );
       setForm({
         customer_name: "",
@@ -216,8 +229,8 @@ export default function AdminOrders() {
 
   const handleReplaceDoc = async (order_number, doc_type, file) => {
     if (!file) return;
-    const ok = await uploadDocument(order_number, doc_type, file);
-    if (!ok) setListError("Document upload failed. Please try again.");
+    const result = await uploadDocument(order_number, doc_type, file);
+    if (!result.ok) setListError(result.detail || "Document upload failed. Please try again.");
     loadOrders();
   };
 
@@ -560,8 +573,9 @@ export default function AdminOrders() {
             <div className="sm:col-span-2 pt-4 mt-2 border-t border-white/10">
               <p className="text-sm font-semibold text-blue-300 mb-1">Carrier & Driver</p>
               <p className="text-xs text-slate-400 mb-4">
-                Driver name & carrier company are shown to the customer on /track. Uploaded
-                documents are private — only visible here in admin, via a temporary link.
+                Driver name, phone & carrier are shown to the customer on /track. Uploaded
+                license & insurance files are also viewable by the customer there, via a
+                temporary secure link.
               </p>
             </div>
             <input
@@ -585,7 +599,7 @@ export default function AdminOrders() {
 
             <label className="rounded-xl border border-dashed border-yellow-500/40 bg-white/5 px-4 py-3 text-sm text-slate-300 cursor-pointer hover:bg-white/10 transition">
               <span className="block text-xs text-yellow-400/80 mb-1">
-                Driver license (file, internal only)
+                Driver license (file)
               </span>
               {licenseFile ? licenseFile.name : "Choose file..."}
               <input
@@ -598,7 +612,7 @@ export default function AdminOrders() {
 
             <label className="rounded-xl border border-dashed border-yellow-500/40 bg-white/5 px-4 py-3 text-sm text-slate-300 cursor-pointer hover:bg-white/10 transition">
               <span className="block text-xs text-yellow-400/80 mb-1">
-                Insurance document (file, internal only)
+                Insurance document (file)
               </span>
               {insuranceFile ? insuranceFile.name : "Choose file..."}
               <input
