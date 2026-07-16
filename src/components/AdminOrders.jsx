@@ -1,126 +1,312 @@
-// Vercel Serverless Function — admin order management (password protected).
-// Endpoint: /api/admin-orders
-//   GET    -> list all orders (newest first)
-//   POST   -> create order  { customer_name, pickup, delivery, ... }
-//   PATCH  -> update order  { order_number, status?, eta?, note?, ... }
-// Every request must include header:  x-admin-password: <ADMIN_PASSWORD env>
+import { useState, useEffect } from "react";
 
-const SUPABASE_URL = (process.env.SUPABASE_URL || "").trim();
-const SUPABASE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
-const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || "").trim();
+const STATUSES = ["Booked", "Driver Assigned", "Picked Up", "In Transit", "Delivered"];
 
-const ALLOWED_STATUSES = [
-  "Booked",
-  "Driver Assigned",
-  "Picked Up",
-  "In Transit",
-  "Delivered",
-];
+export default function AdminOrders() {
+  const [password, setPassword] = useState("");
+  const [authed, setAuthed] = useState(false);
+  const [authError, setAuthError] = useState("");
 
-const sb = (path, options = {}) =>
-  fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    ...options,
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: "return=representation",
-      ...(options.headers || {}),
-    },
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [listError, setListError] = useState("");
+
+  const [form, setForm] = useState({
+    customer_name: "",
+    customer_phone: "",
+    customer_email: "",
+    pickup: "",
+    delivery: "",
+    vehicle: "",
+    transport: "",
+    eta: "",
+    note: "",
   });
+  const [creating, setCreating] = useState(false);
+  const [createMsg, setCreateMsg] = useState("");
 
-export default async function handler(req, res) {
-  if (!SUPABASE_URL || !SUPABASE_KEY || !ADMIN_PASSWORD) {
-    return res.status(500).json({ error: "Server not configured" });
-  }
+  const headers = {
+    "Content-Type": "application/json",
+    "x-admin-password": password,
+  };
 
-  const provided = (req.headers["x-admin-password"] || "").toString();
-  if (provided !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: "UNAUTHORIZED" });
-  }
-
-  try {
-    // ---- LIST ----
-    if (req.method === "GET") {
-      const r = await sb("orders?select=*&order=created_at.desc&limit=200");
+  const loadOrders = async () => {
+    setLoading(true);
+    setListError("");
+    try {
+      const r = await fetch("/api/admin-orders", { headers });
       const data = await r.json();
-      return res.status(200).json({ orders: data });
+      if (!r.ok) {
+        if (r.status === 401) {
+          setAuthed(false);
+          setAuthError("Session expired. Please log in again.");
+        } else {
+          setListError("Could not load orders.");
+        }
+        return;
+      }
+      setOrders(data.orders || []);
+    } catch {
+      setListError("Could not load orders.");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
-
-    // ---- CREATE ----
-    if (req.method === "POST") {
-      const { customer_name, pickup, delivery } = body;
-      if (!customer_name || !pickup || !delivery) {
-        return res.status(400).json({ error: "customer_name, pickup and delivery are required" });
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setAuthError("");
+    try {
+      const r = await fetch("/api/admin-orders", {
+        headers: { "x-admin-password": password },
+      });
+      if (r.status === 401) {
+        setAuthError("Wrong password.");
+        return;
       }
-
-      // Generate a unique order number like US-483920 (retry on rare collision)
-      for (let attempt = 0; attempt < 5; attempt++) {
-        const orderNumber = "US-" + Math.floor(100000 + Math.random() * 900000);
-        const r = await sb("orders", {
-          method: "POST",
-          body: JSON.stringify({
-            order_number: orderNumber,
-            customer_name,
-            customer_phone: body.customer_phone || null,
-            customer_email: body.customer_email || null,
-            pickup,
-            delivery,
-            vehicle: body.vehicle || null,
-            transport: body.transport || null,
-            status: ALLOWED_STATUSES.includes(body.status) ? body.status : "Booked",
-            eta: body.eta || null,
-            note: body.note || null,
-          }),
-        });
-        if (r.ok) {
-          const data = await r.json();
-          return res.status(200).json({ order: data[0] });
-        }
-        const text = await r.text();
-        if (!text.includes("duplicate")) {
-          console.error("Supabase insert error:", text);
-          return res.status(500).json({ error: "DB_ERROR" });
-        }
-        // duplicate order number -> loop and try a new one
+      if (!r.ok) {
+        setAuthError("Something went wrong. Please try again.");
+        return;
       }
-      return res.status(500).json({ error: "COULD_NOT_GENERATE_ORDER_NUMBER" });
+      const data = await r.json();
+      setOrders(data.orders || []);
+      setAuthed(true);
+    } catch {
+      setAuthError("Something went wrong. Please try again.");
     }
+  };
 
-    // ---- UPDATE ----
-    if (req.method === "PATCH") {
-      const orderNumber = (body.order_number || "").toString().trim().toUpperCase();
-      if (!orderNumber) {
-        return res.status(400).json({ error: "order_number is required" });
-      }
+  useEffect(() => {
+    if (authed) loadOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authed]);
 
-      const patch = { updated_at: new Date().toISOString() };
-      if (body.status) {
-        if (!ALLOWED_STATUSES.includes(body.status)) {
-          return res.status(400).json({ error: "INVALID_STATUS" });
-        }
-        patch.status = body.status;
-      }
-      for (const field of ["eta", "note", "customer_phone", "customer_email", "vehicle", "transport", "pickup", "delivery", "customer_name"]) {
-        if (field in body) patch[field] = body[field];
-      }
-
-      const r = await sb(`orders?order_number=eq.${encodeURIComponent(orderNumber)}`, {
-        method: "PATCH",
-        body: JSON.stringify(patch),
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    setCreateMsg("");
+    if (!form.customer_name || !form.pickup || !form.delivery) {
+      setCreateMsg("Customer name, pickup, and delivery are required.");
+      return;
+    }
+    setCreating(true);
+    try {
+      const r = await fetch("/api/admin-orders", {
+        method: "POST",
+        headers,
+        body: JSON.stringify(form),
       });
       const data = await r.json();
-      if (!Array.isArray(data) || data.length === 0) {
-        return res.status(404).json({ error: "NOT_FOUND" });
+      if (!r.ok) {
+        setCreateMsg("Failed to create order.");
+        return;
       }
-      return res.status(200).json({ order: data[0] });
+      setCreateMsg(`✅ Order created: ${data.order.order_number}`);
+      setForm({
+        customer_name: "",
+        customer_phone: "",
+        customer_email: "",
+        pickup: "",
+        delivery: "",
+        vehicle: "",
+        transport: "",
+        eta: "",
+        note: "",
+      });
+      loadOrders();
+    } catch {
+      setCreateMsg("Failed to create order.");
+    } finally {
+      setCreating(false);
     }
+  };
 
-    return res.status(405).json({ error: "Method not allowed" });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "SERVER_ERROR" });
+  const updateStatus = async (order_number, status) => {
+    try {
+      const r = await fetch("/api/admin-orders", {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ order_number, status }),
+      });
+      if (!r.ok) {
+        setListError("Failed to update status.");
+        return;
+      }
+      loadOrders();
+    } catch {
+      setListError("Failed to update status.");
+    }
+  };
+
+  if (!authed) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white flex items-center justify-center px-6">
+        <form
+          onSubmit={handleLogin}
+          className="w-full max-w-sm rounded-3xl border border-white/15 bg-white/5 backdrop-blur p-8"
+        >
+          <h1 className="text-2xl font-extrabold text-center mb-6">Admin Login</h1>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Admin password"
+            className="w-full rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          {authError && <p className="mt-4 text-red-400 text-sm text-center">{authError}</p>}
+          <button
+            type="submit"
+            className="mt-6 w-full rounded-xl px-6 py-3 font-bold bg-blue-600 hover:bg-blue-700 transition"
+          >
+            Log In
+          </button>
+        </form>
+      </div>
+    );
   }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white">
+      <header className="border-b border-white/10">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <a href="/" className="font-bold text-lg">
+            US Star Trucking LLC — Admin
+          </a>
+          <a href="/" className="text-sm text-blue-300 hover:text-white transition">
+            ← Back to Home
+          </a>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-6 py-12 space-y-12">
+        {/* Create order */}
+        <section className="rounded-3xl border border-white/15 bg-white/5 backdrop-blur p-6 sm:p-8">
+          <h2 className="text-xl font-bold mb-6">Create New Order</h2>
+          <form onSubmit={handleCreate} className="grid sm:grid-cols-2 gap-4">
+            <input
+              placeholder="Customer name *"
+              value={form.customer_name}
+              onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
+              className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              placeholder="Phone"
+              value={form.customer_phone}
+              onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
+              className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              placeholder="Email"
+              value={form.customer_email}
+              onChange={(e) => setForm({ ...form, customer_email: e.target.value })}
+              className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              placeholder="Vehicle (e.g. 2021 Toyota Camry)"
+              value={form.vehicle}
+              onChange={(e) => setForm({ ...form, vehicle: e.target.value })}
+              className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              placeholder="Pickup (city, state) *"
+              value={form.pickup}
+              onChange={(e) => setForm({ ...form, pickup: e.target.value })}
+              className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              placeholder="Delivery (city, state) *"
+              value={form.delivery}
+              onChange={(e) => setForm({ ...form, delivery: e.target.value })}
+              className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              placeholder="Transport (Open/Enclosed)"
+              value={form.transport}
+              onChange={(e) => setForm({ ...form, transport: e.target.value })}
+              className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              placeholder="ETA"
+              value={form.eta}
+              onChange={(e) => setForm({ ...form, eta: e.target.value })}
+              className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <textarea
+              placeholder="Note (optional)"
+              value={form.note}
+              onChange={(e) => setForm({ ...form, note: e.target.value })}
+              className="sm:col-span-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows={2}
+            />
+            <button
+              type="submit"
+              disabled={creating}
+              className={`sm:col-span-2 rounded-xl px-6 py-3 font-bold transition ${
+                creating ? "bg-gray-500 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+              }`}
+            >
+              {creating ? "Creating..." : "Create Order"}
+            </button>
+          </form>
+          {createMsg && <p className="mt-4 text-sm text-center">{createMsg}</p>}
+        </section>
+
+        {/* Orders list */}
+        <section className="rounded-3xl border border-white/15 bg-white/5 backdrop-blur p-6 sm:p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold">Orders</h2>
+            <button
+              onClick={loadOrders}
+              className="text-sm text-blue-300 hover:text-white transition"
+            >
+              Refresh
+            </button>
+          </div>
+
+          {loading && <p className="text-slate-400">Loading...</p>}
+          {listError && <p className="text-red-400">{listError}</p>}
+          {!loading && orders.length === 0 && (
+            <p className="text-slate-400">No orders yet.</p>
+          )}
+
+          <div className="space-y-4">
+            {orders.map((o) => (
+              <div
+                key={o.order_number}
+                className="rounded-2xl border border-white/10 bg-white/5 p-5"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                  <div>
+                    <p className="font-mono font-bold text-lg">{o.order_number}</p>
+                    <p className="text-sm text-slate-400">{o.customer_name}</p>
+                  </div>
+                  <span className="text-sm font-semibold text-green-400">{o.status}</span>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-x-8 gap-y-1 text-sm text-slate-300 mb-4">
+                  <p>From: {o.pickup}</p>
+                  <p>To: {o.delivery}</p>
+                  {o.vehicle && <p>Vehicle: {o.vehicle}</p>}
+                  {o.transport && <p>Transport: {o.transport}</p>}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {STATUSES.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => updateStatus(o.order_number, s)}
+                      className={`text-xs font-semibold rounded-lg px-3 py-2 transition ${
+                        o.status === s
+                          ? "bg-blue-600 text-white"
+                          : "bg-white/10 text-slate-300 hover:bg-white/20"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
 }
