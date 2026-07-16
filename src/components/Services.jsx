@@ -46,15 +46,15 @@ function Services() {
   return (
     <section
       id="services"
-      className="bg-gradient-to-b from-white to-slate-100 py-24"
+      className="bg-gradient-to-b from-slate-800 to-slate-900 py-24"
     >
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="text-center mb-16">
-          <h2 className="text-5xl font-extrabold text-slate-900">
+          <h2 className="text-5xl font-extrabold text-white">
             Our Auto Transport Services
           </h2>
-          <p className="mt-6 max-w-3xl mx-auto text-xl text-gray-600">
+          <p className="mt-6 max-w-3xl mx-auto text-xl text-slate-300">
             Whether you're relocating, buying a vehicle online, or shipping a
             luxury car, US Star Trucking LLC provides dependable nationwide
             vehicle transportation with competitive pricing and outstanding
@@ -66,7 +66,7 @@ function Services() {
           {services.map((service) => (
             <div
               key={service.title}
-              className="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition duration-300 border border-gray-100 hover:-translate-y-2 overflow-hidden"
+              className="bg-slate-700 rounded-3xl shadow-lg hover:shadow-2xl transition duration-300 border border-slate-600 hover:-translate-y-2 overflow-hidden"
             >
               <img
                 src={service.image}
@@ -74,10 +74,10 @@ function Services() {
                 className="w-full h-48 object-cover"
               />
               <div className="p-8">
-                <h3 className="text-2xl font-bold text-slate-900 mb-4">
+                <h3 className="text-2xl font-bold text-white mb-4">
                   {service.title}
                 </h3>
-                <p className="text-gray-600 leading-7">
+                <p className="text-slate-300 leading-7">
                   {service.description}
                 </p>
               </div>
