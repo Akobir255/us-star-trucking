@@ -23,7 +23,7 @@ function StatCard({ number, suffix, title, description, isText, started }) {
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 text-center border border-white/20 hover:bg-white/20 transition duration-300 hover:-translate-y-2">
       <h3 className="text-5xl font-extrabold mb-4">
-        {isText ? number : `${count}${suffix}`}
+        {isText ? number : `${count.toLocaleString()}${suffix}`}
       </h3>
       <h4 className="text-xl font-bold mb-3">{title}</h4>
       <p className="text-blue-100">{description}</p>
@@ -45,9 +45,9 @@ function Stats() {
   }, []);
 
   const stats = [
-    { number: "500", suffix: "+", title: "Vehicles Shipped", description: "Successfully transported across the United States.", isText: false },
+    { number: "20000", suffix: "+", title: "Vehicles Shipped", description: "Successfully transported across the United States.", isText: false },
     { number: "50", suffix: "", title: "States Served", description: "Nationwide vehicle shipping across all 50 states.", isText: false },
-    { number: "100", suffix: "%", title: "Licensed & Insured", description: "Professional carriers for every shipment.", isText: false },
+    { number: "6", suffix: "+", title: "Years of Experience", description: "Trusted auto transport expertise since day one.", isText: false },
     { number: "24/7", suffix: "", title: "Customer Support", description: "We're here to assist you throughout the process.", isText: true },
   ];
 

@@ -4,6 +4,7 @@ function HowItWorks() {
       number: "01",
       icon: "📝",
       title: "Request Your Free Quote",
+      link: "#quote-form",
       description:
         "Complete our simple online form or give us a call. We'll provide a fast, accurate, no-obligation quote.",
       gradient: "from-blue-500 to-blue-700",
@@ -12,6 +13,7 @@ function HowItWorks() {
       number: "02",
       icon: "📅",
       title: "Schedule Your Shipment",
+      link: "#quote-form",
       description:
         "Choose your preferred pickup date and transport option. We'll match you with a licensed and insured carrier.",
       gradient: "from-purple-500 to-purple-700",
@@ -20,6 +22,7 @@ function HowItWorks() {
       number: "03",
       icon: "🚛",
       title: "Vehicle Pickup",
+      link: "/door-to-door-auto-transport",
       description:
         "Your vehicle is carefully inspected and picked up by a professional carrier at your chosen location.",
       gradient: "from-orange-500 to-orange-700",
@@ -28,6 +31,7 @@ function HowItWorks() {
       number: "04",
       icon: "✅",
       title: "Safe Delivery",
+      link: "/track",
       description:
         "Your vehicle is delivered safely to its destination. A final inspection ensures everything arrives in excellent condition.",
       gradient: "from-green-500 to-green-700",
@@ -54,9 +58,10 @@ function HowItWorks() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step) => (
-            <div
+            <a
+              href={step.link}
               key={step.number}
-              className={`bg-gradient-to-br ${step.gradient} rounded-3xl shadow-xl hover:shadow-2xl transition duration-300 p-8 text-center hover:-translate-y-2 text-white`}
+              className={`block bg-gradient-to-br ${step.gradient} rounded-3xl shadow-xl hover:shadow-2xl transition duration-300 p-8 text-center hover:-translate-y-2 text-white cursor-pointer`}
             >
               <div className="font-extrabold text-6xl mb-4 opacity-30">
                 {step.number}
@@ -70,7 +75,7 @@ function HowItWorks() {
               <p className="leading-7 opacity-90">
                 {step.description}
               </p>
-            </div>
+            </a>
           ))}
         </div>
 

@@ -3,6 +3,7 @@ function WhyChooseUs() {
     {
       icon: "🛡️",
       title: "Licensed, Bonded & Insured",
+      link: "https://safer.fmcsa.dot.gov/query.asp?searchtype=ANY&query_type=queryCarrierSnapshot&query_param=USDOT&query_string=3205543",
       description:
         "Every shipment is handled by fully licensed FMCSA-compliant carriers with cargo insurance for complete peace of mind.",
       gradient: "from-blue-500 to-blue-700",
@@ -10,6 +11,7 @@ function WhyChooseUs() {
     {
       icon: "🚚",
       title: "Door-to-Door Delivery",
+      link: "/door-to-door-auto-transport",
       description:
         "We pick up and deliver your vehicle as close to your preferred locations as safely possible.",
       gradient: "from-purple-500 to-purple-700",
@@ -17,6 +19,7 @@ function WhyChooseUs() {
     {
       icon: "💰",
       title: "Transparent Pricing",
+      link: "/#quote-form",
       description:
         "No hidden fees. No surprise charges. Get competitive pricing with an instant online estimate.",
       gradient: "from-green-500 to-green-700",
@@ -24,6 +27,7 @@ function WhyChooseUs() {
     {
       icon: "📍",
       title: "Nationwide Coverage",
+      link: "/car-shipping-california",
       description:
         "We transport cars, SUVs, trucks, motorcycles, and luxury vehicles anywhere in the continental United States.",
       gradient: "from-orange-500 to-orange-700",
@@ -31,6 +35,7 @@ function WhyChooseUs() {
     {
       icon: "⭐",
       title: "Top-Rated Customer Service",
+      link: "/#reviews",
       description:
         "Our experienced shipping coordinators keep you informed from pickup to delivery.",
       gradient: "from-yellow-500 to-yellow-600",
@@ -38,6 +43,7 @@ function WhyChooseUs() {
     {
       icon: "⏰",
       title: "Fast Pickup",
+      link: "/expedited-auto-transport",
       description:
         "Most vehicles are picked up within 1–3 business days depending on carrier availability.",
       gradient: "from-red-500 to-red-700",
@@ -60,9 +66,12 @@ function WhyChooseUs() {
 
         <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8">
           {reasons.map((item) => (
-            <div
+            <a
+              href={item.link}
               key={item.title}
-              className={`bg-gradient-to-br ${item.gradient} rounded-2xl shadow-lg hover:shadow-2xl transition duration-300 p-8 text-white hover:-translate-y-2`}
+              target={item.link.startsWith("http") ? "_blank" : undefined}
+              rel={item.link.startsWith("http") ? "noopener noreferrer" : undefined}
+              className={`block bg-gradient-to-br ${item.gradient} rounded-2xl shadow-lg hover:shadow-2xl transition duration-300 p-8 text-white hover:-translate-y-2 cursor-pointer`}
             >
               <div className="text-6xl mb-5">
                 {item.icon}
@@ -73,7 +82,7 @@ function WhyChooseUs() {
               <p className="leading-7 opacity-90">
                 {item.description}
               </p>
-            </div>
+            </a>
           ))}
         </div>
 
