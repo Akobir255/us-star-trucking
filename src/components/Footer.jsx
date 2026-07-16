@@ -131,7 +131,7 @@ function Footer() {
             <ul className="space-y-3">
               <li><a href="#" className="hover:text-blue-400">Home</a></li>
               <li><a href="#quote-form" className="hover:text-blue-400">Free Quote</a></li>
-              <li><a href="/track" className="hover:text-blue-400">📦 Track Shipment</a></li>
+              <li><a href="/track" className="hover:text-blue-400"> Track Shipment</a></li>
               <li><a href="/blog" className="hover:text-blue-400">📰 Blog & Guides</a></li>
               <li><a href="#services" className="hover:text-blue-400">Services</a></li>
               <li><a href="#reviews" className="hover:text-blue-400">Reviews</a></li>
