@@ -91,44 +91,57 @@ export default async function handler(req, res) {
     // ---- CREATE ----
     if (req.method === "POST") {
       const { customer_name, pickup, delivery } = body;
+      const orderNumber = (body.order_number || "").toString().trim().toUpperCase();
+
+      if (!orderNumber) {
+        return res.status(400).json({ error: "order_number is required" });
+      }
+      // Expected formats: 8 digits + "-US" (e.g. 12345678-US), with tolerance
+      // for the legacy variants already in use (trailing "0", no hyphen).
+      if (!/^\d{8}-?US0?$/.test(orderNumber)) {
+        return res.status(400).json({
+          error: "INVALID_ORDER_NUMBER_FORMAT",
+          message: "Order ID should look like 12345678-US",
+        });
+      }
       if (!customer_name || !pickup || !delivery) {
         return res.status(400).json({ error: "customer_name, pickup and delivery are required" });
       }
 
-      // Generate a unique order number like 48293042-US (retry on rare collision)
-      for (let attempt = 0; attempt < 5; attempt++) {
-        const orderNumber = String(Math.floor(10000000 + Math.random() * 90000000)) + "-US";
-        const r = await sb("orders", {
-          method: "POST",
-          body: JSON.stringify({
-            order_number: orderNumber,
-            customer_name,
-            customer_phone: body.customer_phone || null,
-            customer_email: body.customer_email || null,
-            pickup,
-            delivery,
-            vehicle: body.vehicle || null,
-            transport: body.transport || null,
-            status: ALLOWED_STATUSES.includes(body.status) ? body.status : "Booked",
-            eta: body.eta || null,
-            note: body.note || null,
-            carrier_company: body.carrier_company || null,
-            driver_name: body.driver_name || null,
-            driver_phone: body.driver_phone || null,
-          }),
-        });
-        if (r.ok) {
-          const data = await r.json();
-          return res.status(200).json({ order: data[0] });
-        }
-        const text = await r.text();
-        if (!text.includes("duplicate")) {
-          console.error("Supabase insert error:", text);
-          return res.status(500).json({ error: "DB_ERROR" });
-        }
-        // duplicate order number -> loop and try a new one
+      const r = await sb("orders", {
+        method: "POST",
+        body: JSON.stringify({
+          order_number: orderNumber,
+          customer_name,
+          customer_phone: body.customer_phone || null,
+          customer_email: body.customer_email || null,
+          pickup,
+          delivery,
+          vehicle: body.vehicle || null,
+          transport: body.transport || null,
+          status: ALLOWED_STATUSES.includes(body.status) ? body.status : "Booked",
+          eta: body.eta || null,
+          note: body.note || null,
+          carrier_company: body.carrier_company || null,
+          driver_name: body.driver_name || null,
+          driver_phone: body.driver_phone || null,
+        }),
+      });
+
+      if (r.ok) {
+        const data = await r.json();
+        return res.status(200).json({ order: data[0] });
       }
-      return res.status(500).json({ error: "COULD_NOT_GENERATE_ORDER_NUMBER" });
+
+      const text = await r.text();
+      if (text.includes("duplicate")) {
+        return res.status(409).json({
+          error: "ORDER_ALREADY_EXISTS",
+          message: `Order ID ${orderNumber} already exists — pick a different one.`,
+        });
+      }
+      console.error("Supabase insert error:", text);
+      return res.status(500).json({ error: "DB_ERROR" });
     }
 
     // ---- UPDATE ----

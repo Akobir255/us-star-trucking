@@ -35,6 +35,7 @@ export default function AdminOrders() {
   const [listError, setListError] = useState("");
 
   const [form, setForm] = useState({
+    order_number: "",
     customer_name: "",
     customer_phone: "",
     customer_email: "",
@@ -153,8 +154,12 @@ export default function AdminOrders() {
   const handleCreate = async (e) => {
     e.preventDefault();
     setCreateMsg("");
+    if (!form.order_number.trim()) {
+      setCreateMsg("Order ID is required.");
+      return;
+    }
     if (!form.customer_name || !form.pickup || !form.delivery) {
-      setCreateMsg("Customer name, pickup, and delivery are required.");
+      setCreateMsg("Order ID, customer name, pickup, and delivery are required.");
       return;
     }
     setCreating(true);
@@ -166,7 +171,7 @@ export default function AdminOrders() {
       });
       const data = await r.json();
       if (!r.ok) {
-        setCreateMsg("Failed to create order.");
+        setCreateMsg(data.message || "Failed to create order.");
         return;
       }
       const orderNumber = data.order.order_number;
@@ -187,6 +192,7 @@ export default function AdminOrders() {
           : `✅ Order created: ${orderNumber} — but: ${docErrors.join(" | ")} You can re-upload it below.`
       );
       setForm({
+        order_number: "",
         customer_name: "",
         customer_phone: "",
         customer_email: "",
@@ -514,6 +520,12 @@ export default function AdminOrders() {
         <section className="rounded-3xl border border-white/15 bg-white/5 backdrop-blur p-6 sm:p-8">
           <h2 className="text-xl font-bold mb-6">Create New Order</h2>
           <form onSubmit={handleCreate} className="grid sm:grid-cols-2 gap-4">
+            <input
+              placeholder="Order ID * (e.g. 12345678-US)"
+              value={form.order_number}
+              onChange={(e) => setForm({ ...form, order_number: e.target.value })}
+              className="sm:col-span-2 rounded-xl border border-blue-400/40 bg-white/10 px-4 py-3 font-mono text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
             <input
               placeholder="Customer name *"
               value={form.customer_name}
