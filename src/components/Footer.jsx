@@ -2,8 +2,14 @@ import { useState } from "react";
 
 function Modal({ title, onClose, children }) {
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+    <div
+      className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex justify-between items-center p-6 border-b sticky top-0 bg-white">
           <h2 className="text-2xl font-bold text-slate-900">{title}</h2>
           <button
@@ -28,7 +34,6 @@ function Footer() {
   return (
     <footer className="bg-slate-950 text-slate-300">
 
-      {/* Privacy Policy Modal */}
       {showPrivacy && (
         <Modal title="Privacy Policy" onClose={() => setShowPrivacy(false)}>
           <p className="mb-4"><strong>Last updated: July 15, 2026</strong></p>
@@ -43,7 +48,6 @@ function Footer() {
         </Modal>
       )}
 
-      {/* Terms of Service Modal */}
       {showTerms && (
         <Modal title="Terms & Conditions" onClose={() => setShowTerms(false)}>
           <p className="mb-4"><strong>US Star Trucking LLC — MC# 206532</strong></p>
@@ -91,7 +95,6 @@ function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-20">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
 
-          {/* Company */}
           <div>
             <h2 className="text-3xl font-bold text-white mb-5">US Star Trucking LLC</h2>
             <p className="leading-7 text-slate-400">
@@ -105,7 +108,6 @@ function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
           <div>
             <h3 className="text-xl font-bold text-white mb-5">Quick Links</h3>
             <ul className="space-y-3">
@@ -117,7 +119,6 @@ function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
             <h3 className="text-xl font-bold text-white mb-5">Contact</h3>
             <p className="mb-3">
@@ -139,7 +140,6 @@ function Footer() {
             </p>
           </div>
 
-          {/* Business */}
           <div>
             <h3 className="text-xl font-bold text-white mb-5">Business Information</h3>
             <p className="mb-2"><strong>USDOT:</strong> 3205543</p>
@@ -157,16 +157,10 @@ function Footer() {
             © {new Date().getFullYear()} US Star Trucking LLC. All Rights Reserved.
           </p>
           <div className="flex gap-6 text-sm">
-            <button
-              onClick={() => setShowPrivacy(true)}
-              className="hover:text-blue-400 transition"
-            >
+            <button onClick={() => setShowPrivacy(true)} className="hover:text-blue-400 transition">
               Privacy Policy
             </button>
-            <button
-              onClick={() => setShowTerms(true)}
-              className="hover:text-blue-400 transition"
-            >
+            <button onClick={() => setShowTerms(true)} className="hover:text-blue-400 transition">
               Terms & Conditions
             </button>
             <a href="#quote-form" className="hover:text-blue-400">Get Quote</a>
