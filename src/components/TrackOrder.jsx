@@ -49,10 +49,25 @@ export default function TrackOrder() {
   const [error, setError] = useState("");
   const [order, setOrder] = useState(null);
 
+  // Document verification (email or last name)
+  const [verifyInput, setVerifyInput] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState("");
+
+  const fetchOrder = async (cleaned, verify) => {
+    const params = new URLSearchParams({ order: cleaned });
+    if (verify) params.set("verify", verify);
+    const r = await fetch(`/api/track?${params.toString()}`);
+    const data = await r.json();
+    return { r, data };
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setOrder(null);
+    setVerifyInput("");
+    setVerifyError("");
 
     const cleaned = orderNumber.trim().toUpperCase();
     const NEW_FORMAT = /^\d{8}-?US0{0,4}$/;
@@ -64,8 +79,7 @@ export default function TrackOrder() {
 
     setLoading(true);
     try {
-      const r = await fetch(`/api/track?order=${encodeURIComponent(cleaned)}`);
-      const data = await r.json();
+      const { r, data } = await fetchOrder(cleaned);
       if (!r.ok) {
         setError(
           data.error === "NOT_FOUND"
@@ -79,6 +93,39 @@ export default function TrackOrder() {
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    setVerifyError("");
+
+    const value = verifyInput.trim();
+    if (value.length < 2) {
+      setVerifyError("Please enter your email address or last name.");
+      return;
+    }
+
+    setVerifying(true);
+    try {
+      const { r, data } = await fetchOrder(order.orderNumber, value);
+      if (!r.ok) {
+        setVerifyError(
+          data.error === "RATE_LIMITED"
+            ? "Too many attempts. Please wait a few minutes and try again."
+            : "Something went wrong. Please try again."
+        );
+      } else if (data.order.verified) {
+        setOrder(data.order);
+      } else {
+        setVerifyError(
+          "That doesn't match our records. Please use the email or last name from your booking, or call us at (865) 722-7114."
+        );
+      }
+    } catch {
+      setVerifyError("Something went wrong. Please try again.");
+    } finally {
+      setVerifying(false);
     }
   };
 
@@ -192,6 +239,40 @@ export default function TrackOrder() {
             {order.note && (
               <div className="mt-6 rounded-xl border border-blue-400/30 bg-blue-500/10 p-4 text-sm text-blue-200">
                 📝 {order.note}
+              </div>
+            )}
+
+            {/* Carrier documents — locked until the customer verifies */}
+            {order.hasDocuments && !order.verified && (
+              <div className="mt-6 rounded-xl border border-white/15 bg-white/5 p-5">
+                <p className="text-sm font-semibold text-white">
+                  🔒 Carrier documents (driver license &amp; insurance)
+                </p>
+                <p className="mt-1 text-xs text-slate-400">
+                  To protect your driver's privacy, please confirm your identity with the
+                  email address or last name from your booking.
+                </p>
+                <form onSubmit={handleVerify} className="mt-3 flex flex-col sm:flex-row gap-3">
+                  <input
+                    type="text"
+                    value={verifyInput}
+                    onChange={(e) => setVerifyInput(e.target.value)}
+                    placeholder="Your email or last name"
+                    className="flex-1 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button
+                    type="submit"
+                    disabled={verifying}
+                    className={`rounded-xl px-6 py-3 font-bold transition ${
+                      verifying ? "bg-gray-500 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                    }`}
+                  >
+                    {verifying ? "Checking..." : "View documents"}
+                  </button>
+                </form>
+                {verifyError && (
+                  <p className="mt-3 text-sm text-red-400 font-medium">{verifyError}</p>
+                )}
               </div>
             )}
 
