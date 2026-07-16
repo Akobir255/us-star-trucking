@@ -29,29 +29,33 @@ function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? "bg-white/95 backdrop-blur shadow-lg" : "bg-slate-900/80 backdrop-blur"
+        scrolled ? "bg-white shadow-lg" : "bg-slate-900"
       }`}
     >
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex justify-between items-center h-20">
 
-          <a href="#" className="flex items-center gap-4">
-            <img src={logo} alt="US Star Trucking" className="h-14 rounded-lg" />
+          <a href="#" className="flex items-center gap-3">
+            <img src={logo} alt="US Star Trucking" className="h-12 rounded-lg" />
             <div>
-              <h1 className={`font-bold text-xl ${scrolled ? "text-blue-700" : "text-white"}`}>US Star Trucking LLC</h1>
-              <p className={`text-sm ${scrolled ? "text-gray-500" : "text-blue-300"}`}>Nationwide Auto Transport</p>
+              <h1 className={`font-bold text-lg ${scrolled ? "text-blue-700" : "text-white"}`}>
+                US Star Trucking LLC
+              </h1>
+              <p className={`text-xs ${scrolled ? "text-gray-500" : "text-blue-300"}`}>
+                Nationwide Auto Transport
+              </p>
             </div>
           </a>
 
-          <nav className="hidden lg:flex items-center gap-3">
+          <nav className="hidden lg:flex items-center gap-2">
             {links.map((item) => (
               <a
                 key={item.name}
                 href={item.href}
-                className={`font-medium px-4 py-2 rounded-lg border transition ${
+                className={`font-semibold px-4 py-2 rounded-lg transition text-sm ${
                   scrolled
-                    ? "text-gray-700 border-gray-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200"
-                    : "text-white border-white/20 hover:bg-white/20 hover:border-white/40"
+                    ? "text-gray-800 bg-gray-100 hover:bg-blue-600 hover:text-white"
+                    : "text-white bg-white/15 hover:bg-white/30"
                 }`}
               >
                 {item.name}
@@ -61,10 +65,10 @@ function Navbar() {
             <div className="relative">
               <button
                 onClick={() => setOffersOpen(!offersOpen)}
-                className={`font-medium px-4 py-2 rounded-lg border transition flex items-center gap-1 ${
+                className={`font-semibold px-4 py-2 rounded-lg transition text-sm flex items-center gap-1 ${
                   scrolled
-                    ? "text-green-600 border-green-200 hover:bg-green-50"
-                    : "text-green-400 border-green-400/30 hover:bg-green-400/20"
+                    ? "text-green-700 bg-green-100 hover:bg-green-600 hover:text-white"
+                    : "text-green-300 bg-green-500/20 hover:bg-green-500/40"
                 }`}
               >
                 🎁 Special Offers
@@ -105,17 +109,17 @@ function Navbar() {
           <div className="hidden lg:flex items-center gap-3">
             <a
               href="tel:+18657227114"
-              className={`font-bold px-4 py-2 rounded-lg border transition ${
+              className={`font-bold px-4 py-2 rounded-lg text-sm transition ${
                 scrolled
-                  ? "text-blue-700 border-blue-200 hover:bg-blue-50"
-                  : "text-white border-white/20 hover:bg-white/20"
+                  ? "text-blue-700 bg-blue-50 hover:bg-blue-100"
+                  : "text-white bg-white/15 hover:bg-white/30"
               }`}
             >
               (865) 722-7114
             </a>
             <a
               href="#quote-form"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-bold text-sm transition"
             >
               Get Free Quote
             </a>
@@ -131,16 +135,14 @@ function Navbar() {
         </div>
 
         {menuOpen && (
-          <div className="lg:hidden border-t border-white/20 py-5 space-y-3">
+          <div className={`lg:hidden border-t py-5 space-y-3 ${scrolled ? "border-gray-200" : "border-white/20"}`}>
             {links.map((item) => (
               <a
                 key={item.name}
                 href={item.href}
                 onClick={() => setMenuOpen(false)}
-                className={`block font-medium px-4 py-2 rounded-lg border transition ${
-                  scrolled
-                    ? "text-gray-700 border-gray-200"
-                    : "text-white border-white/20"
+                className={`block font-semibold px-4 py-2 rounded-lg transition ${
+                  scrolled ? "text-gray-800 bg-gray-100" : "text-white bg-white/15"
                 }`}
               >
                 {item.name}
