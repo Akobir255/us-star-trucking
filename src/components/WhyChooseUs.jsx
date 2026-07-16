@@ -45,14 +45,14 @@ function WhyChooseUs() {
   ];
 
   return (
-    <section className="py-24 bg-slate-100">
+    <section className="py-24 bg-gradient-to-b from-slate-800 to-slate-900">
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="text-center mb-16">
-          <h2 className="text-5xl font-bold text-slate-900">
+          <h2 className="text-5xl font-bold text-white">
             Why Choose US Star Trucking LLC?
           </h2>
-          <p className="text-xl text-gray-600 mt-5 max-w-3xl mx-auto">
+          <p className="text-xl text-slate-300 mt-5 max-w-3xl mx-auto">
             Thousands of customers trust us for reliable, affordable,
             and secure vehicle transportation across the United States.
           </p>
