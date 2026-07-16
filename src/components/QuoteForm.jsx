@@ -347,8 +347,16 @@ export default function QuoteForm() {
   const quoteRef = useRef(null);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    // Prefill promo code from banner links like /?promo=USSTAR50#quote-form
+    const promoParam = (params.get("promo") || "").toUpperCase().trim();
+    if (promoParam && PROMO_CODES[promoParam]) {
+      setFormData((p) => ({ ...p, promoCode: promoParam }));
+    }
+
     const hasHash = window.location.hash === "#quote-form";
-    const hasParam = new URLSearchParams(window.location.search).has("quote");
+    const hasParam = params.has("quote") || !!promoParam;
     const hasPath = window.location.pathname.replace(/\/$/, "") === "/quote-form";
     if (hasHash || hasParam || hasPath) {
       const t = setTimeout(() => {
@@ -508,8 +516,9 @@ export default function QuoteForm() {
   };
 
   return (
-    <section id="quote-form" className="max-w-6xl mx-auto px-4 sm:px-6 -mt-20 relative z-10">
-      <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8">
+    <section id="quote-form" className="max-w-5xl mx-auto px-4 sm:px-6 -mt-14 relative z-10">
+      <div className="rounded-3xl bg-gradient-to-r from-blue-600 via-cyan-400 to-blue-600 p-[3px] shadow-2xl">
+        <div className="bg-white rounded-[21px] p-5 sm:p-7">
         {submitted ? (
           <div ref={quoteRef} className="max-w-2xl mx-auto text-center py-6">
             <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
@@ -563,8 +572,8 @@ export default function QuoteForm() {
           </div>
         ) : (
           <>
-            <h2 className="text-3xl font-bold text-center mb-2">Get Your Free Car Shipping Quote</h2>
-            <p className="text-center text-gray-500 mb-8">Fast · Safe · Door-to-Door Auto Transport</p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-center mb-2 bg-gradient-to-r from-blue-700 via-cyan-500 to-blue-700 bg-clip-text text-transparent">🚗 Get Your Free Car Shipping Quote</h2>
+            <p className="text-center text-gray-500 mb-6 text-sm sm:text-base">⚡ Instant price · 🛡️ Licensed & insured · 🚪 Door-to-door</p>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <input
@@ -712,6 +721,7 @@ export default function QuoteForm() {
             </form>
           </>
         )}
+        </div>
       </div>
     </section>
   );

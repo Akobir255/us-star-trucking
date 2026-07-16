@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import logo from "../assets/usstar-logo.jpg";
+import { STATES } from "../data/states";
 
 function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [offersOpen, setOffersOpen] = useState(false);
+  const [statesOpen, setStatesOpen] = useState(false);
   const [bannerVisible, setBannerVisible] = useState(true);
 
   useEffect(() => {
@@ -39,9 +41,9 @@ function Navbar() {
           <span className="animate-pulse">🎉</span>
           <span className="font-semibold">
             First shipment <strong>$50 off</strong> — use code{" "}
-            <span className="bg-white text-blue-600 font-bold px-2 py-0.5 rounded-full font-mono">USSTAR50</span>
+            <a href="/?promo=USSTAR50#quote-form" className="bg-white text-blue-600 font-bold px-2 py-0.5 rounded-full font-mono hover:bg-yellow-300 hover:scale-105 transition inline-block" title="Click to apply this code">USSTAR50</a>
             {" "}· Second shipment <strong>$100 off</strong> — use code{" "}
-            <span className="bg-white text-blue-600 font-bold px-2 py-0.5 rounded-full font-mono">USSTAR100</span>
+            <a href="/?promo=USSTAR100#quote-form" className="bg-white text-blue-600 font-bold px-2 py-0.5 rounded-full font-mono hover:bg-yellow-300 hover:scale-105 transition inline-block" title="Click to apply this code">USSTAR100</a>
           </span>
           <button
             onClick={() => setBannerVisible(false)}
@@ -68,7 +70,7 @@ function Navbar() {
             </div>
           </a>
 
-          <nav className="hidden lg:flex items-center gap-2">
+          <nav className="hidden lg:flex items-center gap-3 flex-1 justify-center px-6">
             {links.map((item) => (
               <a
                 key={item.name}
@@ -85,7 +87,40 @@ function Navbar() {
 
             <div className="relative">
               <button
-                onClick={() => setOffersOpen(!offersOpen)}
+                onClick={() => { setStatesOpen(!statesOpen); setOffersOpen(false); }}
+                className={`font-semibold px-4 py-2 rounded-lg transition text-sm flex items-center gap-1 ${
+                  scrolled
+                    ? "text-gray-800 bg-gray-100 hover:bg-blue-600 hover:text-white"
+                    : "text-white bg-white/15 hover:bg-white/30"
+                }`}
+              >
+                📍 Ship To
+                <span className="text-xs">{statesOpen ? "▲" : "▼"}</span>
+              </button>
+
+              {statesOpen && (
+                <div className="absolute top-12 left-0 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 w-64 z-50">
+                  <p className="text-xs text-gray-500 mb-3 font-semibold uppercase tracking-wide">
+                    Popular Destinations
+                  </p>
+                  <div className="grid grid-cols-2 gap-1">
+                    {STATES.map((s) => (
+                      <a
+                        key={s.slug}
+                        href={`/car-shipping-${s.slug}`}
+                        className="px-3 py-2 rounded-lg text-sm font-semibold text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition"
+                      >
+                        {s.name}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="relative">
+              <button
+                onClick={() => { setOffersOpen(!offersOpen); setStatesOpen(false); }}
                 className={`font-semibold px-4 py-2 rounded-lg transition text-sm flex items-center gap-1 ${
                   scrolled
                     ? "text-green-700 bg-green-100 hover:bg-green-600 hover:text-white"
@@ -129,16 +164,6 @@ function Navbar() {
 
           <div className="hidden lg:flex items-center gap-3">
             <a
-              href="tel:+18657227114"
-              className={`font-bold px-4 py-2 rounded-lg text-sm transition ${
-                scrolled
-                  ? "text-blue-700 bg-blue-50 hover:bg-blue-100"
-                  : "text-white bg-white/15 hover:bg-white/30"
-              }`}
-            >
-              (865) 722-7114
-            </a>
-            <a
               href="/track"
               className={`font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-1.5 ${
                 scrolled
@@ -179,6 +204,22 @@ function Navbar() {
                 {item.name}
               </a>
             ))}
+
+            <div className="border border-blue-200 rounded-xl p-4 bg-blue-50">
+              <p className="font-bold text-blue-700 mb-3">📍 Ship To</p>
+              <div className="grid grid-cols-2 gap-1">
+                {STATES.map((s) => (
+                  <a
+                    key={s.slug}
+                    href={`/car-shipping-${s.slug}`}
+                    onClick={() => setMenuOpen(false)}
+                    className="px-2 py-1.5 rounded-lg text-sm font-semibold text-gray-700 hover:bg-blue-100"
+                  >
+                    {s.name}
+                  </a>
+                ))}
+              </div>
+            </div>
 
             <div className="border border-green-200 rounded-xl p-4 bg-green-50">
               <p className="font-bold text-green-700 mb-3">🎁 Special Offers</p>

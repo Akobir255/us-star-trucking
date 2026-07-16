@@ -23,7 +23,7 @@ function TrustBar() {
   ];
 
   return (
-    <section className="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-8">
+    <section className="bg-gradient-to-r from-blue-700 to-blue-900 text-white pt-8 pb-24">
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
