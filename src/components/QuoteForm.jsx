@@ -909,7 +909,11 @@ export default function QuoteForm() {
                 </button>
 
                 <p className="text-center text-xs text-gray-400 leading-5">
-                  By submitting, you agree to be contacted by US Star Trucking LLC by phone,
+                  By submitting, you agree to our{" "}
+                  <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Terms</a>
+                  {" "}and{" "}
+                  <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Privacy Policy</a>,
+                  and consent to be contacted by US Star Trucking LLC by phone,
                   SMS, or email about your quote. Message rates may apply; reply STOP to opt
                   out. An agent typically responds within 1 hour (8 AM – 8 PM ET).
                 </p>

@@ -18,16 +18,16 @@ import AdminOrders from "./components/AdminOrders";
 import StatePage from "./components/StatePage";
 import ServicePage from "./components/ServicePage";
 import { BlogIndex, BlogPost } from "./components/Blog";
+import { PrivacyPolicy, TermsPage } from "./components/LegalPages";
 import { getPostBySlug } from "./data/posts";
 import { getStateBySlug } from "./data/states";
 import { getServiceBySlug } from "./data/services";
 
-function App() {
-  // Simple path-based routing (no router library needed)
-  const path = window.location.pathname.replace(/\/$/, "");
-
+function resolvePage(path) {
   if (path === "/track") return <TrackOrder />;
   if (path === "/admin") return <AdminOrders />;
+  if (path === "/privacy-policy") return <PrivacyPolicy />;
+  if (path === "/terms") return <TermsPage />;
 
   // State SEO pages: /car-shipping-california, /car-shipping-texas, ...
   const stateMatch = path.match(/^\/car-shipping-([a-z-]+)$/);
@@ -46,6 +46,25 @@ function App() {
   if (postMatch) {
     const post = getPostBySlug(postMatch[1]);
     if (post) return <BlogPost post={post} />;
+  }
+
+  return null; // homepage
+}
+
+function App() {
+  // Simple path-based routing (no router library needed)
+  const path = window.location.pathname.replace(/\/$/, "");
+  const page = resolvePage(path);
+
+  // Non-homepage routes: render the page + the consent banner (which also
+  // loads analytics/chat for returning visitors who already accepted).
+  if (page) {
+    return (
+      <>
+        {page}
+        <CookieConsent />
+      </>
+    );
   }
 
   return (
