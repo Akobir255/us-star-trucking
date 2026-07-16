@@ -170,6 +170,18 @@ export default function TrackOrder() {
                 <span>{order.driverName || "—"}</span>
               </div>
               <div className="flex justify-between border-b border-white/10 pb-2">
+                <span className="text-slate-400 font-semibold">Driver phone</span>
+                <span>
+                  {order.driverPhone ? (
+                    <a href={`tel:${order.driverPhone}`} className="text-blue-300 hover:text-white">
+                      {order.driverPhone}
+                    </a>
+                  ) : (
+                    "—"
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between border-b border-white/10 pb-2">
                 <span className="text-slate-400 font-semibold">Estimated delivery</span>
                 <span>{order.eta || "To be confirmed"}</span>
               </div>
@@ -178,6 +190,31 @@ export default function TrackOrder() {
             {order.note && (
               <div className="mt-6 rounded-xl border border-blue-400/30 bg-blue-500/10 p-4 text-sm text-blue-200">
                 📝 {order.note}
+              </div>
+            )}
+
+            {(order.licenseUrl || order.insuranceUrl) && (
+              <div className="mt-6 grid sm:grid-cols-2 gap-3">
+                {order.licenseUrl && (
+                  <a
+                    href={order.licenseUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-xl border border-white/15 bg-white/5 p-4 text-center text-sm font-semibold text-blue-300 hover:text-white hover:bg-white/10 transition"
+                  >
+                    View Driver License
+                  </a>
+                )}
+                {order.insuranceUrl && (
+                  <a
+                    href={order.insuranceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-xl border border-white/15 bg-white/5 p-4 text-center text-sm font-semibold text-blue-300 hover:text-white hover:bg-white/10 transition"
+                  >
+                    View Insurance Document
+                  </a>
+                )}
               </div>
             )}
 

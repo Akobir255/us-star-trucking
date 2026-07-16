@@ -110,6 +110,7 @@ export default async function handler(req, res) {
             note: body.note || null,
             carrier_company: body.carrier_company || null,
             driver_name: body.driver_name || null,
+            driver_phone: body.driver_phone || null,
           }),
         });
         if (r.ok) {
@@ -140,7 +141,7 @@ export default async function handler(req, res) {
         }
         patch.status = body.status;
       }
-      for (const field of ["eta", "note", "customer_phone", "customer_email", "vehicle", "transport", "pickup", "delivery", "customer_name", "carrier_company", "driver_name"]) {
+      for (const field of ["eta", "note", "customer_phone", "customer_email", "vehicle", "transport", "pickup", "delivery", "customer_name", "carrier_company", "driver_name", "driver_phone"]) {
         if (field in body) patch[field] = body[field];
       }
 
@@ -153,6 +154,31 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: "NOT_FOUND" });
       }
       return res.status(200).json({ order: data[0] });
+    }
+
+    // ---- DELETE ----
+    if (req.method === "DELETE") {
+      const orderNumber = (body.order_number || req.query.order_number || "")
+        .toString()
+        .trim()
+        .toUpperCase();
+      if (!orderNumber) {
+        return res.status(400).json({ error: "order_number is required" });
+      }
+
+      const r = await sb(`orders?order_number=eq.${encodeURIComponent(orderNumber)}`, {
+        method: "DELETE",
+      });
+      if (!r.ok) {
+        const text = await r.text();
+        console.error("Supabase delete error:", text);
+        return res.status(500).json({ error: "DB_ERROR" });
+      }
+      const data = await r.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        return res.status(404).json({ error: "NOT_FOUND" });
+      }
+      return res.status(200).json({ deleted: orderNumber });
     }
 
     return res.status(405).json({ error: "Method not allowed" });

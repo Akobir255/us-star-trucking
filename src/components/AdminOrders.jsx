@@ -13,6 +13,7 @@ const EDIT_FIELDS = [
   { key: "eta", label: "ETA" },
   { key: "carrier_company", label: "Carrier company" },
   { key: "driver_name", label: "Driver name" },
+  { key: "driver_phone", label: "Driver / dispatcher phone" },
   { key: "note", label: "Note", full: true },
 ];
 
@@ -45,6 +46,7 @@ export default function AdminOrders() {
     note: "",
     carrier_company: "",
     driver_name: "",
+    driver_phone: "",
   });
   const [licenseFile, setLicenseFile] = useState(null);
   const [insuranceFile, setInsuranceFile] = useState(null);
@@ -59,6 +61,7 @@ export default function AdminOrders() {
   const [editForm, setEditForm] = useState({});
   const [savingEdit, setSavingEdit] = useState(false);
   const [editMsg, setEditMsg] = useState("");
+  const [deletingOrder, setDeletingOrder] = useState(null);
 
   const headers = {
     "Content-Type": "application/json",
@@ -182,6 +185,7 @@ export default function AdminOrders() {
         note: "",
         carrier_company: "",
         driver_name: "",
+        driver_phone: "",
       });
       setLicenseFile(null);
       setInsuranceFile(null);
@@ -215,6 +219,24 @@ export default function AdminOrders() {
     const ok = await uploadDocument(order_number, doc_type, file);
     if (!ok) setListError("Document upload failed. Please try again.");
     loadOrders();
+  };
+
+  const handleDelete = async (order_number) => {
+    try {
+      const r = await fetch("/api/admin-orders", {
+        method: "DELETE",
+        headers,
+        body: JSON.stringify({ order_number }),
+      });
+      if (!r.ok) {
+        setListError("Failed to delete order.");
+        return;
+      }
+      setDeletingOrder(null);
+      loadOrders();
+    } catch {
+      setListError("Failed to delete order.");
+    }
   };
 
   const startEdit = (o) => {
@@ -255,6 +277,184 @@ export default function AdminOrders() {
       setSavingEdit(false);
     }
   };
+
+  const activeOrders = orders.filter((o) => o.status !== "Delivered");
+  const completedOrders = orders.filter((o) => o.status === "Delivered");
+
+  const renderOrderCard = (o) => (
+    <div key={o.order_number} className="rounded-2xl border border-white/10 bg-white/5 p-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+        <div>
+          <p className="font-mono font-bold text-lg">{o.order_number}</p>
+          <p className="text-sm text-slate-400">{o.customer_name}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-semibold text-green-400">{o.status}</span>
+          {editingOrder !== o.order_number && (
+            <button
+              onClick={() => startEdit(o)}
+              className="text-xs text-blue-300 hover:text-white transition"
+            >
+              Edit
+            </button>
+          )}
+          {deletingOrder === o.order_number ? (
+            <span className="flex items-center gap-2">
+              <span className="text-xs text-red-400">Delete permanently?</span>
+              <button
+                onClick={() => handleDelete(o.order_number)}
+                className="text-xs font-semibold text-red-400 hover:text-red-300 transition"
+              >
+                Yes, delete
+              </button>
+              <button
+                onClick={() => setDeletingOrder(null)}
+                className="text-xs text-slate-400 hover:text-white transition"
+              >
+                Cancel
+              </button>
+            </span>
+          ) : (
+            <button
+              onClick={() => setDeletingOrder(o.order_number)}
+              className="text-xs text-red-400/70 hover:text-red-400 transition"
+            >
+              Delete
+            </button>
+          )}
+        </div>
+      </div>
+
+      {editingOrder === o.order_number ? (
+        <div className="mb-4">
+          <div className="grid sm:grid-cols-2 gap-3">
+            {EDIT_FIELDS.map(({ key, label, full }) =>
+              full ? (
+                <textarea
+                  key={key}
+                  placeholder={label}
+                  value={editForm[key] || ""}
+                  onChange={(e) => setEditForm({ ...editForm, [key]: e.target.value })}
+                  className="sm:col-span-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={2}
+                />
+              ) : (
+                <input
+                  key={key}
+                  placeholder={label}
+                  value={editForm[key] || ""}
+                  onChange={(e) => setEditForm({ ...editForm, [key]: e.target.value })}
+                  className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              )
+            )}
+          </div>
+          {editMsg && <p className="mt-2 text-sm text-red-400">{editMsg}</p>}
+          <div className="mt-3 flex gap-2">
+            <button
+              onClick={() => saveEdit(o.order_number)}
+              disabled={savingEdit}
+              className={`text-sm font-semibold rounded-lg px-4 py-2 transition ${
+                savingEdit ? "bg-gray-500 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+              }`}
+            >
+              {savingEdit ? "Saving..." : "Save Changes"}
+            </button>
+            <button
+              onClick={cancelEdit}
+              className="text-sm rounded-lg px-4 py-2 bg-white/10 text-slate-300 hover:bg-white/20 transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 gap-x-8 gap-y-1 text-sm text-slate-300 mb-4">
+          <p>From: {o.pickup}</p>
+          <p>To: {o.delivery}</p>
+          {o.vehicle && <p>Vehicle: {o.vehicle}</p>}
+          {o.transport && <p>Transport: {o.transport}</p>}
+          {o.carrier_company && <p>Carrier: {o.carrier_company}</p>}
+          {o.driver_name && <p>Driver: {o.driver_name}</p>}
+          {o.driver_phone && <p>Driver phone: {o.driver_phone}</p>}
+          {o.note && <p className="sm:col-span-2">Note: {o.note}</p>}
+        </div>
+      )}
+
+      {/* Documents */}
+      <div className="grid sm:grid-cols-2 gap-3 mb-4">
+        <div className="rounded-xl border border-yellow-500/20 bg-white/5 p-3 flex items-center justify-between gap-2">
+          <div>
+            <p className="text-xs text-yellow-400/80 mb-1">Driver license</p>
+            {o.driver_license_url ? (
+              <a
+                href={o.driver_license_url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm text-blue-300 hover:text-white transition"
+              >
+                View file
+              </a>
+            ) : (
+              <p className="text-sm text-slate-500">Not uploaded</p>
+            )}
+          </div>
+          <label className="text-xs text-slate-300 cursor-pointer hover:text-white transition">
+            {uploadingKey === `${o.order_number}:license` ? "Uploading..." : "Upload / Replace"}
+            <input
+              type="file"
+              accept="image/*,.pdf,.doc,.docx"
+              className="hidden"
+              onChange={(e) => handleReplaceDoc(o.order_number, "license", e.target.files[0])}
+            />
+          </label>
+        </div>
+
+        <div className="rounded-xl border border-yellow-500/20 bg-white/5 p-3 flex items-center justify-between gap-2">
+          <div>
+            <p className="text-xs text-yellow-400/80 mb-1">Insurance document</p>
+            {o.insurance_url ? (
+              <a
+                href={o.insurance_url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm text-blue-300 hover:text-white transition"
+              >
+                View file
+              </a>
+            ) : (
+              <p className="text-sm text-slate-500">Not uploaded</p>
+            )}
+          </div>
+          <label className="text-xs text-slate-300 cursor-pointer hover:text-white transition">
+            {uploadingKey === `${o.order_number}:insurance` ? "Uploading..." : "Upload / Replace"}
+            <input
+              type="file"
+              accept="image/*,.pdf,.doc,.docx"
+              className="hidden"
+              onChange={(e) => handleReplaceDoc(o.order_number, "insurance", e.target.files[0])}
+            />
+          </label>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {STATUSES.map((s) => (
+          <button
+            key={s}
+            onClick={() => updateStatus(o.order_number, s)}
+            className={`text-xs font-semibold rounded-lg px-3 py-2 transition ${
+              o.status === s
+                ? "bg-blue-600 text-white"
+                : "bg-white/10 text-slate-300 hover:bg-white/20"
+            }`}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   if (!authed) {
     return (
@@ -376,6 +576,12 @@ export default function AdminOrders() {
               onChange={(e) => setForm({ ...form, driver_name: e.target.value })}
               className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            <input
+              placeholder="Driver / dispatcher phone (shown to customer)"
+              value={form.driver_phone}
+              onChange={(e) => setForm({ ...form, driver_phone: e.target.value })}
+              className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
 
             <label className="rounded-xl border border-dashed border-yellow-500/40 bg-white/5 px-4 py-3 text-sm text-slate-300 cursor-pointer hover:bg-white/10 transition">
               <span className="block text-xs text-yellow-400/80 mb-1">
@@ -384,7 +590,7 @@ export default function AdminOrders() {
               {licenseFile ? licenseFile.name : "Choose file..."}
               <input
                 type="file"
-                accept="image/*,.pdf"
+                accept="image/*,.pdf,.doc,.docx"
                 className="hidden"
                 onChange={(e) => setLicenseFile(e.target.files[0] || null)}
               />
@@ -397,7 +603,7 @@ export default function AdminOrders() {
               {insuranceFile ? insuranceFile.name : "Choose file..."}
               <input
                 type="file"
-                accept="image/*,.pdf"
+                accept="image/*,.pdf,.doc,.docx"
                 className="hidden"
                 onChange={(e) => setInsuranceFile(e.target.files[0] || null)}
               />
@@ -419,7 +625,7 @@ export default function AdminOrders() {
         {/* Orders list */}
         <section className="rounded-3xl border border-white/15 bg-white/5 backdrop-blur p-6 sm:p-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold">Orders</h2>
+            <h2 className="text-xl font-bold">Active Orders</h2>
             <button
               onClick={loadOrders}
               className="text-sm text-blue-300 hover:text-white transition"
@@ -430,167 +636,21 @@ export default function AdminOrders() {
 
           {loading && <p className="text-slate-400">Loading...</p>}
           {listError && <p className="text-red-400">{listError}</p>}
-          {!loading && orders.length === 0 && (
-            <p className="text-slate-400">No orders yet.</p>
+          {!loading && activeOrders.length === 0 && (
+            <p className="text-slate-400">No active orders.</p>
           )}
 
-          <div className="space-y-4">
-            {orders.map((o) => (
-              <div
-                key={o.order_number}
-                className="rounded-2xl border border-white/10 bg-white/5 p-5"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                  <div>
-                    <p className="font-mono font-bold text-lg">{o.order_number}</p>
-                    <p className="text-sm text-slate-400">{o.customer_name}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-semibold text-green-400">{o.status}</span>
-                    {editingOrder !== o.order_number && (
-                      <button
-                        onClick={() => startEdit(o)}
-                        className="text-xs text-blue-300 hover:text-white transition"
-                      >
-                        Edit
-                      </button>
-                    )}
-                  </div>
-                </div>
+          <div className="space-y-4">{activeOrders.map((o) => renderOrderCard(o))}</div>
+        </section>
 
-                {editingOrder === o.order_number ? (
-                  <div className="mb-4">
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      {EDIT_FIELDS.map(({ key, label, full }) =>
-                        full ? (
-                          <textarea
-                            key={key}
-                            placeholder={label}
-                            value={editForm[key] || ""}
-                            onChange={(e) => setEditForm({ ...editForm, [key]: e.target.value })}
-                            className="sm:col-span-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            rows={2}
-                          />
-                        ) : (
-                          <input
-                            key={key}
-                            placeholder={label}
-                            value={editForm[key] || ""}
-                            onChange={(e) => setEditForm({ ...editForm, [key]: e.target.value })}
-                            className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        )
-                      )}
-                    </div>
-                    {editMsg && <p className="mt-2 text-sm text-red-400">{editMsg}</p>}
-                    <div className="mt-3 flex gap-2">
-                      <button
-                        onClick={() => saveEdit(o.order_number)}
-                        disabled={savingEdit}
-                        className={`text-sm font-semibold rounded-lg px-4 py-2 transition ${
-                          savingEdit ? "bg-gray-500 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-                        }`}
-                      >
-                        {savingEdit ? "Saving..." : "Save Changes"}
-                      </button>
-                      <button
-                        onClick={cancelEdit}
-                        className="text-sm rounded-lg px-4 py-2 bg-white/10 text-slate-300 hover:bg-white/20 transition"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid sm:grid-cols-2 gap-x-8 gap-y-1 text-sm text-slate-300 mb-4">
-                    <p>From: {o.pickup}</p>
-                    <p>To: {o.delivery}</p>
-                    {o.vehicle && <p>Vehicle: {o.vehicle}</p>}
-                    {o.transport && <p>Transport: {o.transport}</p>}
-                    {o.carrier_company && <p>Carrier: {o.carrier_company}</p>}
-                    {o.driver_name && <p>Driver: {o.driver_name}</p>}
-                    {o.note && <p className="sm:col-span-2">Note: {o.note}</p>}
-                  </div>
-                )}
-
-                {/* Documents */}
-                <div className="grid sm:grid-cols-2 gap-3 mb-4">
-                  <div className="rounded-xl border border-yellow-500/20 bg-white/5 p-3 flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-xs text-yellow-400/80 mb-1">Driver license</p>
-                      {o.driver_license_url ? (
-                        <a
-                          href={o.driver_license_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-sm text-blue-300 hover:text-white transition"
-                        >
-                          View file
-                        </a>
-                      ) : (
-                        <p className="text-sm text-slate-500">Not uploaded</p>
-                      )}
-                    </div>
-                    <label className="text-xs text-slate-300 cursor-pointer hover:text-white transition">
-                      {uploadingKey === `${o.order_number}:license` ? "Uploading..." : "Upload / Replace"}
-                      <input
-                        type="file"
-                        accept="image/*,.pdf"
-                        className="hidden"
-                        onChange={(e) =>
-                          handleReplaceDoc(o.order_number, "license", e.target.files[0])
-                        }
-                      />
-                    </label>
-                  </div>
-
-                  <div className="rounded-xl border border-yellow-500/20 bg-white/5 p-3 flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-xs text-yellow-400/80 mb-1">Insurance document</p>
-                      {o.insurance_url ? (
-                        <a
-                          href={o.insurance_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-sm text-blue-300 hover:text-white transition"
-                        >
-                          View file
-                        </a>
-                      ) : (
-                        <p className="text-sm text-slate-500">Not uploaded</p>
-                      )}
-                    </div>
-                    <label className="text-xs text-slate-300 cursor-pointer hover:text-white transition">
-                      {uploadingKey === `${o.order_number}:insurance` ? "Uploading..." : "Upload / Replace"}
-                      <input
-                        type="file"
-                        accept="image/*,.pdf"
-                        className="hidden"
-                        onChange={(e) =>
-                          handleReplaceDoc(o.order_number, "insurance", e.target.files[0])
-                        }
-                      />
-                    </label>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {STATUSES.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => updateStatus(o.order_number, s)}
-                      className={`text-xs font-semibold rounded-lg px-3 py-2 transition ${
-                        o.status === s
-                          ? "bg-blue-600 text-white"
-                          : "bg-white/10 text-slate-300 hover:bg-white/20"
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
+        {/* Completed orders */}
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur p-6 sm:p-8">
+          <h2 className="text-xl font-bold mb-6 text-slate-400">Completed Orders</h2>
+          {!loading && completedOrders.length === 0 && (
+            <p className="text-slate-500">No completed orders yet.</p>
+          )}
+          <div className="space-y-4 opacity-75">
+            {completedOrders.map((o) => renderOrderCard(o))}
           </div>
         </section>
       </main>
