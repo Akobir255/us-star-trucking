@@ -145,6 +145,14 @@ export default function StatePage({ state }) {
           </p>
         </section>
 
+        {/* State-specific guidance */}
+        {state.sections && state.sections.map((sec) => (
+          <section key={sec.h} className="mb-14">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4">{sec.h}</h2>
+            <p className="text-blue-100 leading-8 text-lg">{sec.p}</p>
+          </section>
+        ))}
+
         {/* Cities */}
         <section className="mb-14">
           <h2 className="text-2xl sm:text-3xl font-bold mb-6">

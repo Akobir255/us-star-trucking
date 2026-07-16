@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const STEPS = ["Booked", "Driver Assigned", "Picked Up", "In Transit", "Delivered"];
 
@@ -48,6 +48,21 @@ export default function TrackOrder() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [order, setOrder] = useState(null);
+
+  useEffect(() => {
+    document.title = "Track Your Shipment | US Star Trucking LLC";
+    let desc = document.querySelector('meta[name="description"]');
+    if (desc) {
+      desc.setAttribute(
+        "content",
+        "Track your vehicle shipment with US Star Trucking LLC. Enter your order number or booking phone number to see live status, carrier details, and ETA."
+      );
+    }
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) {
+      canonical.setAttribute("href", "https://carshippingservice.org/track");
+    }
+  }, []);
 
   // Document verification (email or last name)
   const [verifyInput, setVerifyInput] = useState("");

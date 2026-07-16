@@ -1,7 +1,18 @@
+import { useEffect } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 
-function LegalLayout({ title, updated, children }) {
+function LegalLayout({ title, updated, slug, description, children }) {
+  useEffect(() => {
+    document.title = `${title} | US Star Trucking LLC`;
+    let desc = document.querySelector('meta[name="description"]');
+    if (desc && description) desc.setAttribute("content", description);
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical && slug) {
+      canonical.setAttribute("href", `https://carshippingservice.org/${slug}`);
+    }
+  }, [title, slug, description]);
+
   return (
     <div className="min-h-screen bg-[#000919] pt-28">
       <Navbar />
@@ -23,7 +34,7 @@ const H = ({ children }) => (
 
 export function PrivacyPolicy() {
   return (
-    <LegalLayout title="Privacy Policy" updated="July 16, 2026">
+    <LegalLayout title="Privacy Policy" updated="July 16, 2026" slug="privacy-policy" description="Read the privacy policy for US Star Trucking LLC — how we collect, use, and protect your information when you request auto transport quotes or services.">
       <p>
         US Star Trucking LLC ("we", "us") is an FMCSA-authorized auto transport
         broker (USDOT 3205543, MC 206532). This Privacy Policy explains what
@@ -147,7 +158,7 @@ export function PrivacyPolicy() {
 
 export function TermsPage() {
   return (
-    <LegalLayout title="Terms & Conditions" updated="July 16, 2026">
+    <LegalLayout title="Terms & Conditions" updated="July 16, 2026" slug="terms" description="Terms and conditions for auto transport brokerage services provided by US Star Trucking LLC, an FMCSA-authorized broker.">
       <p>
         <strong>US Star Trucking LLC — MC# 206532.</strong> US Star Trucking
         LLC is a registered and bonded property broker. We arrange the

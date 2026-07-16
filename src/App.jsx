@@ -19,6 +19,7 @@ import StatePage from "./components/StatePage";
 import ServicePage from "./components/ServicePage";
 import { BlogIndex, BlogPost } from "./components/Blog";
 import { PrivacyPolicy, TermsPage } from "./components/LegalPages";
+import NotFound from "./components/NotFound";
 import { getPostBySlug } from "./data/posts";
 import { getStateBySlug } from "./data/states";
 import { getServiceBySlug } from "./data/services";
@@ -48,7 +49,11 @@ function resolvePage(path) {
     if (post) return <BlogPost post={post} />;
   }
 
-  return null; // homepage
+  // Homepage
+  if (path === "" || path === "/") return null;
+
+  // Anything else is a real 404 — never silently render the homepage
+  return <NotFound />;
 }
 
 function App() {

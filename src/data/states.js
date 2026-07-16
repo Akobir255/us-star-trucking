@@ -6,6 +6,16 @@
 export const STATES = [
   {
     slug: "california",
+sections: [
+      {
+        h: "Shipping to California: what to expect",
+        p: "California sits on three of the nation's busiest transport corridors — I-5 up the coast, I-10 from the South, and I-80 from the East — so carriers pass through daily and pickup windows in metro areas are among the shortest in the country. Los Angeles, the Bay Area, and San Diego are high-density markets where open carriers are almost always available within a few days. If you're shipping to a mountain town, the far north, or a coastal area with tight roads, expect the carrier to arrange a meeting point at the nearest highway exit or large parking lot.",
+      },
+      {
+        h: "Pricing patterns for California routes",
+        p: "Because so many vehicles move in and out of California, competition keeps rates reasonable year-round. Prices tick up in late summer when families relocate before the school year, and enclosed transport is in higher demand here than almost anywhere else thanks to the concentration of luxury and classic vehicles heading to shows, auctions, and collectors. Booking a week or two ahead usually gets you the best combination of price and pickup speed.",
+      },
+    ],
     name: "California",
     abbr: "CA",
     intro:
@@ -34,6 +44,16 @@ export const STATES = [
   },
   {
     slug: "florida",
+sections: [
+      {
+        h: "Snowbird season changes everything",
+        p: "Florida's transport market swings harder with the seasons than any other state. From October through January, southbound capacity on I-95 and I-75 fills with snowbird vehicles and prices rise accordingly; the reverse happens in March through May when everyone heads north. If your dates are flexible, shipping a few weeks before or after the rush can save real money. If they aren't, booking 2-3 weeks ahead locks in a carrier before the corridor fills up.",
+      },
+      {
+        h: "Weather and delivery logistics in Florida",
+        p: "June through November is hurricane season, and while shipments are rarely cancelled, a named storm can pause pickups and deliveries for a few days while carriers reroute — we watch forecasts and keep you informed. Delivery itself is easy across most of the state: Florida's flat terrain and dense highway network mean true door-to-door service is possible in nearly every neighborhood, from Miami high-rises (where we'll coordinate a nearby meeting spot) to gated golf communities around Naples and The Villages.",
+      },
+    ],
     name: "Florida",
     abbr: "FL",
     intro:
@@ -62,6 +82,16 @@ export const STATES = [
   },
   {
     slug: "texas",
+sections: [
+      {
+        h: "The Texas Triangle keeps rates competitive",
+        p: "Most Texas shipments touch the triangle formed by Dallas-Fort Worth, Houston, and San Antonio/Austin — one of the highest-volume transport regions in America. Carriers circulate through it constantly, which means fast pickup and sharp pricing for any route connecting these metros to the rest of the country. I-35, I-45, I-10, and I-20 all funnel through the state, so Texas works as a natural waypoint on cross-country routes too.",
+      },
+      {
+        h: "Shipping to smaller Texas towns",
+        p: "Texas is enormous, and rates reflect geography: a delivery in the DFW suburbs costs meaningfully less than one in the Panhandle or far West Texas, where a carrier may need to detour hours off its route. For rural addresses we'll often suggest meeting in the nearest sizable town — it can shave days off your wait and dollars off your quote. Oil-field and ranch deliveries with unpaved access roads are handled the same way, at the closest safe paved location.",
+      },
+    ],
     name: "Texas",
     abbr: "TX",
     intro:
@@ -90,6 +120,16 @@ export const STATES = [
   },
   {
     slug: "new-york",
+sections: [
+      {
+        h: "Shipping into New York City is different",
+        p: "Full-size car carriers are 75+ feet long and simply can't navigate much of Manhattan, Brooklyn's brownstone blocks, or many parking-restricted streets in Queens and the Bronx. For NYC deliveries, drivers typically arrange to meet at a nearby accessible spot — a shopping center lot, a wide commercial street, or just across a bridge — and we coordinate the exact location with you in advance. Deliveries to Long Island, Westchester, and New Jersey suburbs are usually true door-to-door.",
+      },
+      {
+        h: "Upstate New York routes",
+        p: "Upstate destinations like Albany, Syracuse, Rochester, and Buffalo ride the I-90 corridor and price differently from the city — often cheaper per mile in summer, with winter lake-effect snow occasionally adding a day or two between November and March. The I-95 corridor between New York and Florida is one of the busiest in the nation, which makes NY-FL among the most affordable long-distance routes we arrange, especially outside snowbird season.",
+      },
+    ],
     name: "New York",
     abbr: "NY",
     intro:
@@ -118,6 +158,16 @@ export const STATES = [
   },
   {
     slug: "arizona",
+sections: [
+      {
+        h: "Winter visitor season drives Arizona demand",
+        p: "Arizona is the Southwest's snowbird hub: every fall, vehicles pour into Phoenix, Scottsdale, Mesa, and Tucson from the Midwest and Canada, then head home in spring. Like Florida, that means southbound rates rise in October-December and northbound rates rise in March-May. The I-10 and I-40 corridors keep carriers flowing through the state year-round, so even in peak season pickup windows stay reasonable if you book ahead.",
+      },
+      {
+        h: "Shipping in desert heat",
+        p: "Summer transport to Arizona is routine for carriers, but triple-digit heat is worth planning around: make sure your battery is healthy and tires are properly inflated before pickup, since heat exposes weak batteries, and don't leave aerosols, electronics, or anything meltable in the vehicle. Flagstaff and the high country are the exception to Arizona's easy weather — winter snow on I-17 and I-40 can occasionally slow northern Arizona deliveries.",
+      },
+    ],
     name: "Arizona",
     abbr: "AZ",
     intro:
@@ -146,6 +196,16 @@ export const STATES = [
   },
   {
     slug: "georgia",
+sections: [
+      {
+        h: "Atlanta is the Southeast's transport hub",
+        p: "Three major interstates — I-75, I-85, and I-20 — converge on Atlanta, making it one of the best-connected cities in the country for auto transport. Carriers heading between the Northeast, Florida, Texas, and the Midwest all pass through, so metro Atlanta pickups are often arranged within 1-2 days and rates stay competitive year-round. Suburbs from Marietta to Alpharetta to Decatur get true door-to-door service.",
+      },
+      {
+        h: "Beyond Atlanta: Savannah, Augusta, and the coast",
+        p: "The Port of Savannah is one of America's busiest vehicle ports, and we regularly arrange transport for cars arriving from overseas or heading to coastal Georgia. Savannah, Augusta, Columbus, and Macon all sit on solid carrier routes, though pickup windows run a day or two longer than Atlanta's. Military moves to Fort Eisenhower and Fort Stewart are common on our schedule — ask about our military discount when you book.",
+      },
+    ],
     name: "Georgia",
     abbr: "GA",
     intro:
@@ -174,6 +234,16 @@ export const STATES = [
   },
   {
     slug: "north-carolina",
+sections: [
+      {
+        h: "Military moves are a North Carolina specialty",
+        p: "With Fort Liberty (formerly Fort Bragg), Camp Lejeune, Seymour Johnson AFB, and Cherry Point all in-state, North Carolina sees constant PCS vehicle traffic. We work these routes regularly, understand PCS timelines, and can coordinate pickup around report dates. If you're an active-duty family, mention it when you book — military shipments get discounted rates.",
+      },
+      {
+        h: "From the Research Triangle to the mountains",
+        p: "Charlotte and the Raleigh-Durham triangle are two of the fastest-growing metros in the country, and both sit on strong I-85/I-40 carrier routes with quick pickup windows. Heading west, deliveries to Asheville and the Blue Ridge mountains take a little more planning — steep, winding roads mean carriers often meet customers along I-26 or I-40 rather than at the door. Coastal deliveries to Wilmington and the Outer Banks are seasonal, with summer beach traffic occasionally adding a day.",
+      },
+    ],
     name: "North Carolina",
     abbr: "NC",
     intro:
@@ -202,6 +272,16 @@ export const STATES = [
   },
   {
     slug: "illinois",
+sections: [
+      {
+        h: "Chicago: the crossroads of American auto transport",
+        p: "More long-haul carrier routes pass through Chicago than almost any other city — I-80, I-90, I-55, I-57, and I-94 all converge here. That density means excellent availability and some of the Midwest's best rates for shipments in or out of Chicagoland. City deliveries follow the same rule as other dense urban areas: for narrow streets in neighborhoods like Lincoln Park or Wicker Park, drivers arrange a nearby meeting point, while suburban deliveries are door-to-door.",
+      },
+      {
+        h: "Winter shipping in Illinois",
+        p: "December through February, lake-effect snow and ice storms can add a day or two to pickup and transit windows — carriers won't load or unload in unsafe conditions, and we'd rather your car arrive a day late than damaged. Rates often dip slightly in deep winter since demand falls, making it a good time to ship if your schedule is flexible. Downstate destinations like Springfield, Champaign, and Peoria ride the I-55/I-57 corridors with steady year-round service.",
+      },
+    ],
     name: "Illinois",
     abbr: "IL",
     intro:
@@ -230,6 +310,16 @@ export const STATES = [
   },
   {
     slug: "washington",
+sections: [
+      {
+        h: "The I-5 corridor and mountain passes",
+        p: "Nearly all Washington shipments flow through the I-5 corridor connecting Seattle, Tacoma, and Portland — a dense, well-served route with fast pickup in the Puget Sound metro. Eastbound shipments cross the Cascades on I-90 through Snoqualmie Pass, which is routine most of the year but can see chain requirements and delays during winter storms; November through March, build an extra day into your plans for east-west routes.",
+      },
+      {
+        h: "Military, tech, and island logistics",
+        p: "Joint Base Lewis-McChord generates steady PCS traffic, and we handle those moves with military discounts and report-date coordination. Tech relocations into Seattle and Bellevue are equally common — for dense downtown addresses, drivers typically meet at an accessible lot nearby. Destinations on the Olympic Peninsula or the islands take extra planning since carriers don't board ferries; we'll arrange delivery to the nearest mainland point, such as Everett or Anacortes.",
+      },
+    ],
     name: "Washington",
     abbr: "WA",
     intro:
@@ -258,6 +348,16 @@ export const STATES = [
   },
   {
     slug: "tennessee",
+sections: [
+      {
+        h: "Our home state — and a national crossroads",
+        p: "US Star Trucking is based in Tennessee, and it happens to be one of the best-connected states in the country: I-40 runs the full east-west length through Memphis, Nashville, and Knoxville, while I-75, I-24, and I-65 tie the state into the Southeast and Midwest. Carriers pass through constantly, so Tennessee pickups and deliveries are consistently fast and competitively priced — and if anything needs personal attention, this is our backyard.",
+      },
+      {
+        h: "Nashville's boom and the rest of the state",
+        p: "Nashville is one of America's fastest-growing relocation destinations, and inbound routes from Chicago, New York, California, and Florida run weekly. Knoxville, Chattanooga, and Memphis all sit directly on interstate corridors with steady service. Deliveries into the Smokies and other mountain towns east of Knoxville may involve meeting the carrier along I-40 — steep grades and switchbacks aren't truck-friendly — and we'll coordinate the easiest spot with you.",
+      },
+    ],
     name: "Tennessee",
     abbr: "TN",
     intro:

@@ -30,6 +30,17 @@ export default function AdminOrders() {
   const [authed, setAuthed] = useState(false);
   const [authError, setAuthError] = useState("");
 
+  useEffect(() => {
+    document.title = "Admin | US Star Trucking LLC";
+    let robots = document.querySelector('meta[name="robots"]');
+    if (!robots) {
+      robots = document.createElement("meta");
+      robots.setAttribute("name", "robots");
+      document.head.appendChild(robots);
+    }
+    robots.setAttribute("content", "noindex,nofollow");
+  }, []);
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [listError, setListError] = useState("");
