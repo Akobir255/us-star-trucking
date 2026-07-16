@@ -174,12 +174,18 @@ function Spinner() {
 function ZipInput({ label, name, value, onChange, cityState, loading }) {
   return (
     <div className="flex flex-col gap-1">
+      <label htmlFor={`zip-${name}`} className="text-sm font-semibold text-gray-700">
+        {label}
+      </label>
       <input
+        id={`zip-${name}`}
         type="text"
+        inputMode="numeric"
+        autoComplete="postal-code"
         name={name}
         value={value}
         onChange={onChange}
-        placeholder={label}
+        placeholder="e.g. 90210"
         maxLength={5}
         required
         className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
@@ -260,9 +266,13 @@ function VehicleCard({ vehicle, index, canRemove, onRemove, onFieldChange, onMak
       <div className="grid md:grid-cols-2 gap-4">
         <input
           type="text"
+          inputMode="numeric"
+          pattern="(19|20)\d{2}"
+          title="Enter a 4-digit year, e.g. 2019"
+          maxLength={4}
           value={vehicle.year}
-          onChange={(e) => onFieldChange("year", e.target.value)}
-          placeholder="Vehicle Year"
+          onChange={(e) => onFieldChange("year", e.target.value.replace(/\D/g, "").slice(0, 4))}
+          placeholder="Vehicle Year (e.g. 2019)"
           className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
@@ -324,7 +334,7 @@ function VehicleCard({ vehicle, index, canRemove, onRemove, onFieldChange, onMak
 
 export default function QuoteForm() {
   const initialForm = {
-    pickup: "", delivery: "", transport: "",
+    pickup: "", delivery: "", transport: "", pickupDate: "",
     name: "", phone: "", email: "",
     promoCode: "",
     website: "",
@@ -339,12 +349,20 @@ export default function QuoteForm() {
   const [submitted, setSubmitted] = useState(false);
   const [appliedPromo, setAppliedPromo] = useState(null);
 
+  // Two-step flow: 1 = shipment details → estimate, 2 = contact details → book
+  const [step, setStep] = useState(1);
+  const [estimate, setEstimate] = useState(null);
+  const [estimating, setEstimating] = useState(false);
+
   const [pickupCity, setPickupCity] = useState("");
   const [deliveryCity, setDeliveryCity] = useState("");
   const [zipLoadingPickup, setZipLoadingPickup] = useState(false);
   const [zipLoadingDelivery, setZipLoadingDelivery] = useState(false);
 
   const quoteRef = useRef(null);
+  const stepTopRef = useRef(null);
+
+  const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -353,6 +371,17 @@ export default function QuoteForm() {
     const promoParam = (params.get("promo") || "").toUpperCase().trim();
     if (promoParam && PROMO_CODES[promoParam]) {
       setFormData((p) => ({ ...p, promoCode: promoParam }));
+    }
+
+    // Prefill ZIPs from route links like /?pickup=90001&delivery=33101#quote-form
+    const pickupParam = (params.get("pickup") || "").replace(/\D/g, "").slice(0, 5);
+    const deliveryParam = (params.get("delivery") || "").replace(/\D/g, "").slice(0, 5);
+    if (pickupParam || deliveryParam) {
+      setFormData((p) => ({
+        ...p,
+        ...(pickupParam ? { pickup: pickupParam } : {}),
+        ...(deliveryParam ? { delivery: deliveryParam } : {}),
+      }));
     }
 
     const hasHash = window.location.hash === "#quote-form";
@@ -460,6 +489,51 @@ export default function QuoteForm() {
     }
   };
 
+  const shipmentPayload = () => ({
+    pickup: formData.pickup,
+    delivery: formData.delivery,
+    transport: formData.transport,
+    pickupDate: formData.pickupDate,
+    website: formData.website,
+    vehicles: vehicles.map(({ year, make, model, vehicle, condition }) => ({
+      year, make, model, vehicle, condition,
+    })),
+    year: vehicles[0]?.year,
+    make: vehicles[0]?.make,
+    model: vehicles[0]?.model,
+    vehicle: vehicles[0]?.vehicle,
+    condition: vehicles[0]?.condition,
+  });
+
+  // STEP 1 — get the estimate (no contact details required)
+  const handleGetEstimate = async (e) => {
+    e.preventDefault();
+    setEstimating(true);
+    setMessage({ type: "", text: "" });
+
+    try {
+      const data = await submitQuote({ ...shipmentPayload(), mode: "estimate" });
+      setEstimate(data.quote);
+      setStep(2);
+      setTimeout(() => stepTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+    } catch (err) {
+      console.error(err);
+      const code = err.code || "SERVER_ERROR";
+      if (code === "INVALID_ZIP") {
+        setMessage({ type: "error", text: "One of the ZIP codes is incorrect. Please check and try again." });
+      } else if (code === "NO_ROUTE") {
+        setMessage({ type: "error", text: "We couldn't calculate a route for those ZIP codes. Please check them." });
+      } else if (code === "RATE_LIMITED") {
+        setMessage({ type: "error", text: "Too many requests. Please wait a minute and try again." });
+      } else {
+        setMessage({ type: "error", text: "Something went wrong. Please try again." });
+      }
+    } finally {
+      setEstimating(false);
+    }
+  };
+
+  // STEP 2 — save the quote with contact details
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -467,16 +541,12 @@ export default function QuoteForm() {
     setQuote(null);
 
     const payload = {
-      ...formData,
+      ...shipmentPayload(),
+      mode: "book",
+      name: formData.name,
+      phone: formData.phone,
+      email: formData.email,
       promoCode: formData.promoCode.toUpperCase(),
-      vehicles: vehicles.map(({ year, make, model, vehicle, condition }) => ({
-        year, make, model, vehicle, condition,
-      })),
-      year: vehicles[0]?.year,
-      make: vehicles[0]?.make,
-      model: vehicles[0]?.model,
-      vehicle: vehicles[0]?.vehicle,
-      condition: vehicles[0]?.condition,
     };
 
     try {
@@ -513,6 +583,8 @@ export default function QuoteForm() {
     setAppliedPromo(null);
     setPickupCity("");
     setDeliveryCity("");
+    setStep(1);
+    setEstimate(null);
   };
 
   return (
@@ -572,153 +644,283 @@ export default function QuoteForm() {
           </div>
         ) : (
           <>
+            <div ref={stepTopRef} />
             <h2 className="text-2xl sm:text-3xl font-extrabold text-center mb-2 bg-gradient-to-r from-blue-700 via-cyan-500 to-blue-700 bg-clip-text text-transparent">🚗 Get Your Free Car Shipping Quote</h2>
-            <p className="text-center text-gray-500 mb-6 text-sm sm:text-base">⚡ Instant estimate · 🛡️ Licensed & bonded broker · 🚪 Door-to-door</p>
+            <p className="text-center text-gray-500 mb-5 text-sm sm:text-base">⚡ Instant estimate · 🛡️ Licensed & bonded broker · 🚪 Door-to-door</p>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <input
-                type="text"
-                name="website"
-                value={formData.website}
-                onChange={handleChange}
-                tabIndex={-1}
-                autoComplete="off"
-                aria-hidden="true"
-                style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0 }}
-              />
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <ZipInput
-                  label="Pickup ZIP Code"
-                  name="pickup"
-                  value={formData.pickup}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, "").slice(0, 5);
-                    setFormData((p) => ({ ...p, pickup: value }));
-                  }}
-                  cityState={pickupCity}
-                  loading={zipLoadingPickup}
-                />
-                <ZipInput
-                  label="Delivery ZIP Code"
-                  name="delivery"
-                  value={formData.delivery}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, "").slice(0, 5);
-                    setFormData((p) => ({ ...p, delivery: value }));
-                  }}
-                  cityState={deliveryCity}
-                  loading={zipLoadingDelivery}
-                />
+            {/* Step indicator */}
+            <div className="flex items-center justify-center gap-3 mb-6 text-sm">
+              <div className={`flex items-center gap-2 ${step === 1 ? "text-blue-700 font-bold" : "text-gray-400"}`}>
+                <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${step === 1 ? "bg-blue-600 text-white" : "bg-green-500 text-white"}`}>
+                  {step === 1 ? "1" : "✓"}
+                </span>
+                Shipment details
               </div>
-
-              <div className="flex flex-col gap-4">
-                {vehicles.map((v, i) => (
-                  <VehicleCard
-                    key={v.id}
-                    vehicle={v}
-                    index={i}
-                    canRemove={vehicles.length > 1}
-                    onRemove={() => removeVehicle(v.id)}
-                    onFieldChange={(field, value) => handleVehicleField(v.id, field, value)}
-                    onMakeChange={(val) => handleVehicleMakeChange(v.id, val)}
-                    onMakeSelect={(make) => handleVehicleMakeSelect(v.id, make)}
-                    onModelChange={(val) => handleVehicleModelChange(v.id, val, v.allModels)}
-                    onModelSelect={(model) => handleVehicleModelSelect(v.id, v.make, model)}
-                  />
-                ))}
+              <div className="h-px w-8 bg-gray-300" />
+              <div className={`flex items-center gap-2 ${step === 2 ? "text-blue-700 font-bold" : "text-gray-400"}`}>
+                <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${step === 2 ? "bg-blue-600 text-white" : "bg-gray-300 text-white"}`}>2</span>
+                Your estimate
               </div>
+            </div>
 
-              <button
-                type="button"
-                onClick={addVehicle}
-                className="self-start flex items-center gap-2 text-blue-600 hover:text-blue-800 font-semibold px-2 py-1"
-              >
-                <span className="text-xl leading-none">+</span> Add another vehicle
-              </button>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <select
-                  name="transport"
-                  value={formData.transport}
-                  onChange={handleChange}
-                  className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 md:col-span-2"
-                  required
-                >
-                  <option value="">Transport Type</option>
-                  <option value="Open">Open Transport</option>
-                  <option value="Enclosed">Enclosed Transport</option>
-                </select>
-
+            {step === 1 ? (
+              /* ============ STEP 1 — SHIPMENT DETAILS ============ */
+              <form onSubmit={handleGetEstimate} className="flex flex-col gap-4">
                 <input
                   type="text"
-                  name="name"
-                  value={formData.name}
+                  name="website"
+                  value={formData.website}
                   onChange={handleChange}
-                  placeholder="Full Name"
-                  className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0 }}
                 />
 
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="Phone Number"
-                  className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Email Address"
-                  className="border border-gray-300 p-3 rounded-lg md:col-span-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-
-                <div className="md:col-span-2">
-                  <input
-                    type="text"
-                    name="promoCode"
-                    value={formData.promoCode}
-                    onChange={handleChange}
-                    placeholder="Promo Code (optional) — e.g. USSTAR50"
-                    className={`border p-3 rounded-lg w-full focus:outline-none focus:ring-2 uppercase tracking-widest ${
-                      promoMessage.type === "success"
-                        ? "border-green-400 focus:ring-green-500 bg-green-50"
-                        : promoMessage.type === "error"
-                        ? "border-red-400 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-green-500"
-                    }`}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <ZipInput
+                    label="Pickup ZIP Code"
+                    name="pickup"
+                    value={formData.pickup}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "").slice(0, 5);
+                      setFormData((p) => ({ ...p, pickup: value }));
+                    }}
+                    cityState={pickupCity}
+                    loading={zipLoadingPickup}
                   />
-                  {promoMessage.text && (
-                    <p className={`mt-1 text-sm font-medium ${promoMessage.type === "success" ? "text-green-600" : "text-red-500"}`}>
-                      {promoMessage.type === "success" ? "✅" : "❌"} {promoMessage.text}
+                  <ZipInput
+                    label="Delivery ZIP Code"
+                    name="delivery"
+                    value={formData.delivery}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "").slice(0, 5);
+                      setFormData((p) => ({ ...p, delivery: value }));
+                    }}
+                    cityState={deliveryCity}
+                    loading={zipLoadingDelivery}
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor="pickup-date" className="text-sm font-semibold text-gray-700">
+                      First Available Pickup Date
+                    </label>
+                    <input
+                      id="pickup-date"
+                      type="date"
+                      name="pickupDate"
+                      value={formData.pickupDate}
+                      min={today}
+                      onChange={handleChange}
+                      required
+                      className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                    />
+                    <p className="text-xs text-gray-400 pl-1">Flexible dates often mean better carrier availability.</p>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor="transport-type" className="text-sm font-semibold text-gray-700">
+                      Transport Type
+                    </label>
+                    <select
+                      id="transport-type"
+                      name="transport"
+                      value={formData.transport}
+                      onChange={handleChange}
+                      className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                      required
+                    >
+                      <option value="">Select transport type</option>
+                      <option value="Open">Open Transport (most affordable)</option>
+                      <option value="Enclosed">Enclosed Transport (extra protection)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  {vehicles.map((v, i) => (
+                    <VehicleCard
+                      key={v.id}
+                      vehicle={v}
+                      index={i}
+                      canRemove={vehicles.length > 1}
+                      onRemove={() => removeVehicle(v.id)}
+                      onFieldChange={(field, value) => handleVehicleField(v.id, field, value)}
+                      onMakeChange={(val) => handleVehicleMakeChange(v.id, val)}
+                      onMakeSelect={(make) => handleVehicleMakeSelect(v.id, make)}
+                      onModelChange={(val) => handleVehicleModelChange(v.id, val, v.allModels)}
+                      onModelSelect={(model) => handleVehicleModelSelect(v.id, v.make, model)}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={addVehicle}
+                  className="self-start flex items-center gap-2 text-blue-600 hover:text-blue-800 font-semibold px-2 py-1"
+                >
+                  <span className="text-xl leading-none">+</span> Add another vehicle
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={estimating}
+                  className={`py-3 rounded-lg font-bold text-white transition-colors ${
+                    estimating ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                  }`}
+                >
+                  {estimating ? "Calculating your estimate..." : "See My Instant Estimate →"}
+                </button>
+
+                <p className="text-center text-xs text-gray-400">
+                  No contact details needed to see your estimate.
+                </p>
+
+                {message.text && (
+                  <div className={`text-center font-medium ${message.type === "success" ? "text-green-600" : "text-red-600"}`}>
+                    {message.text}
+                  </div>
+                )}
+              </form>
+            ) : (
+              /* ============ STEP 2 — ESTIMATE + CONTACT ============ */
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <input
+                  type="text"
+                  name="website"
+                  value={formData.website}
+                  onChange={handleChange}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0 }}
+                />
+
+                {estimate && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 text-center">
+                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Your Estimated Price</div>
+                    <div className="text-4xl font-extrabold text-blue-700">${estimate.price}</div>
+                    <div className="text-sm text-gray-500 mt-1">
+                      {estimate.pickupCity}, {estimate.pickupState} → {estimate.deliveryCity}, {estimate.deliveryState}
+                      {" · "}{estimate.distance}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2 max-w-md mx-auto">
+                      This is an estimate. Your final price is confirmed when a carrier is
+                      assigned to your route — we'll explain every fee before you book.
                     </p>
-                  )}
-                </div>
-              </div>
+                    <button
+                      type="button"
+                      onClick={() => setStep(1)}
+                      className="mt-3 text-blue-600 hover:text-blue-800 text-sm font-semibold"
+                    >
+                      ← Edit shipment details
+                    </button>
+                  </div>
+                )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className={`py-3 rounded-lg font-bold text-white transition-colors ${
-                  loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-                }`}
-              >
-                {loading ? "Calculating..." : `Get My Free Quote${vehicles.length > 1 ? ` (${vehicles.length} Vehicles)` : ""}${appliedPromo ? ` (-$${appliedPromo.discount})` : ""}`}
-              </button>
+                <p className="text-center text-gray-600 text-sm font-medium">
+                  Enter your contact details to save this quote — an agent will confirm
+                  availability for your dates.
+                </p>
 
-              {message.text && (
-                <div className={`text-center font-medium ${message.type === "success" ? "text-green-600" : "text-red-600"}`}>
-                  {message.text}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor="contact-name" className="text-sm font-semibold text-gray-700">Full Name</label>
+                    <input
+                      id="contact-name"
+                      type="text"
+                      name="name"
+                      autoComplete="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="e.g. John Smith"
+                      className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor="contact-phone" className="text-sm font-semibold text-gray-700">Phone Number</label>
+                    <input
+                      id="contact-phone"
+                      type="tel"
+                      name="phone"
+                      autoComplete="tel"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="e.g. (865) 555-0123"
+                      className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1 md:col-span-2">
+                    <label htmlFor="contact-email" className="text-sm font-semibold text-gray-700">Email Address</label>
+                    <input
+                      id="contact-email"
+                      type="email"
+                      name="email"
+                      autoComplete="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="e.g. john@example.com"
+                      className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label htmlFor="promo-code" className="text-sm font-semibold text-gray-700 block mb-1">
+                      Promo Code <span className="font-normal text-gray-400">(optional)</span>
+                    </label>
+                    <input
+                      id="promo-code"
+                      type="text"
+                      name="promoCode"
+                      value={formData.promoCode}
+                      onChange={handleChange}
+                      placeholder="e.g. USSTAR50"
+                      className={`border p-3 rounded-lg w-full focus:outline-none focus:ring-2 uppercase tracking-widest ${
+                        promoMessage.type === "success"
+                          ? "border-green-400 focus:ring-green-500 bg-green-50"
+                          : promoMessage.type === "error"
+                          ? "border-red-400 focus:ring-red-500"
+                          : "border-gray-300 focus:ring-green-500"
+                      }`}
+                    />
+                    {promoMessage.text && (
+                      <p className={`mt-1 text-sm font-medium ${promoMessage.type === "success" ? "text-green-600" : "text-red-500"}`}>
+                        {promoMessage.type === "success" ? "✅" : "❌"} {promoMessage.text}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              )}
-            </form>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`py-3 rounded-lg font-bold text-white transition-colors ${
+                    loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                  }`}
+                >
+                  {loading ? "Saving your quote..." : `Save My Quote${appliedPromo ? ` (-$${appliedPromo.discount})` : ""}`}
+                </button>
+
+                <p className="text-center text-xs text-gray-400 leading-5">
+                  By submitting, you agree to be contacted by US Star Trucking LLC by phone,
+                  SMS, or email about your quote. Message rates may apply; reply STOP to opt
+                  out. An agent typically responds within 1 hour (8 AM – 8 PM ET).
+                </p>
+
+                {message.text && (
+                  <div className={`text-center font-medium ${message.type === "success" ? "text-green-600" : "text-red-600"}`}>
+                    {message.text}
+                  </div>
+                )}
+              </form>
+            )}
           </>
         )}
         </div>

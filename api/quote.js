@@ -63,8 +63,23 @@ export default async function handler(req, res) {
       return res.status(200).json({ quote: null, emailSent: false, ignored: true });
     }
 
-    const { pickup, delivery, vehicle, condition, transport, promoCode } = body;
-    if (!pickup || !delivery || !vehicle || !condition || !transport) {
+    const { pickup, delivery, transport, promoCode } = body;
+    const mode = body.mode === "estimate" ? "estimate" : "book";
+
+    // Normalize vehicles: prefer the vehicles[] array, fall back to flat fields
+    const vehiclesList =
+      Array.isArray(body.vehicles) && body.vehicles.length > 0
+        ? body.vehicles
+        : [{ vehicle: body.vehicle, condition: body.condition }];
+
+    const vehiclesValid = vehiclesList.every((v) => v && v.vehicle && v.condition);
+
+    if (!pickup || !delivery || !transport || !vehiclesValid) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Contact details are only required when booking (step 2), not for estimates
+    if (mode === "book" && (!body.name || !body.phone || !body.email)) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -119,8 +134,11 @@ export default async function handler(req, res) {
     const miles = Math.round(summary.distance * 0.000621371);
     const hours = summary.duration / 3600;
 
-    // 3. Calculate base price
-    let basePrice = calculateQuote(miles, vehicle, condition, transport);
+    // 3. Calculate base price — sum across ALL vehicles on the shipment
+    let basePrice = vehiclesList.reduce(
+      (sum, v) => sum + calculateQuote(miles, v.vehicle, v.condition, transport),
+      0
+    );
 
     // 4. Apply promo code discount
     const code = (promoCode || "").toString().toUpperCase().trim();
@@ -148,6 +166,11 @@ export default async function handler(req, res) {
       deliveryState: destination.state,
     };
 
+    // Estimate mode (step 1): return the price only — no emails, no lead yet.
+    if (mode === "estimate") {
+      return res.status(200).json({ quote, emailSent: false });
+    }
+
     // Helper — send one email via EmailJS
     const sendEmail = async (templateId, templateParams) => {
       const payload = {
@@ -173,6 +196,10 @@ export default async function handler(req, res) {
 
     const sharedParams = {
       ...body,
+      first_available_date: body.pickupDate || "Not specified",
+      vehicles_summary: vehiclesList
+        .map((v) => `${v.year || ""} ${v.make || ""} ${v.model || ""} (${v.vehicle}, ${v.condition})`.trim())
+        .join(" | "),
       distance: quote.distance,
       duration: quote.duration,
       miles: quote.miles,
