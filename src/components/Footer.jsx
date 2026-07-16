@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { STATES } from "../data/states";
 
 function Modal({ title, onClose, children }) {
   return (
@@ -129,6 +130,7 @@ function Footer() {
             <ul className="space-y-3">
               <li><a href="#" className="hover:text-blue-400">Home</a></li>
               <li><a href="#quote-form" className="hover:text-blue-400">Free Quote</a></li>
+              <li><a href="/track" className="hover:text-blue-400">📦 Track Shipment</a></li>
               <li><a href="#services" className="hover:text-blue-400">Services</a></li>
               <li><a href="#reviews" className="hover:text-blue-400">Reviews</a></li>
               <li><a href="#faq" className="hover:text-blue-400">FAQ</a></li>
@@ -183,6 +185,22 @@ function Footer() {
             </div>
           </div>
 
+        </div>
+
+        {/* Popular shipping destinations — state SEO pages */}
+        <div className="mt-14 pt-10 border-t border-slate-800">
+          <h3 className="text-xl font-bold text-white mb-5">Popular Shipping Destinations</h3>
+          <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm">
+            {STATES.map((s) => (
+              <a
+                key={s.slug}
+                href={`/car-shipping-${s.slug}`}
+                className="hover:text-blue-400 transition"
+              >
+                Car Shipping to {s.name}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
 
