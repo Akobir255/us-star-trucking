@@ -1,4 +1,4 @@
-import heroImage from "../assets/hero.jpg";
+import heroImage from "../assets/hero.webp";
 
 function Hero() {
   const scrollToQuote = () => {
@@ -89,8 +89,12 @@ function Hero() {
 
           <img
             src={heroImage}
-            alt="US Star Trucking Auto Transport"
-            className="rounded-3xl shadow-2xl"
+            alt="Open car carrier truck loaded with vehicles for nationwide auto transport"
+            width="1100"
+            height="825"
+            fetchpriority="high"
+            decoding="async"
+            className="rounded-3xl shadow-2xl w-full h-auto"
           />
 
           <div className="absolute -bottom-6 left-6 bg-white text-slate-900 rounded-2xl p-6 shadow-2xl">

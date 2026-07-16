@@ -60,18 +60,26 @@ function FAQ() {
             >
               <button
                 onClick={() => setOpen(open === index ? null : index)}
+                aria-expanded={open === index}
+                aria-controls={`faq-answer-${index}`}
+                id={`faq-question-${index}`}
                 className="w-full flex justify-between items-center text-left p-6 hover:bg-white/10 transition"
               >
                 <span className="text-xl font-semibold text-white">
                   {faq.question}
                 </span>
-                <span className="text-3xl text-blue-400 font-bold">
+                <span className="text-3xl text-blue-400 font-bold" aria-hidden="true">
                   {open === index ? "−" : "+"}
                 </span>
               </button>
 
               {open === index && (
-                <div className="px-6 pb-6 text-blue-200 leading-7">
+                <div
+                  id={`faq-answer-${index}`}
+                  role="region"
+                  aria-labelledby={`faq-question-${index}`}
+                  className="px-6 pb-6 text-blue-200 leading-7"
+                >
                   {faq.answer}
                 </div>
               )}

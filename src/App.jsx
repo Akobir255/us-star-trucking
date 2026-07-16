@@ -69,7 +69,14 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#000919] pt-28">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-blue-700 focus:font-bold focus:px-4 focus:py-2 focus:rounded-lg"
+      >
+        Skip to main content
+      </a>
       <Navbar />
+      <main id="main-content">
       <Hero />
       <div className="bg-gradient-to-b from-[#04356A] to-[#000919]">
         <TrustBar />
@@ -97,6 +104,7 @@ function App() {
       </div>
       <Promotions />
       <Contact />
+      </main>
       <Footer />
       <FloatingButtons />
       <CookieConsent />

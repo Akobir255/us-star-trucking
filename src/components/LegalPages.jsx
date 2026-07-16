@@ -5,13 +5,13 @@ function LegalLayout({ title, updated, children }) {
   return (
     <div className="min-h-screen bg-[#000919] pt-28">
       <Navbar />
-      <div className="max-w-4xl mx-auto px-6 py-16">
+      <main className="max-w-4xl mx-auto px-6 py-16">
         <div className="bg-white rounded-3xl shadow-2xl p-8 sm:p-12">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-2">{title}</h1>
           <p className="text-sm text-gray-400 mb-8">Last updated: {updated}</p>
           <div className="text-gray-600 leading-7 text-[15px] space-y-4">{children}</div>
         </div>
-      </div>
+      </main>
       <Footer />
     </div>
   );

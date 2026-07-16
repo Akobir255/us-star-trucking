@@ -323,7 +323,7 @@ function VehicleCard({ vehicle, index, canRemove, onRemove, onFieldChange, onMak
                 <span className="text-sm">Loading vehicle image...</span>
               </div>
             ) : (
-              <img src={vehicle.image} alt={`${vehicle.make} ${vehicle.model}`} className="w-full h-full object-contain" />
+              <img src={vehicle.image} alt={`${vehicle.make} ${vehicle.model}`} loading="lazy" decoding="async" className="w-full h-full object-contain" />
             )}
           </div>
         )}

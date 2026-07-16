@@ -167,13 +167,21 @@ export default function TrackOrder() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
-          <input
-            type="text"
-            value={lookupInput}
-            onChange={(e) => setLookupInput(e.target.value)}
-            placeholder="Order number or phone number"
-            className="flex-1 rounded-xl border border-white/20 bg-white/10 px-5 py-4 text-white placeholder-slate-400 tracking-wide focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <div className="flex-1">
+            <label htmlFor="track-lookup" className="sr-only">
+              Order number or phone number
+            </label>
+            <input
+              id="track-lookup"
+              name="track-lookup"
+              type="text"
+              value={lookupInput}
+              onChange={(e) => setLookupInput(e.target.value)}
+              placeholder="Order number or phone number"
+              autoComplete="off"
+              className="w-full rounded-xl border border-white/20 bg-white/10 px-5 py-4 text-white placeholder-slate-400 tracking-wide focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
           <button
             type="submit"
             disabled={loading}
@@ -268,13 +276,20 @@ export default function TrackOrder() {
                   email address or last name from your booking.
                 </p>
                 <form onSubmit={handleVerify} className="mt-3 flex flex-col sm:flex-row gap-3">
-                  <input
-                    type="text"
-                    value={verifyInput}
-                    onChange={(e) => setVerifyInput(e.target.value)}
-                    placeholder="Your email or last name"
-                    className="flex-1 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+                  <div className="flex-1">
+                    <label htmlFor="verify-identity" className="sr-only">
+                      Your email or last name
+                    </label>
+                    <input
+                      id="verify-identity"
+                      name="verify-identity"
+                      type="text"
+                      value={verifyInput}
+                      onChange={(e) => setVerifyInput(e.target.value)}
+                      placeholder="Your email or last name"
+                      className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
                   <button
                     type="submit"
                     disabled={verifying}

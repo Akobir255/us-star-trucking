@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import logo from "../assets/usstar-logo.webp";
 import { STATES } from "../data/states";
 
@@ -8,11 +8,32 @@ function Navbar() {
   const [statesOpen, setStatesOpen] = useState(false);
   const [bannerVisible, setBannerVisible] = useState(true);
 
+  const statesRef = useRef(null);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Close the Ship To dropdown on Escape or when clicking outside it
+  useEffect(() => {
+    if (!statesOpen) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setStatesOpen(false);
+    };
+    const onClickOutside = (e) => {
+      if (statesRef.current && !statesRef.current.contains(e.target)) {
+        setStatesOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("mousedown", onClickOutside);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("mousedown", onClickOutside);
+    };
+  }, [statesOpen]);
 
   const links = [
     { name: "Services", href: "#services" },
@@ -52,11 +73,11 @@ function Navbar() {
 
           {/* Left: brand (links home) */}
           <a href="/" className="flex items-center gap-3 shrink-0">
-            <img src={logo} alt="US Star Trucking" className="h-12 rounded-lg" />
+            <img src={logo} alt="US Star Trucking logo" width="64" height="48" className="h-12 w-auto rounded-lg" />
             <div>
-              <h1 className={`font-bold text-lg leading-tight ${scrolled ? "text-blue-700" : "text-white"}`}>
+              <span className={`block font-bold text-lg leading-tight ${scrolled ? "text-blue-700" : "text-white"}`}>
                 US Star Trucking LLC
-              </h1>
+              </span>
               <p className={`text-xs ${scrolled ? "text-gray-500" : "text-blue-300"}`}>
                 Nationwide Auto Transport
               </p>
@@ -64,7 +85,7 @@ function Navbar() {
           </a>
 
           {/* Center: plain text links */}
-          <nav className="hidden lg:flex items-center gap-7">
+          <nav aria-label="Main navigation" className="hidden lg:flex items-center gap-7">
             {links.map((item) => (
               <a
                 key={item.name}
@@ -83,9 +104,12 @@ function Navbar() {
               </a>
             ))}
 
-            <div className="relative">
+            <div className="relative" ref={statesRef}>
               <button
                 onClick={() => setStatesOpen(!statesOpen)}
+                aria-expanded={statesOpen}
+                aria-haspopup="true"
+                aria-controls="states-menu"
                 className={`font-semibold text-sm flex items-center gap-1 whitespace-nowrap transition ${
                   scrolled
                     ? "text-gray-700 hover:text-blue-700"
@@ -93,11 +117,11 @@ function Navbar() {
                 }`}
               >
                 Ship To
-                <span className="text-[10px]">{statesOpen ? "▲" : "▼"}</span>
+                <span className="text-[10px]" aria-hidden="true">{statesOpen ? "▲" : "▼"}</span>
               </button>
 
               {statesOpen && (
-                <div className="absolute top-10 left-1/2 -translate-x-1/2 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 w-64 z-50">
+                <div id="states-menu" className="absolute top-10 left-1/2 -translate-x-1/2 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 w-64 z-50">
                   <p className="text-xs text-gray-500 mb-3 font-semibold uppercase tracking-wide">
                     Popular Destinations
                   </p>
@@ -141,15 +165,17 @@ function Navbar() {
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className={`lg:hidden text-3xl ${scrolled ? "text-slate-900" : "text-white"}`}
-            aria-label="Menu"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
           >
-            ☰
+            <span aria-hidden="true">{menuOpen ? "✕" : "☰"}</span>
           </button>
 
         </div>
 
         {menuOpen && (
-          <div className={`lg:hidden border-t py-5 space-y-3 ${scrolled ? "border-gray-200" : "border-white/20"}`}>
+          <nav id="mobile-menu" aria-label="Mobile navigation" className={`lg:hidden border-t py-5 space-y-3 ${scrolled ? "border-gray-200" : "border-white/20"}`}>
             {links.map((item) => (
               <a
                 key={item.name}
@@ -202,7 +228,7 @@ function Navbar() {
             >
               Get Free Quote
             </a>
-          </div>
+          </nav>
         )}
 
       </div>

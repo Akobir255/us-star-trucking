@@ -1,7 +1,7 @@
-import openTransport from "../assets/opentrailer.jpg";
-import enclosedTransport from "../assets/enclosed.jpg";
-import expeditedShipping from "../assets/expedited.jpg";
-import doorToDoor from "../assets/doortodoor.jpg";
+import openTransport from "../assets/opentrailer.webp";
+import enclosedTransport from "../assets/enclosed.webp";
+import expeditedShipping from "../assets/expedited.webp";
+import doorToDoor from "../assets/doortodoor.webp";
 
 function Services() {
   const services = [
@@ -78,6 +78,10 @@ function Services() {
               <img
                 src={service.image}
                 alt={service.title}
+                width="800"
+                height="600"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-48 object-cover"
               />
               <div className="p-8">

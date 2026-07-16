@@ -26,7 +26,7 @@ function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 rounded-full flex items-center justify-center text-lg transition"
-                title="Facebook"
+                title="Facebook" aria-label="US Star Trucking on Facebook"
               >
                 f
               </a>
@@ -35,7 +35,7 @@ function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white w-10 h-10 rounded-full flex items-center justify-center text-lg transition"
-                title="Instagram"
+                title="Instagram" aria-label="US Star Trucking on Instagram"
               >
                 📷
               </a>
@@ -44,7 +44,7 @@ function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-blue-700 hover:bg-blue-800 text-white w-10 h-10 rounded-full flex items-center justify-center text-lg transition"
-                title="LinkedIn"
+                title="LinkedIn" aria-label="US Star Trucking on LinkedIn"
               >
                 in
               </a>
