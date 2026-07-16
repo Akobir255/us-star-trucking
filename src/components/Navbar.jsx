@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import logo from "../assets/usstar-logo.jpg";
+import logo from "../assets/usstar-logo.webp";
 import { STATES } from "../data/states";
 
 function Navbar() {

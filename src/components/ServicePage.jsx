@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { SERVICES } from "../data/services";
-import { STATES } from "../data/states";
+import openTransport from "../assets/opentrailer.webp";
+import enclosedTransport from "../assets/enclosed.webp";
+import expeditedShipping from "../assets/expedited.webp";
+import doorToDoor from "../assets/doortodoor.webp";
 
 // Sets document title + meta description + canonical for SEO,
 // and injects FAQ structured data for the service.
