@@ -15,19 +15,33 @@ import Promotions from "./components/Promotions";
 
 function App() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-slate-100 to-blue-100 pt-20">
+    <div className="min-h-screen bg-blue-100 pt-20">
       <Navbar />
       <Hero />
-      <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-blue-900 pt-10 pb-32">
+      <div className="bg-gradient-to-b from-blue-900 to-slate-950">
         <TrustBar />
-        <QuoteForm />
+        <div className="pb-24">
+          <QuoteForm />
+        </div>
       </div>
-      <Services />
-      <HowItWorks />
-      <Stats />
-      <WhyChooseUs />
-      <Reviews />
-      <FAQ />
+      <div className="bg-blue-100">
+        <Services />
+      </div>
+      <div className="bg-blue-200">
+        <HowItWorks />
+      </div>
+      <div className="bg-blue-100">
+        <Stats />
+      </div>
+      <div className="bg-blue-200">
+        <WhyChooseUs />
+      </div>
+      <div className="bg-blue-100">
+        <Reviews />
+      </div>
+      <div className="bg-blue-200">
+        <FAQ />
+      </div>
       <Promotions />
       <Contact />
       <Footer />
