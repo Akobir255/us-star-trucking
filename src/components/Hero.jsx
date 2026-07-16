@@ -34,8 +34,9 @@ function Hero() {
 
           <p className="mt-8 text-xl text-slate-300 leading-8">
             Fast, safe, and affordable vehicle shipping anywhere in the United
-            States. We provide door-to-door transport backed by licensed,
-            insured, and experienced carriers you can trust.
+            States. We're an FMCSA-authorized auto transport broker — we
+            arrange your door-to-door shipment with licensed, insured motor
+            carriers and manage the process from dispatch through delivery.
           </p>
 
           <div className="flex flex-wrap gap-4 mt-10">
@@ -95,15 +96,15 @@ function Hero() {
           <div className="absolute -bottom-6 left-6 bg-white text-slate-900 rounded-2xl p-6 shadow-2xl">
 
             <p className="text-3xl font-extrabold text-blue-600">
-              ⭐⭐⭐⭐⭐
+              🚛 MC 206532
             </p>
 
             <p className="font-bold mt-2">
-              Trusted Nationwide Vehicle Transport
+              FMCSA-Authorized Auto Transport Broker
             </p>
 
             <p className="text-sm text-slate-600">
-              Safe • Secure • Fast Delivery
+              Door-to-Door • All 50 States
             </p>
 
           </div>

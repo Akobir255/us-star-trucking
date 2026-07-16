@@ -56,7 +56,7 @@ function ReviewTicker({ reviews }) {
                 </span>
                 <div className="leading-tight">
                   <p className="text-sm font-bold text-white">{review.name}</p>
-                  <p className="text-xs text-emerald-400">✓ Verified shipment</p>
+                  <p className="text-xs text-blue-300">{review.title}</p>
                 </div>
               </figcaption>
             </figure>

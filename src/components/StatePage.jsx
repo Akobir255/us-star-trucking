@@ -167,7 +167,7 @@ export default function StatePage({ state }) {
           <h2 className="text-2xl sm:text-3xl font-bold mb-6">How It Works</h2>
           <div className="grid sm:grid-cols-3 gap-4">
             {[
-              ["1", "Get your quote", "Enter pickup and delivery ZIPs in our calculator for an instant price."],
+              ["1", "Get your quote", "Enter pickup and delivery ZIPs in our calculator for an instant estimate."],
               ["2", "We schedule pickup", "A licensed, insured carrier picks up your vehicle door-to-door."],
               ["3", "Track & receive", `Follow your shipment on our tracking page until it arrives in ${state.name}.`],
             ].map(([n, title, text]) => (

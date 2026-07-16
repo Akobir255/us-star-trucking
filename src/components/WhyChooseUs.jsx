@@ -21,7 +21,7 @@ function WhyChooseUs() {
       title: "Transparent Pricing",
       link: "/#quote-form",
       description:
-        "No hidden fees. No surprise charges. Get competitive pricing with an instant online estimate.",
+        "Clear upfront estimates with every fee explained before you book. Your final price is confirmed when a carrier is assigned.",
       gradient: "from-[#04356A] to-[#054E98]",
     },
     {

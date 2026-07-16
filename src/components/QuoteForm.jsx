@@ -573,7 +573,7 @@ export default function QuoteForm() {
         ) : (
           <>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-center mb-2 bg-gradient-to-r from-blue-700 via-cyan-500 to-blue-700 bg-clip-text text-transparent">🚗 Get Your Free Car Shipping Quote</h2>
-            <p className="text-center text-gray-500 mb-6 text-sm sm:text-base">⚡ Instant price · 🛡️ Licensed & insured · 🚪 Door-to-door</p>
+            <p className="text-center text-gray-500 mb-6 text-sm sm:text-base">⚡ Instant estimate · 🛡️ Licensed & bonded broker · 🚪 Door-to-door</p>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <input

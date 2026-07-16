@@ -2,8 +2,8 @@ function TrustBar() {
   const items = [
     {
       icon: "🛡️",
-      title: "Licensed & Insured",
-      text: "Professional, fully compliant auto transport.",
+      title: "Licensed & Bonded Broker",
+      text: "FMCSA-authorized auto transport broker working with insured carriers.",
     },
     {
       icon: "🚪",
@@ -56,7 +56,7 @@ function TrustBar() {
               <span className="text-2xl">🏛️</span>
               <div>
                 <p className="font-bold text-sm">FMCSA</p>
-                <p className="text-blue-200 text-xs">Verified Carrier</p>
+                <p className="text-blue-200 text-xs">Licensed Broker</p>
               </div>
             </a>
 
@@ -80,29 +80,6 @@ function TrustBar() {
               <div>
                 <p className="font-bold text-sm">MC Number</p>
                 <p className="text-blue-200 text-xs"># 206532</p>
-              </div>
-            </div>
-
-            {/* BBB */}
-            <a
-              href="https://www.bbb.org"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl px-5 py-3 flex items-center gap-2 transition"
-            >
-              <span className="text-2xl">⭐</span>
-              <div>
-                <p className="font-bold text-sm">BBB</p>
-                <p className="text-blue-200 text-xs">Accredited</p>
-              </div>
-            </a>
-
-            {/* Google Reviews */}
-            <div className="bg-white/10 border border-white/20 rounded-xl px-5 py-3 flex items-center gap-2">
-              <span className="text-2xl">🌟</span>
-              <div>
-                <p className="font-bold text-sm">Google</p>
-                <p className="text-blue-200 text-xs">5★ Rated</p>
               </div>
             </div>
 

@@ -166,7 +166,8 @@ function Footer() {
             <p className="mb-2"><strong>USDOT:</strong> 3205543</p>
             <p className="mb-2"><strong>MC:</strong> 206532</p>
             <p className="mb-2">Nationwide Auto Transport</p>
-            <p className="text-green-400 font-semibold mt-3">✓ Fully Licensed & Insured</p>
+            <p className="text-green-400 font-semibold mt-3">✓ Licensed & Bonded Property Broker</p>
+            <p className="text-slate-400 text-sm mt-2">We arrange your shipment with independent, insured motor carriers.</p>
             <div className="mt-5 space-y-2">
               <a
                 href="https://safer.fmcsa.dot.gov/query.asp?searchtype=ANY&query_type=queryCarrierSnapshot&query_param=USDOT&query_string=3205543"
