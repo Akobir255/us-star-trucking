@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/quote-form", "destination": "/" }
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
