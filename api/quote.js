@@ -1,9 +1,10 @@
 // Vercel Serverless Function — runs on the server, keeps API keys secret.
 // Endpoint: POST /api/quote
 // Includes: in-memory rate limiting + honeypot spam protection.
-// Sends two emails via EmailJS:
-//   1. Lead notification to the business (EMAILJS_TEMPLATE_ID)
-//   2. Quote confirmation to the customer (EMAILJS_CUSTOMER_TEMPLATE_ID)
+// Perf: geocodes both ZIPs in parallel; emails are sent in the background
+// (waitUntil) so the customer sees their quote immediately.
+
+import { waitUntil } from "@vercel/functions";
 
 const RATE_LIMIT = 5;
 const RATE_WINDOW_MS = 60_000;
@@ -71,7 +72,7 @@ export default async function handler(req, res) {
       return res.status(422).json({ error: "INVALID_ZIP" });
     }
 
-    // 1. Geocode both ZIPs
+    // 1. Geocode both ZIPs — in parallel
     const geocode = async (zip) => {
       const r = await fetch(
         `https://api.openrouteservice.org/geocode/search?api_key=${ORS_KEY}&text=${encodeURIComponent(zip)}&boundary.country=USA&size=1`
@@ -88,8 +89,7 @@ export default async function handler(req, res) {
 
     let origin, destination;
     try {
-      origin = await geocode(pickup);
-      destination = await geocode(delivery);
+      [origin, destination] = await Promise.all([geocode(pickup), geocode(delivery)]);
     } catch (e) {
       if (e.message === "INVALID_ZIP") return res.status(422).json({ error: "INVALID_ZIP" });
       throw e;
@@ -148,7 +148,7 @@ export default async function handler(req, res) {
       deliveryState: destination.state,
     };
 
-    // Helper — send one email via EmailJS, returns true/false
+    // Helper — send one email via EmailJS
     const sendEmail = async (templateId, templateParams) => {
       const payload = {
         service_id: EMAILJS_SERVICE,
@@ -182,14 +182,14 @@ export default async function handler(req, res) {
       discount_applied: discountApplied > 0 ? `$${discountApplied} off (${code})` : "None",
     };
 
-    // 5. Send lead notification to the business
-    let emailSent = false;
+    // 5 + 6. Send both emails in the BACKGROUND — the customer gets their
+    // quote immediately instead of waiting for EmailJS.
+    const emailJobs = [];
+
     if (EMAILJS_SERVICE && EMAILJS_TEMPLATE && EMAILJS_PUBLIC) {
-      emailSent = await sendEmail(EMAILJS_TEMPLATE, sharedParams);
+      emailJobs.push(sendEmail(EMAILJS_TEMPLATE, sharedParams));
     }
 
-    // 6. Send confirmation to the customer (only if they gave an email)
-    let customerEmailSent = false;
     const customerEmail = (body.email || "").toString().trim();
     const looksLikeEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail);
 
@@ -199,14 +199,20 @@ export default async function handler(req, res) {
       EMAILJS_PUBLIC &&
       looksLikeEmail
     ) {
-      customerEmailSent = await sendEmail(EMAILJS_CUSTOMER_TEMPLATE, {
-        ...sharedParams,
-        customer_email: customerEmail,
-        customer_name: (body.name || "there").toString().trim() || "there",
-      });
+      emailJobs.push(
+        sendEmail(EMAILJS_CUSTOMER_TEMPLATE, {
+          ...sharedParams,
+          customer_email: customerEmail,
+          customer_name: (body.name || "there").toString().trim() || "there",
+        })
+      );
     }
 
-    return res.status(200).json({ quote, emailSent, customerEmailSent });
+    if (emailJobs.length > 0) {
+      waitUntil(Promise.allSettled(emailJobs));
+    }
+
+    return res.status(200).json({ quote, emailSent: emailJobs.length > 0 });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "SERVER_ERROR" });

@@ -13,6 +13,7 @@
     "@emailjs/browser": "^4.4.1",
     "@googlemaps/js-api-loader": "^1.16.8",
     "@tailwindcss/vite": "^4.3.2",
+    "@vercel/functions": "^3.7.5",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
