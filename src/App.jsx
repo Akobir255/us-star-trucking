@@ -15,6 +15,8 @@ import Promotions from "./components/Promotions";
 import CookieConsent from "./components/CookieConsent";
 import TrackOrder from "./components/TrackOrder";
 import AdminOrders from "./components/AdminOrders";
+import StatePage from "./components/StatePage";
+import { getStateBySlug } from "./data/states";
 
 function App() {
   // Simple path-based routing (no router library needed)
@@ -22,6 +24,13 @@ function App() {
 
   if (path === "/track") return <TrackOrder />;
   if (path === "/admin") return <AdminOrders />;
+
+  // State SEO pages: /car-shipping-california, /car-shipping-texas, ...
+  const stateMatch = path.match(/^\/car-shipping-([a-z-]+)$/);
+  if (stateMatch) {
+    const state = getStateBySlug(stateMatch[1]);
+    if (state) return <StatePage state={state} />;
+  }
 
   return (
     <div className="min-h-screen bg-blue-100 pt-28">
