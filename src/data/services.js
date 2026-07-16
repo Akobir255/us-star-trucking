@@ -315,6 +315,37 @@ export const SERVICES = [
     ],
   },
   {
+    slug: "rv-transport",
+    name: "RV Transport",
+    short: "RV",
+    emoji: "🚐",
+    tagline: "Travel trailers, fifth wheels, and motorhomes moved nationwide",
+    intro:
+      "Bought an RV out of state, relocating, or heading to your seasonal spot without the long drive? We arrange nationwide transport for recreational vehicles of all types — travel trailers, fifth wheels, toy haulers, campers, and motorhomes. Depending on your RV, it's professionally towed by an experienced hauler or driven by a qualified driver, and delivered as close to your door, dealership, or campground as road access allows.",
+    benefits: [
+      ["All RV types", "Travel trailers, fifth wheels, toy haulers, pop-ups, truck campers, and Class A/B/C motorhomes."],
+      ["Tow-away or drive-away", "Towable RVs move behind professional tow rigs; motorhomes can be driven by qualified, insured drivers."],
+      ["Experienced RV haulers", "Carriers who understand hitch weights, height clearances, and route planning for oversized loads."],
+      ["Door, dealer, or campground", "Pickup and delivery at your home, the dealership, a storage lot, or your seasonal site."],
+    ],
+    priceNote:
+      "RV transport pricing depends on length, height, weight, and distance — larger rigs may need special routing. Call (865) 722-7114 with your RV's specs for an exact quote.",
+    faqs: [
+      {
+        q: "Can you ship a motorhome that isn't towable?",
+        a: "Yes — drivable motorhomes are typically moved by qualified drive-away drivers who are insured and experienced with large rigs. Non-running RVs can also be moved with specialized equipment.",
+      },
+      {
+        q: "How should I prepare my RV for transport?",
+        a: "Secure or remove loose items inside, latch all cabinets and doors, retract slide-outs and awnings, disconnect propane, check tire pressure, and make sure hitch components are in good condition.",
+      },
+      {
+        q: "Is my RV insured during transport?",
+        a: "Yes — carriers we work with maintain cargo insurance, and we verify coverage before dispatch. Ask us for the certificate of insurance for your shipment anytime.",
+      },
+    ],
+  },
+  {
     slug: "suv-truck-transport",
     name: "SUV & Truck Transport",
     short: "SUV & Truck",

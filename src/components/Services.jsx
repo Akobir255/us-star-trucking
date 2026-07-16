@@ -1,6 +1,5 @@
 import openTransport from "../assets/opentrailer.webp";
 import enclosedTransport from "../assets/enclosed.webp";
-import doorToDoor from "../assets/doortodoor.webp";
 
 function Services() {
   const services = [
@@ -19,11 +18,11 @@ function Services() {
         "Maximum protection for luxury, exotic, classic, and collector vehicles with fully enclosed trailers.",
     },
     {
-      image: doorToDoor,
-      title: "Door-to-Door Delivery",
-      link: "/door-to-door-auto-transport",
+      image: "https://images.unsplash.com/photo-1605377294702-2a112984fa62?w=400&h=250&fit=crop",
+      title: "RV Transport",
+      link: "/rv-transport",
       description:
-        "Convenient pickup and delivery directly to your home or business whenever road access allows.",
+        "Professional shipping for travel trailers, fifth wheels, campers, and motorhomes — towed or hauled nationwide.",
     },
     {
       image: "https://images.unsplash.com/photo-1776221307349-717fc7944510?w=400&h=250&fit=crop",
