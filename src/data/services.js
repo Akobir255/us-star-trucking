@@ -284,6 +284,37 @@ export const SERVICES = [
     ],
   },
   {
+    slug: "boat-transport",
+    name: "Boat Transport",
+    short: "Boat",
+    emoji: "🚤",
+    tagline: "Trailer-ready boats shipped safely nationwide",
+    intro:
+      "Buying a boat out of state or relocating to new waters? We arrange nationwide transport for trailerable boats — fishing boats, speedboats, pontoons, bowriders, and jet skis. Your boat travels on its own trailer or on carrier equipment, secured by experienced haulers who know how to handle marine loads, and delivered as close to your door or marina as road access allows.",
+    benefits: [
+      ["All trailerable boats", "Fishing boats, speedboats, pontoons, bowriders, sailboats on trailers, and personal watercraft."],
+      ["Your trailer or ours", "Ship on your own road-worthy trailer, or we arrange carrier equipment for boats without one."],
+      ["Marine-experienced haulers", "Carriers who understand hull support, strapping points, and height clearances for boats."],
+      ["Door-to-door or marina delivery", "Pickup and drop-off at your home, storage lot, dealership, or marina wherever access allows."],
+    ],
+    priceNote:
+      "Boat transport pricing depends on length, beam width, height on the trailer, and distance — oversize boats may need permits. Call (865) 722-7114 with your boat's dimensions for an exact quote.",
+    faqs: [
+      {
+        q: "Do I need my own trailer to ship a boat?",
+        a: "A road-worthy trailer makes shipping easier and cheaper, but it's not required — we can arrange carriers with appropriate equipment for boats without trailers.",
+      },
+      {
+        q: "How should I prepare my boat for transport?",
+        a: "Drain water systems, secure or remove loose gear and electronics, latch hatches, disconnect the battery, and make sure the trailer's tires, lights, and bearings are in good condition.",
+      },
+      {
+        q: "What size boats can you ship?",
+        a: "Most trailerable boats up to about 8.5 feet wide ship at standard rates. Wider or taller boats can still be moved but may require oversize permits — call us with your dimensions and we'll confirm.",
+      },
+    ],
+  },
+  {
     slug: "suv-truck-transport",
     name: "SUV & Truck Transport",
     short: "SUV & Truck",

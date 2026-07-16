@@ -1,6 +1,5 @@
 import openTransport from "../assets/opentrailer.webp";
 import enclosedTransport from "../assets/enclosed.webp";
-import expeditedShipping from "../assets/expedited.webp";
 import doorToDoor from "../assets/doortodoor.webp";
 
 function Services() {
@@ -27,11 +26,11 @@ function Services() {
         "Convenient pickup and delivery directly to your home or business whenever road access allows.",
     },
     {
-      image: expeditedShipping,
-      title: "Expedited Shipping",
-      link: "/expedited-auto-transport",
+      image: "https://images.unsplash.com/photo-1776221307349-717fc7944510?w=400&h=250&fit=crop",
+      title: "Boat Transport",
+      link: "/boat-transport",
       description:
-        "Need your vehicle moved quickly? Our expedited service prioritizes faster pickup and delivery.",
+        "Nationwide shipping for boats on trailers — fishing boats, speedboats, pontoons, and jet skis moved safely door to door.",
     },
     {
       image: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400&h=250&fit=crop",
