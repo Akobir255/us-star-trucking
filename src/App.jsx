@@ -17,6 +17,8 @@ import TrackOrder from "./components/TrackOrder";
 import AdminOrders from "./components/AdminOrders";
 import StatePage from "./components/StatePage";
 import ServicePage from "./components/ServicePage";
+import { BlogIndex, BlogPost } from "./components/Blog";
+import { getPostBySlug } from "./data/posts";
 import { getStateBySlug } from "./data/states";
 import { getServiceBySlug } from "./data/services";
 
@@ -37,6 +39,14 @@ function App() {
   // Service SEO pages: /door-to-door-auto-transport, /motorcycle-shipping, ...
   const service = getServiceBySlug(path.slice(1));
   if (service) return <ServicePage service={service} />;
+
+  // Blog: /blog and /blog/<slug>
+  if (path === "/blog") return <BlogIndex />;
+  const postMatch = path.match(/^\/blog\/([a-z0-9-]+)$/);
+  if (postMatch) {
+    const post = getPostBySlug(postMatch[1]);
+    if (post) return <BlogPost post={post} />;
+  }
 
   return (
     <div className="min-h-screen bg-blue-100 pt-28">
