@@ -44,7 +44,7 @@ function ProgressBar({ status }) {
 }
 
 export default function TrackOrder() {
-  const [orderNumber, setOrderNumber] = useState("");
+  const [lookupInput, setLookupInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [order, setOrder] = useState(null);
@@ -54,10 +54,9 @@ export default function TrackOrder() {
   const [verifying, setVerifying] = useState(false);
   const [verifyError, setVerifyError] = useState("");
 
-  const fetchOrder = async (cleaned, verify) => {
-    const params = new URLSearchParams({ order: cleaned });
-    if (verify) params.set("verify", verify);
-    const r = await fetch(`/api/track?${params.toString()}`);
+  const fetchOrder = async (params) => {
+    const search = new URLSearchParams(params);
+    const r = await fetch(`/api/track?${search.toString()}`);
     const data = await r.json();
     return { r, data };
   };
@@ -69,21 +68,37 @@ export default function TrackOrder() {
     setVerifyInput("");
     setVerifyError("");
 
-    const cleaned = orderNumber.trim().toUpperCase();
+    const raw = lookupInput.trim();
+    const asOrder = raw.toUpperCase();
     const NEW_FORMAT = /^\d{8}-?US0{0,4}$/;
     const OLD_FORMAT = /^US-\d{6}$/;
-    if (!NEW_FORMAT.test(cleaned) && !OLD_FORMAT.test(cleaned)) {
-      setError("Please enter a valid order number, e.g. 12345678-US");
-      return;
+
+    // Decide: order number or phone number?
+    let params;
+    if (NEW_FORMAT.test(asOrder) || OLD_FORMAT.test(asOrder)) {
+      params = { order: asOrder };
+    } else {
+      let digits = raw.replace(/\D/g, "");
+      if (digits.length === 11 && digits.startsWith("1")) digits = digits.slice(1);
+      if (digits.length === 10) {
+        params = { phone: digits };
+      } else {
+        setError(
+          "Please enter your order number (e.g. 12345678-US) or the 10-digit phone number used for your booking."
+        );
+        return;
+      }
     }
 
     setLoading(true);
     try {
-      const { r, data } = await fetchOrder(cleaned);
+      const { r, data } = await fetchOrder(params);
       if (!r.ok) {
         setError(
           data.error === "NOT_FOUND"
-            ? "We couldn't find that order. Please check the number or call us at (865) 722-7114."
+            ? "We couldn't find a shipment for that. Please check the number or call us at (865) 722-7114."
+            : data.error === "RATE_LIMITED"
+            ? "Too many attempts. Please wait a few minutes and try again."
             : "Something went wrong. Please try again."
         );
       } else {
@@ -108,7 +123,7 @@ export default function TrackOrder() {
 
     setVerifying(true);
     try {
-      const { r, data } = await fetchOrder(order.orderNumber, value);
+      const { r, data } = await fetchOrder({ order: order.orderNumber, verify: value });
       if (!r.ok) {
         setVerifyError(
           data.error === "RATE_LIMITED"
@@ -147,17 +162,17 @@ export default function TrackOrder() {
         <div className="text-center mb-10">
           <h1 className="text-4xl sm:text-5xl font-extrabold">Track Your Shipment</h1>
           <p className="mt-4 text-blue-300 text-lg">
-            Enter your order number to see the current status of your vehicle.
+            Enter your order number or the phone number you booked with.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
           <input
             type="text"
-            value={orderNumber}
-            onChange={(e) => setOrderNumber(e.target.value)}
-            placeholder="Order number, e.g. 12345678-US"
-            className="flex-1 rounded-xl border border-white/20 bg-white/10 px-5 py-4 text-white placeholder-slate-400 uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={lookupInput}
+            onChange={(e) => setLookupInput(e.target.value)}
+            placeholder="Order number or phone number"
+            className="flex-1 rounded-xl border border-white/20 bg-white/10 px-5 py-4 text-white placeholder-slate-400 tracking-wide focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             type="submit"

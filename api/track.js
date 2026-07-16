@@ -1,34 +1,49 @@
 // Vercel Serverless Function — public order tracking lookup.
-// Endpoint: GET /api/track?order=12345678-US[&verify=<email or last name>]
+// Endpoints:
+//   GET /api/track?order=12345678-US[&verify=<email or last name>]
+//   GET /api/track?phone=8657227114[&verify=<email or last name>]
 //
+// Phone lookup returns the customer's most recent order.
 // Basic lookup returns status info only. The driver license / insurance
-// document links are only included when the caller proves they're the
-// customer by supplying their email address or last name in `verify`.
-// Failed verification attempts are rate-limited per IP.
+// document links are only included after the caller verifies with the
+// customer's email address or last name. Phone lookups and verification
+// attempts are rate-limited per IP.
 
 const SUPABASE_URL = (process.env.SUPABASE_URL || "").trim();
 const SUPABASE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
 
 const BUCKET = "driver-documents";
 
-// --- Rate limiting for verification attempts (per serverless instance).
+// --- Rate limiting (per serverless instance).
 // Note: memory is per-instance on Vercel, so this is a soft limit — but it
 // still blocks naive guessing scripts that hit a warm instance.
-const VERIFY_LIMIT = 10; // attempts
-const VERIFY_WINDOW_MS = 10 * 60_000; // per 10 minutes
-const verifyHits = new Map();
+const LIMITS = {
+  verify: { max: 10, windowMs: 10 * 60_000 },
+  phone: { max: 15, windowMs: 10 * 60_000 },
+};
+const hits = new Map(); // key: `${kind}:${ip}` -> [timestamps]
 
-function isVerifyRateLimited(ip) {
+function isRateLimited(kind, ip) {
+  const { max, windowMs } = LIMITS[kind];
+  const key = `${kind}:${ip}`;
   const now = Date.now();
-  const arr = (verifyHits.get(ip) || []).filter((t) => now - t < VERIFY_WINDOW_MS);
+  const arr = (hits.get(key) || []).filter((t) => now - t < windowMs);
   arr.push(now);
-  verifyHits.set(ip, arr);
-  if (verifyHits.size > 5000) {
-    for (const [k, v] of verifyHits) {
-      if (v.every((t) => now - t > VERIFY_WINDOW_MS)) verifyHits.delete(k);
+  hits.set(key, arr);
+  if (hits.size > 5000) {
+    for (const [k, v] of hits) {
+      if (v.every((t) => now - t > 10 * 60_000)) hits.delete(k);
     }
   }
-  return arr.length > VERIFY_LIMIT;
+  return arr.length > max;
+}
+
+function getIp(req) {
+  return (
+    (req.headers["x-forwarded-for"] || "").split(",")[0].trim() ||
+    req.socket?.remoteAddress ||
+    "unknown"
+  );
 }
 
 // Encode each path segment individually so real "/" folder separators are
@@ -77,6 +92,29 @@ function matchesCustomer(verify, customerEmail, customerName) {
   return false;
 }
 
+// Build the common format variants a US phone number may be stored as,
+// so lookup works no matter how it was typed into the admin panel.
+function phoneVariants(digits10) {
+  const a = digits10.slice(0, 3);
+  const b = digits10.slice(3, 6);
+  const c = digits10.slice(6);
+  return [
+    digits10,
+    `1${digits10}`,
+    `+1${digits10}`,
+    `(${a}) ${b}-${c}`,
+    `${a}-${b}-${c}`,
+    `${a} ${b} ${c}`,
+    `+1 ${a} ${b} ${c}`,
+    `+1-${a}-${b}-${c}`,
+  ];
+}
+
+const SELECT_FIELDS =
+  "order_number,customer_name,customer_email,pickup,delivery,vehicle,transport," +
+  "status,eta,note,updated_at,created_at,carrier_company,driver_name,driver_phone," +
+  "driver_license_path,insurance_path";
+
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -85,39 +123,58 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Server not configured" });
   }
 
-  const order = (req.query.order || "").toString().trim().toUpperCase();
-  // New format: 8 digits + optional dash + US + optional trailing zeros (e.g. 12345678-US, 12345678US0)
-  // Old format kept for backward compatibility with existing orders: US-123456
-  const NEW_FORMAT = /^\d{8}-?US0{0,4}$/;
-  const OLD_FORMAT = /^US-\d{6}$/;
-  if (!NEW_FORMAT.test(order) && !OLD_FORMAT.test(order)) {
-    return res.status(400).json({ error: "INVALID_ORDER_NUMBER" });
-  }
-
+  const orderParam = (req.query.order || "").toString().trim().toUpperCase();
+  const phoneParam = (req.query.phone || "").toString();
   const verify = (req.query.verify || "").toString().trim();
 
-  // Rate-limit only verification attempts, not plain status lookups.
-  if (verify) {
-    const ip =
-      (req.headers["x-forwarded-for"] || "").split(",")[0].trim() ||
-      req.socket?.remoteAddress ||
-      "unknown";
-    if (isVerifyRateLimited(ip)) {
-      return res.status(429).json({ error: "RATE_LIMITED" });
-    }
+  if (!orderParam && !phoneParam) {
+    return res.status(400).json({ error: "MISSING_LOOKUP" });
   }
 
+  const ip = getIp(req);
+  if (verify && isRateLimited("verify", ip)) {
+    return res.status(429).json({ error: "RATE_LIMITED" });
+  }
+
+  const headers = {
+    apikey: SUPABASE_KEY,
+    Authorization: `Bearer ${SUPABASE_KEY}`,
+  };
+
   try {
-    const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/orders?order_number=eq.${encodeURIComponent(order)}` +
-        `&select=order_number,customer_name,customer_email,pickup,delivery,vehicle,transport,status,eta,note,updated_at,carrier_company,driver_name,driver_phone,driver_license_path,insurance_path`,
-      {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-        },
+    let queryUrl;
+
+    if (orderParam) {
+      // --- Lookup by order number ---
+      // New format: 8 digits + optional dash + US + optional trailing zeros (e.g. 12345678-US)
+      // Old format kept for backward compatibility with existing orders: US-123456
+      const NEW_FORMAT = /^\d{8}-?US0{0,4}$/;
+      const OLD_FORMAT = /^US-\d{6}$/;
+      if (!NEW_FORMAT.test(orderParam) && !OLD_FORMAT.test(orderParam)) {
+        return res.status(400).json({ error: "INVALID_ORDER_NUMBER" });
       }
-    );
+      queryUrl =
+        `${SUPABASE_URL}/rest/v1/orders?order_number=eq.${encodeURIComponent(orderParam)}` +
+        `&select=${SELECT_FIELDS}&limit=1`;
+    } else {
+      // --- Lookup by customer phone (most recent order) ---
+      let digits = phoneParam.replace(/\D/g, "");
+      if (digits.length === 11 && digits.startsWith("1")) digits = digits.slice(1);
+      if (digits.length !== 10) {
+        return res.status(400).json({ error: "INVALID_PHONE" });
+      }
+      if (isRateLimited("phone", ip)) {
+        return res.status(429).json({ error: "RATE_LIMITED" });
+      }
+      const orFilter = phoneVariants(digits)
+        .map((v) => `customer_phone.eq.${encodeURIComponent(v)}`)
+        .join(",");
+      queryUrl =
+        `${SUPABASE_URL}/rest/v1/orders?or=(${orFilter})` +
+        `&select=${SELECT_FIELDS}&order=created_at.desc&limit=1`;
+    }
+
+    const r = await fetch(queryUrl, { headers });
     const data = await r.json();
 
     if (!Array.isArray(data) || data.length === 0) {
