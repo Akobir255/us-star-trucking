@@ -101,7 +101,7 @@ function normalizePhone(value) {
 
 const SELECT_FIELDS =
   "order_number,customer_name,customer_email,pickup,delivery,vehicle,transport," +
-  "status,eta,note,updated_at,created_at,carrier_company,driver_name,driver_phone," +
+  "status,eta,note,updated_at,carrier_company,driver_name,driver_phone," +
   "driver_license_path,insurance_path";
 
 export default async function handler(req, res) {
@@ -161,7 +161,7 @@ export default async function handler(req, res) {
       const pattern = `*${digits.slice(0, 3)}*${digits.slice(3, 6)}*${digits.slice(6)}*`;
       queryUrl =
         `${SUPABASE_URL}/rest/v1/orders?customer_phone=ilike.${encodeURIComponent(pattern)}` +
-        `&select=${SELECT_FIELDS}&order=created_at.desc&limit=10`;
+        `&select=${SELECT_FIELDS}&order=updated_at.desc&limit=10`;
     }
 
     const r = await fetch(queryUrl, { headers });
