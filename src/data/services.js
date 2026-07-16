@@ -252,6 +252,68 @@ export const SERVICES = [
       },
     ],
   },
+  {
+    slug: "expedited-auto-transport",
+    name: "Expedited Auto Transport",
+    short: "Expedited",
+    emoji: "⚡",
+    tagline: "Priority pickup when your vehicle can't wait",
+    intro:
+      "Sometimes the schedule is the whole job — a job start date, a closing, a car sold with a deadline. Expedited transport puts your shipment at the front of the line: we prioritize carrier assignment for the fastest available pickup, often within 24-48 hours, and keep you updated at every step until delivery.",
+    benefits: [
+      ["Priority carrier assignment", "Your order goes to the top of the dispatch list for the fastest available truck."],
+      ["24-48 hour pickup targets", "On major corridors, expedited pickups are often arranged within 1-2 days."],
+      ["Deadline planning", "Tell us your must-arrive-by date and we plan the route and carrier around it."],
+      ["Constant updates", "Extra communication comes standard — you'll always know where things stand."],
+    ],
+    priceNote:
+      "Expedited service carries a premium over standard rates because carriers adjust routes to prioritize your vehicle — typically $200-$400 above the standard quote depending on route and season. Call (865) 722-7114 with your deadline for an exact number.",
+    faqs: [
+      {
+        q: "How fast can you pick up my car?",
+        a: "On major routes, expedited pickup is often possible within 24-48 hours of booking. Rural locations may need an extra day.",
+      },
+      {
+        q: "Does expedited shipping guarantee a delivery date?",
+        a: "Transit is still subject to weather, traffic, and DOT driving-hour rules, so dates are targets rather than guarantees — but expedited orders get priority at every step, and we plan buffer time around your deadline.",
+      },
+      {
+        q: "How much more does expedited cost?",
+        a: "Typically $200-$400 above the standard rate for the same route. Call us with your dates and we'll quote it exactly.",
+      },
+    ],
+  },
+  {
+    slug: "suv-truck-transport",
+    name: "SUV & Truck Transport",
+    short: "SUV & Truck",
+    emoji: "🛻",
+    tagline: "Oversized vehicles need the right trailer — we arrange it",
+    intro:
+      "SUVs, pickup trucks, vans, and lifted vehicles take more trailer space and weight allowance than sedans, so they need carriers with the right capacity. We ship everything from a RAV4 to a dually F-350 — including lifted trucks, work vans, and oversized rigs — matching each vehicle to a carrier that can load it safely.",
+    benefits: [
+      ["Right-sized carriers", "We match your vehicle's height, length, and weight to a trailer that fits it properly."],
+      ["Lifted & modified friendly", "Tell us about lift kits, racks, or oversized tires — we plan for them upfront, no surprises at pickup."],
+      ["Work vehicles welcome", "Cargo vans, crew cabs, and light commercial vehicles shipped nationwide."],
+      ["Open or enclosed", "Most SUVs and trucks ship open; enclosed available for premium builds."],
+    ],
+    priceNote:
+      "Larger vehicles cost more than sedans because they use more deck space and weight capacity — our calculator adds this automatically when you select SUV, Pickup Truck, or Van. Heavily modified or dually trucks may need a custom quote: call (865) 722-7114.",
+    faqs: [
+      {
+        q: "Does a lifted truck cost more to ship?",
+        a: "Usually yes — extra height can take a top-deck spot or require a specific trailer. Tell us the lift size and tire setup when booking so the quote is accurate from the start.",
+      },
+      {
+        q: "Can you ship a dually or heavy-duty pickup?",
+        a: "Yes — duallys and 3/4-ton/1-ton trucks ship regularly; they just need carriers with the right weight capacity, which we arrange.",
+      },
+      {
+        q: "Can I leave equipment or tools in my work van?",
+        a: "Up to 100 lbs of secured items is generally acceptable, but the carrier's insurance covers the vehicle, not the contents — remove anything valuable.",
+      },
+    ],
+  },
 ];
 
 export const getServiceBySlug = (slug) =>
