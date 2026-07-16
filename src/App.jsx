@@ -13,8 +13,16 @@ import Stats from "./components/Stats";
 import Reviews from "./components/Reviews";
 import Promotions from "./components/Promotions";
 import CookieConsent from "./components/CookieConsent";
+import TrackOrder from "./components/TrackOrder";
+import AdminOrders from "./components/AdminOrders";
 
 function App() {
+  // Simple path-based routing (no router library needed)
+  const path = window.location.pathname.replace(/\/$/, "");
+
+  if (path === "/track") return <TrackOrder />;
+  if (path === "/admin") return <AdminOrders />;
+
   return (
     <div className="min-h-screen bg-blue-100 pt-28">
       <Navbar />
