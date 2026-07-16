@@ -70,12 +70,12 @@ function Navbar() {
             </div>
           </a>
 
-          <nav className="hidden lg:flex items-center gap-3 flex-1 justify-center px-6">
+          <nav className="hidden lg:flex items-center gap-2 flex-1 justify-start pl-6">
             {links.map((item) => (
               <a
                 key={item.name}
                 href={item.href}
-                className={`font-semibold px-4 py-2 rounded-lg transition text-sm ${
+                className={`font-semibold px-3 py-2 rounded-lg transition text-sm whitespace-nowrap ${
                   scrolled
                     ? "text-gray-800 bg-gray-100 hover:bg-blue-600 hover:text-white"
                     : "text-white bg-white/15 hover:bg-white/30"
@@ -88,7 +88,7 @@ function Navbar() {
             <div className="relative">
               <button
                 onClick={() => { setStatesOpen(!statesOpen); setOffersOpen(false); }}
-                className={`font-semibold px-4 py-2 rounded-lg transition text-sm flex items-center gap-1 ${
+                className={`font-semibold px-3 py-2 rounded-lg transition text-sm flex items-center gap-1 whitespace-nowrap ${
                   scrolled
                     ? "text-gray-800 bg-gray-100 hover:bg-blue-600 hover:text-white"
                     : "text-white bg-white/15 hover:bg-white/30"
@@ -121,7 +121,7 @@ function Navbar() {
             <div className="relative">
               <button
                 onClick={() => { setOffersOpen(!offersOpen); setStatesOpen(false); }}
-                className={`font-semibold px-4 py-2 rounded-lg transition text-sm flex items-center gap-1 ${
+                className={`font-semibold px-3 py-2 rounded-lg transition text-sm flex items-center gap-1 whitespace-nowrap ${
                   scrolled
                     ? "text-green-700 bg-green-100 hover:bg-green-600 hover:text-white"
                     : "text-green-300 bg-green-500/20 hover:bg-green-500/40"
@@ -165,7 +165,7 @@ function Navbar() {
           <div className="hidden lg:flex items-center gap-3">
             <a
               href="/track"
-              className={`font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-1.5 ${
+              className={`font-bold px-3 py-2 rounded-lg text-sm transition flex items-center gap-1.5 whitespace-nowrap ${
                 scrolled
                   ? "text-blue-700 bg-blue-50 hover:bg-blue-100"
                   : "text-white bg-white/15 hover:bg-white/30"
@@ -175,7 +175,7 @@ function Navbar() {
             </a>
             <a
               href="#quote-form"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-bold text-sm transition"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold text-sm transition whitespace-nowrap"
             >
               Get Free Quote
             </a>
