@@ -168,12 +168,49 @@ export default async function handler(req, res) {
     let data = await r.json();
 
     // For phone lookups, keep only rows whose digits match exactly.
+    let looseMatches = null;
     if (!orderParam && Array.isArray(data)) {
+      looseMatches = data.length;
       const digits = normalizePhone(phoneParam);
       data = data.filter((row) => normalizePhone(row.customer_phone) === digits);
     }
 
     if (!Array.isArray(data) || data.length === 0) {
+      // Debug mode: report what the search saw, with phone values masked.
+      if (req.query.debug === "1" && !orderParam) {
+        let phonesInDb = null;
+        try {
+          const dbg = await fetch(
+            `${SUPABASE_URL}/rest/v1/orders?customer_phone=not.is.null&select=customer_phone&limit=25`,
+            { headers }
+          );
+          const rows = await dbg.json();
+          if (Array.isArray(rows)) {
+            phonesInDb = rows.map((row) => {
+              const p = (row.customer_phone || "").toString();
+              const d = normalizePhone(p);
+              return {
+                masked: p.replace(/\d(?=.*\d{2})/g, "*"),
+                digitCount: d.length,
+                lastTwo: d.slice(-2),
+                rawLength: p.length,
+              };
+            });
+          } else {
+            phonesInDb = { dbError: rows };
+          }
+        } catch (e) {
+          phonesInDb = { dbError: String(e) };
+        }
+        return res.status(404).json({
+          error: "NOT_FOUND",
+          debug: {
+            queryDigits: normalizePhone(phoneParam),
+            looseMatches,
+            ordersWithPhone: phonesInDb,
+          },
+        });
+      }
       return res.status(404).json({ error: "NOT_FOUND" });
     }
 
