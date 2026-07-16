@@ -1,25 +1,30 @@
+import openTransport from "../assets/opentrailer.jpg";
+import enclosedTransport from "../assets/enclosed.jpg";
+import expeditedShipping from "../assets/expedited.jpg";
+import doorToDoor from "../assets/doortodoor.jpg";
+
 function Services() {
   const services = [
     {
-      image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=250&fit=crop",
+      image: openTransport,
       title: "Open Auto Transport",
       description:
         "Our most popular and affordable shipping option for everyday vehicles. Safe, reliable, and available nationwide.",
     },
     {
-      image: "https://images.unsplash.com/photo-1567818735868-e71b99932e29?w=400&h=250&fit=crop",
+      image: enclosedTransport,
       title: "Enclosed Auto Transport",
       description:
         "Maximum protection for luxury, exotic, classic, and collector vehicles with fully enclosed trailers.",
     },
     {
-      image: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&h=250&fit=crop",
+      image: doorToDoor,
       title: "Door-to-Door Delivery",
       description:
         "Convenient pickup and delivery directly to your home or business whenever road access allows.",
     },
     {
-      image: "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=400&h=250&fit=crop",
+      image: expeditedShipping,
       title: "Expedited Shipping",
       description:
         "Need your vehicle moved quickly? Our expedited service prioritizes faster pickup and delivery.",
