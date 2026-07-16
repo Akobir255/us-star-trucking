@@ -29,26 +29,30 @@ function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? "bg-white/95 backdrop-blur shadow-lg" : "bg-white"
+        scrolled ? "bg-white/95 backdrop-blur shadow-lg" : "bg-slate-900/80 backdrop-blur"
       }`}
     >
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex justify-between items-center h-20">
 
           <a href="#" className="flex items-center gap-4">
-            <img src={logo} alt="US Star Trucking" className="h-14" />
+            <img src={logo} alt="US Star Trucking" className="h-14 rounded-lg" />
             <div>
-              <h1 className="font-bold text-xl text-blue-700">US Star Trucking LLC</h1>
-              <p className="text-sm text-gray-500">Nationwide Auto Transport</p>
+              <h1 className={`font-bold text-xl ${scrolled ? "text-blue-700" : "text-white"}`}>US Star Trucking LLC</h1>
+              <p className={`text-sm ${scrolled ? "text-gray-500" : "text-blue-300"}`}>Nationwide Auto Transport</p>
             </div>
           </a>
 
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-3">
             {links.map((item) => (
               <a
                 key={item.name}
                 href={item.href}
-                className="font-medium text-gray-700 hover:text-blue-700 transition"
+                className={`font-medium px-4 py-2 rounded-lg border transition ${
+                  scrolled
+                    ? "text-gray-700 border-gray-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200"
+                    : "text-white border-white/20 hover:bg-white/20 hover:border-white/40"
+                }`}
               >
                 {item.name}
               </a>
@@ -57,14 +61,18 @@ function Navbar() {
             <div className="relative">
               <button
                 onClick={() => setOffersOpen(!offersOpen)}
-                className="font-medium text-green-600 hover:text-green-700 transition flex items-center gap-1"
+                className={`font-medium px-4 py-2 rounded-lg border transition flex items-center gap-1 ${
+                  scrolled
+                    ? "text-green-600 border-green-200 hover:bg-green-50"
+                    : "text-green-400 border-green-400/30 hover:bg-green-400/20"
+                }`}
               >
                 🎁 Special Offers
                 <span className="text-xs">{offersOpen ? "▲" : "▼"}</span>
               </button>
 
               {offersOpen && (
-                <div className="absolute top-10 left-0 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 w-72 z-50">
+                <div className="absolute top-12 left-0 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 w-72 z-50">
                   <p className="text-xs text-gray-500 mb-3 font-semibold uppercase tracking-wide">
                     Current Promotions
                   </p>
@@ -94,8 +102,15 @@ function Navbar() {
             </div>
           </nav>
 
-          <div className="hidden lg:flex items-center gap-5">
-            <a href="tel:+18657227114" className="font-bold text-blue-700">
+          <div className="hidden lg:flex items-center gap-3">
+            <a
+              href="tel:+18657227114"
+              className={`font-bold px-4 py-2 rounded-lg border transition ${
+                scrolled
+                  ? "text-blue-700 border-blue-200 hover:bg-blue-50"
+                  : "text-white border-white/20 hover:bg-white/20"
+              }`}
+            >
               (865) 722-7114
             </a>
             <a
@@ -108,7 +123,7 @@ function Navbar() {
 
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="lg:hidden text-3xl"
+            className={`lg:hidden text-3xl ${scrolled ? "text-slate-900" : "text-white"}`}
           >
             ☰
           </button>
@@ -116,13 +131,17 @@ function Navbar() {
         </div>
 
         {menuOpen && (
-          <div className="lg:hidden border-t py-5 space-y-4">
+          <div className="lg:hidden border-t border-white/20 py-5 space-y-3">
             {links.map((item) => (
               <a
                 key={item.name}
                 href={item.href}
                 onClick={() => setMenuOpen(false)}
-                className="block font-medium"
+                className={`block font-medium px-4 py-2 rounded-lg border transition ${
+                  scrolled
+                    ? "text-gray-700 border-gray-200"
+                    : "text-white border-white/20"
+                }`}
               >
                 {item.name}
               </a>
@@ -141,7 +160,7 @@ function Navbar() {
               ))}
             </div>
 
-            <a href="tel:+18657227114" className="block text-blue-700 font-bold">
+            <a href="tel:+18657227114" className="block text-blue-700 font-bold px-4 py-2">
               📞 (865) 722-7114
             </a>
             <a

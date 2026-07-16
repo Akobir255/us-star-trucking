@@ -41,55 +41,48 @@ function Reviews() {
   return (
     <section
       id="reviews"
-      className="bg-gradient-to-b from-slate-100 to-white py-24"
+      className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 py-24"
     >
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="text-center mb-16">
-
-          <h2 className="text-5xl font-extrabold text-slate-900">
+          <h2 className="text-5xl font-extrabold text-white">
             Trusted by Customers Nationwide
           </h2>
-
-          <p className="mt-5 text-xl text-gray-600">
+          <p className="mt-5 text-xl text-blue-300">
             Customer satisfaction is at the heart of everything we do.
           </p>
-
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-
           {reviews.map((review) => (
             <div
               key={review.name}
-              className="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition duration-300 p-8 border border-gray-100 hover:-translate-y-2"
+              className="bg-white/10 backdrop-blur border border-white/20 rounded-3xl shadow-lg hover:shadow-2xl transition duration-300 p-8 hover:-translate-y-2"
             >
-
-              <div className="text-2xl text-yellow-500 mb-4">
+              <div className="text-2xl text-yellow-400 mb-4">
                 ⭐⭐⭐⭐⭐
               </div>
 
-              <h3 className="text-xl font-bold text-slate-900 mb-3">
+              <h3 className="text-xl font-bold text-white mb-3">
                 {review.title}
               </h3>
 
-              <p className="text-gray-600 leading-7 mb-6">
+              <p className="text-blue-200 leading-7 mb-6">
                 "{review.text}"
               </p>
 
-              <hr className="mb-5" />
+              <hr className="mb-5 border-white/20" />
 
-              <h4 className="font-bold text-slate-900">
+              <h4 className="font-bold text-white">
                 {review.name}
               </h4>
 
-              <p className="text-gray-500">
+              <p className="text-blue-300">
                 {review.location}
               </p>
-
             </div>
           ))}
-
         </div>
 
       </div>

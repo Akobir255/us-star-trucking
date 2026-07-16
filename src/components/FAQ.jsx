@@ -39,54 +39,44 @@ function FAQ() {
   return (
     <section
       id="faq"
-      className="bg-slate-50 py-24"
+      className="bg-gradient-to-br from-purple-950 via-purple-900 to-indigo-950 py-24"
     >
       <div className="max-w-5xl mx-auto px-6">
 
         <div className="text-center mb-16">
-
-          <h2 className="text-5xl font-extrabold text-slate-900">
+          <h2 className="text-5xl font-extrabold text-white">
             Frequently Asked Questions
           </h2>
-
-          <p className="mt-5 text-xl text-gray-600">
+          <p className="mt-5 text-xl text-purple-300">
             Everything you need to know about shipping your vehicle.
           </p>
-
         </div>
 
         <div className="space-y-5">
-
           {faqs.map((faq, index) => (
             <div
               key={index}
-              className="bg-white rounded-2xl shadow-md overflow-hidden"
+              className="bg-white/10 backdrop-blur border border-purple-400/30 rounded-2xl overflow-hidden"
             >
-
               <button
-                onClick={() =>
-                  setOpen(open === index ? null : index)
-                }
-                className="w-full flex justify-between items-center text-left p-6 hover:bg-gray-50 transition"
+                onClick={() => setOpen(open === index ? null : index)}
+                className="w-full flex justify-between items-center text-left p-6 hover:bg-white/10 transition"
               >
-                <span className="text-xl font-semibold text-slate-900">
+                <span className="text-xl font-semibold text-white">
                   {faq.question}
                 </span>
-
-                <span className="text-3xl text-blue-600 font-bold">
+                <span className="text-3xl text-purple-400 font-bold">
                   {open === index ? "−" : "+"}
                 </span>
               </button>
 
               {open === index && (
-                <div className="px-6 pb-6 text-gray-600 leading-7">
+                <div className="px-6 pb-6 text-purple-200 leading-7">
                   {faq.answer}
                 </div>
               )}
-
             </div>
           ))}
-
         </div>
 
       </div>
