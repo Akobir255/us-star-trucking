@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { submitQuote, getCityState } from "../googleDistance";
-import PriceRangeGauge from "./PriceRangeGauge"; 
 
 const PROMO_CODES = {
   USSTAR50: { discount: 50, label: "$50 off your first shipment" },
@@ -660,7 +659,7 @@ export default function QuoteForm() {
               <div className="h-px w-8 bg-gray-300" />
               <div className={`flex items-center gap-2 ${step === 2 ? "text-blue-700 font-bold" : "text-gray-400"}`}>
                 <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${step === 2 ? "bg-blue-600 text-white" : "bg-gray-300 text-white"}`}>2</span>
-                Your estimate
+                Unlock your quote
               </div>
             </div>
 
@@ -781,11 +780,11 @@ export default function QuoteForm() {
                     estimating ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
                   }`}
                 >
-                  {estimating ? "Calculating your estimate..." : "See My Instant Estimate →"}
+                  {estimating ? "Checking your route..." : "Continue →"}
                 </button>
 
                 <p className="text-center text-xs text-gray-400">
-                  No contact details needed to see your estimate.
+                  One quick step left — your instant estimate appears after your contact details.
                 </p>
 
                 {message.text && (
@@ -809,16 +808,52 @@ export default function QuoteForm() {
                 />
 
                 {estimate && (
-                  <PriceRangeGauge
-                    estimate={estimate}
-                    promo={appliedPromo}
-                    onEditDetails={() => setStep(1)}
-                  />
+                  <div className="rounded-2xl border-2 border-blue-100 bg-blue-50/60 p-5">
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <div>
+                        <div className="flex items-center gap-2 text-green-600 font-bold">
+                          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                          Your quote is ready!
+                        </div>
+                        <div className="mt-1 text-sm text-gray-600 font-medium">
+                          {estimate.pickupCity}, {estimate.pickupState} → {estimate.deliveryCity}, {estimate.deliveryState}
+                          {estimate.distance ? ` · ${estimate.distance}` : ""}
+                        </div>
+                        {vehicles[0]?.make && (
+                          <div className="text-sm text-gray-500">
+                            {[vehicles[0].year, vehicles[0].make, vehicles[0].model].filter(Boolean).join(" ")}
+                            {vehicles.length > 1 ? ` + ${vehicles.length - 1} more` : ""}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center justify-end gap-1.5 text-3xl font-extrabold text-blue-700 select-none">
+                          <svg className="h-6 w-6 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <rect x="5" y="11" width="14" height="9" rx="2" />
+                            <path d="M8 11V8a4 4 0 118 0v3" />
+                          </svg>
+                          <span aria-hidden="true">$ • • •</span>
+                        </div>
+                        <div className="text-xs text-gray-500 font-medium mt-0.5">
+                          Revealed instantly below
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setStep(1)}
+                      className="mt-3 text-sm text-blue-600 hover:underline font-semibold"
+                    >
+                      ← Edit shipment details
+                    </button>
+                  </div>
                 )}
 
                 <p className="text-center text-gray-600 text-sm font-medium">
-                  Enter your contact details to save this quote — an agent will confirm
-                  availability for your dates.
+                  Enter your details below and your exact quote appears instantly —
+                  an agent will also confirm availability for your dates.
                 </p>
 
                 <div className="grid md:grid-cols-2 gap-4">
@@ -901,7 +936,7 @@ export default function QuoteForm() {
                     loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
                   }`}
                 >
-                  {loading ? "Saving your quote..." : `Save My Quote${appliedPromo ? ` (-$${appliedPromo.discount})` : ""}`}
+                  {loading ? "Getting your quote..." : `Show My Quote${appliedPromo ? ` (-$${appliedPromo.discount})` : ""} →`}
                 </button>
 
                 <p className="text-center text-xs text-gray-400 leading-5">
