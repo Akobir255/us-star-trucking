@@ -608,16 +608,32 @@ export default function QuoteForm() {
 
             {quote && (
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-4 inline-block min-w-[260px]">
-                <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Your Estimated Quote</div>
-                {appliedPromo && (
-                  <div className="text-sm text-gray-400 line-through mb-1">${quote.originalPrice}</div>
-                )}
-                <div className="text-4xl font-bold text-blue-700">${quote.price}</div>
-                <div className="text-sm text-gray-500 mt-1">{quote.distance} · {quote.duration}</div>
-                {appliedPromo && (
-                  <div className="mt-2 text-green-600 font-semibold text-sm">
-                    You saved ${appliedPromo.discount} with code {formData.promoCode.toUpperCase()}!
-                  </div>
+                {quote.manual ? (
+                  <>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Your Quote Request</div>
+                    <div className="text-2xl font-bold text-blue-700">Personally quoted route</div>
+                    <div className="text-sm text-gray-600 mt-2 leading-6">{quote.manualReason}</div>
+                    <div className="text-sm text-gray-500 mt-2">
+                      Our specialist will call you shortly with your exact price.
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Your Estimated Quote</div>
+                    {appliedPromo && (
+                      <div className="text-sm text-gray-400 line-through mb-1">${quote.originalPrice}</div>
+                    )}
+                    <div className="text-4xl font-bold text-blue-700">${quote.price}</div>
+                    <div className="text-sm text-gray-500 mt-1">{quote.distance} · {quote.duration}</div>
+                    {quote.oceanNote && (
+                      <div className="mt-2 text-xs text-blue-600 font-medium">{quote.oceanNote}</div>
+                    )}
+                    {appliedPromo && (
+                      <div className="mt-2 text-green-600 font-semibold text-sm">
+                        You saved ${appliedPromo.discount} with code {formData.promoCode.toUpperCase()}!
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -815,7 +831,7 @@ export default function QuoteForm() {
                           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
-                          Your quote is ready!
+                          {estimate.manual ? "Route received — specialist pricing" : "Your quote is ready!"}
                         </div>
                         <div className="mt-1 text-sm text-gray-600 font-medium">
                           {estimate.pickupCity}, {estimate.pickupState} → {estimate.deliveryCity}, {estimate.deliveryState}
@@ -829,18 +845,35 @@ export default function QuoteForm() {
                         )}
                       </div>
                       <div className="text-right">
-                        <div className="flex items-center justify-end gap-1.5 text-3xl font-extrabold text-blue-700 select-none">
-                          <svg className="h-6 w-6 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect x="5" y="11" width="14" height="9" rx="2" />
-                            <path d="M8 11V8a4 4 0 118 0v3" />
-                          </svg>
-                          <span aria-hidden="true">$ • • •</span>
-                        </div>
-                        <div className="text-xs text-gray-500 font-medium mt-0.5">
-                          Revealed instantly below
-                        </div>
+                        {estimate.manual ? (
+                          <div className="max-w-[180px]">
+                            <div className="text-sm font-bold text-blue-700">Personally quoted route</div>
+                            <div className="text-xs text-gray-500 font-medium mt-0.5">
+                              Our specialist calls you with the exact price
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex items-center justify-end gap-1.5 text-3xl font-extrabold text-blue-700 select-none">
+                              <svg className="h-6 w-6 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <rect x="5" y="11" width="14" height="9" rx="2" />
+                                <path d="M8 11V8a4 4 0 118 0v3" />
+                              </svg>
+                              <span aria-hidden="true">$ • • •</span>
+                            </div>
+                            <div className="text-xs text-gray-500 font-medium mt-0.5">
+                              Revealed instantly below
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
+                    {estimate.oceanNote && (
+                      <div className="mt-2 text-xs text-blue-600 font-medium">{estimate.oceanNote}</div>
+                    )}
+                    {estimate.manual && estimate.manualReason && (
+                      <div className="mt-2 text-xs text-gray-600">{estimate.manualReason}</div>
+                    )}
                     <button
                       type="button"
                       onClick={() => setStep(1)}
