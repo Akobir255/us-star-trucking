@@ -1,37 +1,41 @@
 /**
  * PriceRangeGauge
- * Shows the shipment estimate as a low-high price range with a gradient
- * gauge and trade-off callouts, instead of a single fixed number.
+ * Shows the exact estimated price first, then a supporting range of
+ * ±rangePercent (default 20%) around it, with a gradient gauge and
+ * trade-off callouts.
  *
  * Pass in the `estimate` object returned by the quote API
- * ({ price, miles, distance, pickupCity, pickupState, deliveryCity, deliveryState })
- * plus an optional dollar band. No changes needed to the pricing API.
+ * ({ price, miles, distance, pickupCity, pickupState, deliveryCity, deliveryState }).
+ * No changes needed to the pricing API.
  */
 export default function PriceRangeGauge({
   estimate,
-  band = 100,
-  longHaulMiles = 1000,
-  longHaulBand = 200,
+  rangePercent = 0.2, // ±20% around the exact price
   onEditDetails,
 }) {
   if (!estimate) return null;
 
-  const effectiveBand =
-    estimate.miles && estimate.miles >= longHaulMiles ? longHaulBand : band;
+  const price = estimate.price;
 
   // round to nearest $50 so the range reads as deliberate price points
   const roundTo50 = (n) => Math.round(n / 50) * 50;
-  const low = roundTo50(Math.max(0, estimate.price - effectiveBand));
-  const high = roundTo50(estimate.price + effectiveBand);
+  const low = roundTo50(Math.max(0, price * (1 - rangePercent)));
+  const high = roundTo50(price * (1 + rangePercent));
 
   return (
     <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 sm:p-6 text-center">
       <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
-        Your Estimated Price Range
+        Your Estimated Price
       </div>
 
-      <div className="text-4xl font-extrabold text-blue-700">
-        ${low.toLocaleString()} – ${high.toLocaleString()}
+      {/* Exact price — the headline number */}
+      <div className="text-5xl font-extrabold text-blue-700">
+        ${price.toLocaleString()}
+      </div>
+
+      {/* Supporting range below it */}
+      <div className="text-base font-semibold text-gray-600 mt-1">
+        Typical range: ${low.toLocaleString()} – ${high.toLocaleString()}
       </div>
 
       <div className="text-sm text-gray-500 mt-1">
@@ -46,6 +50,19 @@ export default function PriceRangeGauge({
           style={{
             background:
               "linear-gradient(90deg, #ef4444 0%, #f59e0b 35%, #eab308 55%, #84cc16 75%, #22c55e 100%)",
+          }}
+        />
+        {/* Marker showing the exact price at the center of the range */}
+        <div
+          className="absolute -top-1.5"
+          style={{
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: 0,
+            height: 0,
+            borderLeft: "7px solid transparent",
+            borderRight: "7px solid transparent",
+            borderTop: "9px solid #1d4ed8",
           }}
         />
         <div

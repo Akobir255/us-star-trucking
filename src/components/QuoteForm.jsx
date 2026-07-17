@@ -802,9 +802,7 @@ export default function QuoteForm() {
                 {estimate && (
                   <PriceRangeGauge
                     estimate={estimate}
-                    band={150}
-                    longHaulMiles={1000}
-                    longHaulBand={200}
+                    rangePercent={0.2}
                     onEditDetails={() => setStep(1)}
                   />
                 )}
