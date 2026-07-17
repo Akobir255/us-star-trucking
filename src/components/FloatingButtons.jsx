@@ -27,7 +27,7 @@ export default function FloatingButtons() {
           href="tel:+18657227114"
           className="btn-green text-white rounded-full shadow-2xl px-6 py-4 font-bold flex items-center justify-center gap-3 transition duration-300 hover:scale-105 whitespace-nowrap"
         >
-          📞 Call Now
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1.9.3 1.8.6 2.7a2 2 0 01-.5 2.1L8 9.7a16 16 0 006.3 6.3l1.2-1.2a2 2 0 012.1-.5c.9.3 1.8.5 2.7.6a2 2 0 011.7 2z"/></svg> Call Now
         </a>
 
         {/* Email */}
@@ -35,7 +35,7 @@ export default function FloatingButtons() {
           href="mailto:leo@usstrucking.org"
           className="btn-blue text-white rounded-full shadow-2xl px-6 py-4 font-bold flex items-center justify-center gap-3 transition duration-300 hover:scale-105 whitespace-nowrap"
         >
-          ✉️ Email
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></svg> Email
         </a>
 
         {/* Quote */}
@@ -43,7 +43,7 @@ export default function FloatingButtons() {
           href="/#quote-form"
           className="btn-orange text-white rounded-full shadow-2xl px-6 py-4 font-bold flex items-center justify-center gap-3 transition duration-300 hover:scale-105 whitespace-nowrap"
         >
-          🚗 Get Quote
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true"><path d="M5 16V9l2-4h10l2 4v7"/><path d="M3 16h18"/><circle cx="7.5" cy="16" r="0.5" fill="currentColor"/><circle cx="16.5" cy="16" r="0.5" fill="currentColor"/></svg> Get Quote
         </a>
 
       </div>

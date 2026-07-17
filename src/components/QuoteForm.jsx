@@ -646,8 +646,8 @@ export default function QuoteForm() {
         ) : (
           <>
             <div ref={stepTopRef} />
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-center mb-2 bg-gradient-to-r from-blue-700 via-cyan-500 to-blue-700 bg-clip-text text-transparent">🚗 Get Your Free Car Shipping Quote</h2>
-            <p className="text-center text-gray-500 mb-5 text-sm sm:text-base">⚡ Instant estimate · 🛡️ Licensed & bonded broker · 🚪 Door-to-door</p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-center mb-2 bg-gradient-to-r from-blue-700 via-cyan-500 to-blue-700 bg-clip-text text-transparent">Get Your Free Car Shipping Quote</h2>
+            <p className="text-center text-gray-500 mb-5 text-sm sm:text-base">Instant estimate · Licensed & bonded broker · Door-to-door</p>
 
             {/* Step indicator */}
             <div className="flex items-center justify-center gap-3 mb-6 text-sm">
@@ -668,7 +668,7 @@ export default function QuoteForm() {
                 like /?promo=USSTAR50 give instant visual feedback */}
             {appliedPromo && (
               <div className="flex items-center justify-center gap-2 mb-5 bg-green-50 border border-green-300 text-green-700 text-sm font-semibold rounded-xl px-4 py-2.5 max-w-md mx-auto">
-                🎉 Code <span className="font-mono bg-white border border-green-200 rounded px-1.5">{formData.promoCode.toUpperCase()}</span>
+                Code <span className="font-mono bg-white border border-green-200 rounded px-1.5">{formData.promoCode.toUpperCase()}</span>
                 applied — ${appliedPromo.discount} off your shipment
               </div>
             )}
@@ -888,7 +888,7 @@ export default function QuoteForm() {
                     />
                     {promoMessage.text && (
                       <p className={`mt-1 text-sm font-medium ${promoMessage.type === "success" ? "text-green-600" : "text-red-500"}`}>
-                        {promoMessage.type === "success" ? "✅" : "❌"} {promoMessage.text}
+                        {promoMessage.text}
                       </p>
                     )}
                   </div>
