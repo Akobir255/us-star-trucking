@@ -40,7 +40,7 @@ export default function FloatingButtons() {
 
         {/* Quote */}
         <a
-          href="#quote-form"
+          href="/#quote-form"
           className="btn-orange text-white rounded-full shadow-2xl px-6 py-4 font-bold flex items-center justify-center gap-3 transition duration-300 hover:scale-105 whitespace-nowrap"
         >
           🚗 Get Quote

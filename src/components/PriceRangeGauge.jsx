@@ -1,8 +1,9 @@
 /**
  * PriceRangeGauge
- * Shows the exact estimated price first, then a supporting range of
- * ±rangePercent (default 20%) around it, with a gradient gauge and
- * trade-off callouts.
+ * Shows the exact estimated price first, then a supporting range around it:
+ * ±$50 for prices under $1,000, ±$100 for $1,000 and above.
+ * If a promo is applied ({ discount, label }), the discounted price becomes
+ * the headline and the original shows struck through.
  *
  * Pass in the `estimate` object returned by the quote API
  * ({ price, miles, distance, pickupCity, pickupState, deliveryCity, deliveryState }).
@@ -10,17 +11,22 @@
  */
 export default function PriceRangeGauge({
   estimate,
-  rangePercent = 0.2, // ±20% around the exact price
+  promo = null,
   onEditDetails,
 }) {
   if (!estimate) return null;
 
-  const price = estimate.price;
+  const originalPrice = estimate.price;
+  const discount = promo?.discount || 0;
+  const price = Math.max(0, originalPrice - discount);
+
+  // ±$50 band for cheaper shipments, ±$100 for $1,000+
+  const band = price < 1000 ? 50 : 100;
 
   // round to nearest $50 so the range reads as deliberate price points
   const roundTo50 = (n) => Math.round(n / 50) * 50;
-  const low = roundTo50(Math.max(0, price * (1 - rangePercent)));
-  const high = roundTo50(price * (1 + rangePercent));
+  const low = roundTo50(Math.max(0, price - band));
+  const high = roundTo50(price + band);
 
   return (
     <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 sm:p-6 text-center">
@@ -29,9 +35,19 @@ export default function PriceRangeGauge({
       </div>
 
       {/* Exact price — the headline number */}
+      {discount > 0 && (
+        <div className="text-lg text-gray-400 line-through font-semibold">
+          ${originalPrice.toLocaleString()}
+        </div>
+      )}
       <div className="text-5xl font-extrabold text-blue-700">
         ${price.toLocaleString()}
       </div>
+      {discount > 0 && (
+        <div className="text-sm font-semibold text-green-600 mt-1">
+          Promo applied — you save ${discount}
+        </div>
+      )}
 
       {/* Supporting range below it */}
       <div className="text-base font-semibold text-gray-600 mt-1">

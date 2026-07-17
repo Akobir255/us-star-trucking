@@ -36,11 +36,11 @@ function Navbar() {
   }, [statesOpen]);
 
   const links = [
-    { name: "Services", href: "#services" },
-    { name: "How It Works", href: "#how-it-works" },
-    { name: "Special Offers", href: "#promotions", accent: true },
-    { name: "FAQ", href: "#faq" },
-    { name: "Contact", href: "#contact" },
+    { name: "Services", href: "/#services" },
+    { name: "How It Works", href: "/#how-it-works" },
+    { name: "Special Offers", href: "/#promotions", accent: true },
+    { name: "FAQ", href: "/#faq" },
+    { name: "Contact", href: "/#contact" },
   ];
 
   return (

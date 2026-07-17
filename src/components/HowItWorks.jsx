@@ -88,7 +88,7 @@ function HowItWorks() {
             for safe, reliable, and affordable nationwide vehicle transport.
           </p>
           <a
-            href="#quote-form"
+            href="/#quote-form"
             className="inline-block bg-white text-blue-700 font-bold px-8 py-4 rounded-xl hover:bg-gray-100 transition"
           >
             Get Your Free Quote

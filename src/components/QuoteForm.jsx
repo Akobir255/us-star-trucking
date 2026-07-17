@@ -664,6 +664,15 @@ export default function QuoteForm() {
               </div>
             </div>
 
+            {/* Applied promo banner — visible on both steps so promo links
+                like /?promo=USSTAR50 give instant visual feedback */}
+            {appliedPromo && (
+              <div className="flex items-center justify-center gap-2 mb-5 bg-green-50 border border-green-300 text-green-700 text-sm font-semibold rounded-xl px-4 py-2.5 max-w-md mx-auto">
+                🎉 Code <span className="font-mono bg-white border border-green-200 rounded px-1.5">{formData.promoCode.toUpperCase()}</span>
+                applied — ${appliedPromo.discount} off your shipment
+              </div>
+            )}
+
             {step === 1 ? (
               /* ============ STEP 1 — SHIPMENT DETAILS ============ */
               <form onSubmit={handleGetEstimate} className="flex flex-col gap-4">
@@ -802,7 +811,7 @@ export default function QuoteForm() {
                 {estimate && (
                   <PriceRangeGauge
                     estimate={estimate}
-                    rangePercent={0.2}
+                    promo={appliedPromo}
                     onEditDetails={() => setStep(1)}
                   />
                 )}

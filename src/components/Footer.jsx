@@ -54,14 +54,14 @@ function Footer() {
           <div>
             <h3 className="text-xl font-bold text-white mb-5">Quick Links</h3>
             <ul className="space-y-3">
-              <li><a href="#" className="hover:text-blue-400">Home</a></li>
-              <li><a href="#quote-form" className="hover:text-blue-400">Free Quote</a></li>
+              <li><a href="/" className="hover:text-blue-400">Home</a></li>
+              <li><a href="/#quote-form" className="hover:text-blue-400">Free Quote</a></li>
               <li><a href="/track" className="hover:text-blue-400"> Track Shipment</a></li>
               <li><a href="/blog" className="hover:text-blue-400">📰 Blog & Guides</a></li>
-              <li><a href="#services" className="hover:text-blue-400">Services</a></li>
-              <li><a href="#reviews" className="hover:text-blue-400">Reviews</a></li>
-              <li><a href="#faq" className="hover:text-blue-400">FAQ</a></li>
-              <li><a href="#contact" className="hover:text-blue-400">Contact</a></li>
+              <li><a href="/#services" className="hover:text-blue-400">Services</a></li>
+              <li><a href="/#reviews" className="hover:text-blue-400">Reviews</a></li>
+              <li><a href="/#faq" className="hover:text-blue-400">FAQ</a></li>
+              <li><a href="/#contact" className="hover:text-blue-400">Contact</a></li>
             </ul>
           </div>
 
