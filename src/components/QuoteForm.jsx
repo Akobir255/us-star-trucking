@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { submitQuote, getCityState } from "../googleDistance";
+import PriceRangeGauge from "./PriceRangeGauge"; 
 
 const PROMO_CODES = {
   USSTAR50: { discount: 50, label: "$50 off your first shipment" },
@@ -799,25 +800,13 @@ export default function QuoteForm() {
                 />
 
                 {estimate && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 text-center">
-                    <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Your Estimated Price</div>
-                    <div className="text-4xl font-extrabold text-blue-700">${estimate.price}</div>
-                    <div className="text-sm text-gray-500 mt-1">
-                      {estimate.pickupCity}, {estimate.pickupState} → {estimate.deliveryCity}, {estimate.deliveryState}
-                      {" · "}{estimate.distance}
-                    </div>
-                    <p className="text-xs text-gray-400 mt-2 max-w-md mx-auto">
-                      This is an estimate. Your final price is confirmed when a carrier is
-                      assigned to your route — we'll explain every fee before you book.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => setStep(1)}
-                      className="mt-3 text-blue-600 hover:text-blue-800 text-sm font-semibold"
-                    >
-                      ← Edit shipment details
-                    </button>
-                  </div>
+                  <PriceRangeGauge
+                    estimate={estimate}
+                    band={150}
+                    longHaulMiles={1000}
+                    longHaulBand={200}
+                    onEditDetails={() => setStep(1)}
+                  />
                 )}
 
                 <p className="text-center text-gray-600 text-sm font-medium">
