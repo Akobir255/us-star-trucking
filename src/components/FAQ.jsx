@@ -32,6 +32,16 @@ function FAQ() {
       answer:
         "We offer both Open Transport and Enclosed Transport. Open transport is the most affordable option, while enclosed transport provides extra protection for luxury, exotic, and classic vehicles.",
     },
+    {
+      question: "Can I leave personal items in my car during shipping?",
+      answer:
+        "Carriers allow a small amount of personal items in the trunk or cargo area, generally up to about 100 lbs, as long as they're below window level and don't add significant weight. Items aren't covered by carrier insurance, so we recommend removing anything valuable or irreplaceable before pickup.",
+    },
+    {
+      question: "What happens if my pickup date changes?",
+      answer:
+        "Pickup windows are estimates, not guarantees — carrier schedules can shift due to traffic, weather, or route changes. If your availability changes, just let us know as soon as possible and we'll work with the carrier to adjust the pickup date.",
+    },
   ];
 
   const [open, setOpen] = useState(null);

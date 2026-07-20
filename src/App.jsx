@@ -11,6 +11,7 @@ import TrustBar from "./components/TrustBar";
 import Contact from "./components/Contact";
 import Stats from "./components/Stats";
 import Reviews from "./components/Reviews";
+import RecentShipments from "./components/RecentShipments";
 import Promotions from "./components/Promotions";
 import CookieConsent from "./components/CookieConsent";
 import TrackOrder from "./components/TrackOrder";
@@ -104,6 +105,7 @@ function App() {
       <div className="bg-[#000919]">
         <Reviews />
       </div>
+      <RecentShipments />
       <div className="bg-[#001D3F]">
         <FAQ />
       </div>

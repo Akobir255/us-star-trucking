@@ -384,6 +384,20 @@ export default function QuoteForm() {
       }));
     }
 
+    // Prefill vehicle type + phone from the hero's mini quote form,
+    // e.g. /?pickup=90001&delivery=33101&vehicle=SUV&phone=8657227114#quote-form
+    const vehicleParam = params.get("vehicle") || "";
+    const validVehicleTypes = ["Sedan", "SUV", "Pickup Truck", "Van", "Motorcycle"];
+    if (vehicleParam && validVehicleTypes.includes(vehicleParam)) {
+      setVehicles((prev) =>
+        prev.map((v, i) => (i === 0 ? { ...v, vehicle: vehicleParam } : v))
+      );
+    }
+    const phoneParam = (params.get("phone") || "").replace(/[^\d+()\-.\s]/g, "").slice(0, 20);
+    if (phoneParam) {
+      setFormData((p) => ({ ...p, phone: phoneParam }));
+    }
+
     const hasHash = window.location.hash === "#quote-form";
     const hasParam = params.has("quote") || !!promoParam;
     const hasPath = window.location.pathname.replace(/\/$/, "") === "/quote-form";

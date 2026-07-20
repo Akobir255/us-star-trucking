@@ -79,10 +79,13 @@ function Footer() {
                 leo@usstrucking.org
               </a>
             </p>
-            <p>
+            <p className="mb-3">
               📍 9111 Cross Park Dr<br />
               Suite D200 #1013<br />
               Knoxville, TN 37923
+            </p>
+            <p>
+              🕐 Mon–Sun: 8:00 AM – 8:00 PM ET
             </p>
           </div>
 

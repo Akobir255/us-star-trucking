@@ -1,13 +1,123 @@
-import heroImage from "../assets/hero.webp";
+import { useState } from "react";
 
-function Hero() {
-  const scrollToQuote = () => {
-    const section = document.getElementById("quote-form");
-    if (section) {
-      section.scrollIntoView({ behavior: "smooth" });
-    }
+const VEHICLE_TYPES = ["Sedan", "SUV", "Pickup Truck", "Van", "Motorcycle"];
+
+const TRUST_ITEMS = [
+  "Licensed & Bonded",
+  "Fully Insured",
+  "Nationwide Service",
+  "Free Quotes",
+  "Door-to-Door Delivery",
+];
+
+function HeroQuoteForm() {
+  const [pickup, setPickup] = useState("");
+  const [delivery, setDelivery] = useState("");
+  const [vehicle, setVehicle] = useState("");
+  const [phone, setPhone] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (pickup) params.set("pickup", pickup);
+    if (delivery) params.set("delivery", delivery);
+    if (vehicle) params.set("vehicle", vehicle);
+    if (phone) params.set("phone", phone);
+    window.location.href = `/?${params.toString()}#quote-form`;
   };
 
+  return (
+    <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 text-slate-900">
+      <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-1">
+        Instant Estimate
+      </p>
+      <h2 className="text-2xl font-extrabold mb-6">
+        Get Your Free Shipping Quote
+      </h2>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1">
+            <label htmlFor="hero-pickup" className="text-sm font-semibold text-gray-700">
+              Pickup ZIP
+            </label>
+            <input
+              id="hero-pickup"
+              type="text"
+              inputMode="numeric"
+              maxLength={5}
+              placeholder="90001"
+              value={pickup}
+              onChange={(e) => setPickup(e.target.value.replace(/\D/g, "").slice(0, 5))}
+              required
+              className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="hero-delivery" className="text-sm font-semibold text-gray-700">
+              Delivery ZIP
+            </label>
+            <input
+              id="hero-delivery"
+              type="text"
+              inputMode="numeric"
+              maxLength={5}
+              placeholder="33101"
+              value={delivery}
+              onChange={(e) => setDelivery(e.target.value.replace(/\D/g, "").slice(0, 5))}
+              required
+              className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label htmlFor="hero-vehicle" className="text-sm font-semibold text-gray-700">
+            Vehicle Type
+          </label>
+          <select
+            id="hero-vehicle"
+            value={vehicle}
+            onChange={(e) => setVehicle(e.target.value)}
+            className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select vehicle type</option>
+            {VEHICLE_TYPES.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label htmlFor="hero-phone" className="text-sm font-semibold text-gray-700">
+            Phone Number
+          </label>
+          <input
+            id="hero-phone"
+            type="tel"
+            placeholder="(865) 722-7114"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <button
+          type="submit"
+          className="bg-orange-500 hover:bg-orange-600 transition text-white font-bold py-4 rounded-xl shadow-lg shadow-orange-500/30 mt-2"
+        >
+          Get My Free Quote →
+        </button>
+      </form>
+
+      <p className="text-xs text-gray-400 mt-4 text-center">
+        No obligation. Takes less than 30 seconds.
+      </p>
+    </div>
+  );
+}
+
+function Hero() {
   return (
     <section
       id="home"
@@ -18,8 +128,17 @@ function Hero() {
         {/* LEFT SIDE */}
         <div>
 
-          <div className="inline-block bg-blue-600/20 text-blue-300 px-4 py-2 rounded-full text-sm font-semibold mb-6">
+          <div className="inline-block bg-blue-600/20 text-blue-300 px-4 py-2 rounded-full text-sm font-semibold mb-5">
             🚛 Licensed • Bonded • Insured
+          </div>
+
+          {/* Rating row */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-5">
+            <span className="text-yellow-400 text-lg tracking-tight">★★★★★</span>
+            <span className="font-bold">4.9/5 Average Rating</span>
+            <span className="text-slate-400 text-sm">
+              Google Reviews · Facebook · BBB
+            </span>
           </div>
 
           <h2 className="text-blue-400 uppercase tracking-[4px] font-bold">
@@ -39,20 +158,27 @@ function Hero() {
             carriers and manage the process from dispatch through delivery.
           </p>
 
-          <div className="flex flex-wrap gap-4 mt-10">
+          {/* Trust checklist */}
+          <ul className="flex flex-wrap gap-x-6 gap-y-2 mt-6 text-sm">
+            {TRUST_ITEMS.map((item) => (
+              <li key={item} className="flex items-center gap-2 text-slate-200 font-semibold">
+                <span className="text-green-400" aria-hidden="true">✓</span>
+                {item}
+              </li>
+            ))}
+          </ul>
 
-            <button
-              onClick={scrollToQuote}
-              className="bg-blue-600 hover:bg-blue-700 transition px-8 py-4 rounded-xl font-bold shadow-xl"
-            >
-              🚗 Get My Free Quote
-            </button>
+          <div className="flex flex-wrap items-center gap-5 mt-10">
 
             <a
               href="tel:+18657227114"
-              className="border border-white px-8 py-4 rounded-xl hover:bg-white hover:text-slate-900 transition font-semibold"
+              className="flex items-center gap-3 bg-white/10 hover:bg-white/15 border border-white/20 transition px-6 py-4 rounded-xl"
             >
-              📞 Call (865) 722-7114
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-blue-400 shrink-0" aria-hidden="true"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1.9.3 1.8.6 2.7a2 2 0 01-.5 2.1L8 9.7a16 16 0 006.3 6.3l1.2-1.2a2 2 0 012.1-.5c.9.3 1.8.5 2.7.6a2 2 0 011.7 2z"/></svg>
+              <div className="leading-tight text-left">
+                <p className="text-xl font-extrabold">(865) 722-7114</p>
+                <p className="text-xs text-slate-300 font-semibold">Available 7 Days a Week</p>
+              </div>
             </a>
 
           </div>
@@ -83,36 +209,9 @@ function Hero() {
 
         </div>
 
-        {/* RIGHT SIDE */}
-
-        <div className="relative">
-
-          <img
-            src={heroImage}
-            alt="Open car carrier truck loaded with vehicles for nationwide auto transport"
-            width="1100"
-            height="825"
-            fetchpriority="high"
-            decoding="async"
-            className="rounded-3xl shadow-2xl w-full h-auto"
-          />
-
-          <div className="absolute -bottom-6 left-6 bg-white text-slate-900 rounded-2xl p-6 shadow-2xl">
-
-            <p className="text-3xl font-extrabold text-blue-600">
-              🚛 MC 206532
-            </p>
-
-            <p className="font-bold mt-2">
-              FMCSA-Authorized Auto Transport Broker
-            </p>
-
-            <p className="text-sm text-slate-600">
-              Door-to-Door • All 50 States
-            </p>
-
-          </div>
-
+        {/* RIGHT SIDE — instant quote form */}
+        <div>
+          <HeroQuoteForm />
         </div>
 
       </div>
