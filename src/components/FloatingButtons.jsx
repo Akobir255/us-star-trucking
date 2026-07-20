@@ -19,8 +19,8 @@ export default function FloatingButtons() {
         .btn-orange { animation: pulse-orange 2s infinite; animation-delay: 0.8s; }
       `}</style>
 
-      {/* bottom-28 leaves room for the Tidio chat bubble below the stack */}
-      <div className="fixed bottom-28 right-6 z-50 flex flex-col gap-4">
+      {/* bottom-28 leaves room for the Tidio chat bubble below the stack. Desktop-only — mobile has the navbar phone link and its own sticky CTA. */}
+      <div className="fixed bottom-28 right-6 z-50 hidden lg:flex flex-col gap-4">
 
         {/* Call */}
         <a

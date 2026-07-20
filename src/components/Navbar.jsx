@@ -45,8 +45,8 @@ function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? "bg-white shadow-lg" : "bg-slate-900"
+      className={`fixed top-0 left-0 w-full z-50 bg-white transition-all duration-300 ${
+        scrolled ? "shadow-lg" : "shadow-sm border-b border-gray-100"
       }`}
     >
       {/* Announcement banner — stacked above the nav inside the same fixed header */}
@@ -75,10 +75,10 @@ function Navbar() {
           <a href="/" className="flex items-center gap-3 shrink-0">
             <img src={logo} alt="US Star Trucking logo" width="64" height="48" className="h-12 w-auto rounded-lg" />
             <div>
-              <span className={`block font-bold text-lg leading-tight ${scrolled ? "text-blue-700" : "text-white"}`}>
+              <span className="block font-bold text-lg leading-tight text-blue-700">
                 US Star Trucking LLC
               </span>
-              <p className={`text-xs ${scrolled ? "text-gray-500" : "text-blue-300"}`}>
+              <p className="text-xs text-gray-500">
                 Nationwide Auto Transport
               </p>
             </div>
@@ -92,12 +92,8 @@ function Navbar() {
                 href={item.href}
                 className={`font-semibold text-sm whitespace-nowrap transition ${
                   item.accent
-                    ? scrolled
-                      ? "text-green-600 hover:text-green-700"
-                      : "text-green-300 hover:text-green-200"
-                    : scrolled
-                    ? "text-gray-700 hover:text-blue-700"
-                    : "text-blue-100 hover:text-white"
+                    ? "text-green-600 hover:text-green-700"
+                    : "text-gray-700 hover:text-blue-700"
                 }`}
               >
                 {item.name}
@@ -110,11 +106,7 @@ function Navbar() {
                 aria-expanded={statesOpen}
                 aria-haspopup="true"
                 aria-controls="states-menu"
-                className={`font-semibold text-sm flex items-center gap-1 whitespace-nowrap transition ${
-                  scrolled
-                    ? "text-gray-700 hover:text-blue-700"
-                    : "text-blue-100 hover:text-white"
-                }`}
+                className="font-semibold text-sm flex items-center gap-1 whitespace-nowrap transition text-gray-700 hover:text-blue-700"
               >
                 Ship To
                 <span className="text-[10px]" aria-hidden="true">{statesOpen ? "▲" : "▼"}</span>
@@ -141,21 +133,29 @@ function Navbar() {
             </div>
           </nav>
 
-          {/* Right: the only two buttons */}
-          <div className="hidden lg:flex items-center gap-3 shrink-0">
+          {/* Right: phone number + the two CTA buttons */}
+          <div className="hidden lg:flex items-center gap-5 shrink-0">
+            <a
+              href="tel:+18657227114"
+              className="flex flex-col items-end leading-tight group"
+            >
+              <span className="flex items-center gap-1.5 text-lg font-extrabold text-blue-700 group-hover:text-blue-800 transition whitespace-nowrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1.9.3 1.8.6 2.7a2 2 0 01-.5 2.1L8 9.7a16 16 0 006.3 6.3l1.2-1.2a2 2 0 012.1-.5c.9.3 1.8.5 2.7.6a2 2 0 011.7 2z"/></svg>
+                (865) 722-7114
+              </span>
+              <span className="text-[11px] font-semibold text-gray-400">
+                Available 7 Days a Week
+              </span>
+            </a>
             <a
               href="/track"
-              className={`font-bold px-4 py-2 rounded-xl text-sm transition whitespace-nowrap border ${
-                scrolled
-                  ? "text-blue-700 border-blue-200 hover:bg-blue-50"
-                  : "text-white border-white/30 hover:bg-white/10"
-              }`}
+              className="font-bold px-4 py-2 rounded-xl text-sm transition whitespace-nowrap border text-blue-700 border-blue-200 hover:bg-blue-50"
             >
               Track Shipment
             </a>
             <a
               href="#quote-form"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-bold text-sm transition whitespace-nowrap"
+              className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-xl font-bold text-sm transition whitespace-nowrap shadow-md shadow-orange-500/30"
             >
               Get Free Quote
             </a>
@@ -164,7 +164,7 @@ function Navbar() {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className={`lg:hidden text-3xl ${scrolled ? "text-slate-900" : "text-white"}`}
+            className="lg:hidden text-3xl text-slate-900"
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
@@ -175,7 +175,7 @@ function Navbar() {
         </div>
 
         {menuOpen && (
-          <nav id="mobile-menu" aria-label="Mobile navigation" className={`lg:hidden border-t py-5 space-y-3 ${scrolled ? "border-gray-200" : "border-white/20"}`}>
+          <nav id="mobile-menu" aria-label="Mobile navigation" className="lg:hidden border-t border-gray-200 py-5 space-y-3">
             {links.map((item) => (
               <a
                 key={item.name}
@@ -184,9 +184,7 @@ function Navbar() {
                 className={`block font-semibold px-4 py-2 rounded-lg transition ${
                   item.accent
                     ? "text-green-700 bg-green-50"
-                    : scrolled
-                    ? "text-gray-800 bg-gray-100"
-                    : "text-white bg-white/15"
+                    : "text-gray-800 bg-gray-100"
                 }`}
               >
                 {item.name}
@@ -209,22 +207,24 @@ function Navbar() {
               </div>
             </div>
 
-            <a href="tel:+18657227114" className="block text-blue-700 font-bold px-4 py-2">
+            <a
+              href="tel:+18657227114"
+              className="flex items-center justify-center gap-2 text-blue-700 font-extrabold text-lg px-4 py-3 rounded-xl bg-blue-50"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1.9.3 1.8.6 2.7a2 2 0 01-.5 2.1L8 9.7a16 16 0 006.3 6.3l1.2-1.2a2 2 0 012.1-.5c.9.3 1.8.5 2.7.6a2 2 0 011.7 2z"/></svg>
               (865) 722-7114
             </a>
             <a
               href="/track"
               onClick={() => setMenuOpen(false)}
-              className={`block font-bold text-center rounded-xl py-3 border ${
-                scrolled ? "text-blue-700 border-blue-200" : "text-white border-white/30"
-              }`}
+              className="block font-bold text-center rounded-xl py-3 border text-blue-700 border-blue-200"
             >
               Track Shipment
             </a>
             <a
               href="#quote-form"
               onClick={() => setMenuOpen(false)}
-              className="block bg-blue-600 text-white text-center rounded-xl py-3 font-bold"
+              className="block bg-orange-500 text-white text-center rounded-xl py-3 font-bold"
             >
               Get Free Quote
             </a>
