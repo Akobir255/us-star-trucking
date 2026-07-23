@@ -127,6 +127,8 @@ export default function AdminOrders() {
   };
 
   useEffect(() => {
+    // loadOrders sets a loading flag before its async fetch; not a render loop.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (authed) loadOrders();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authed]);

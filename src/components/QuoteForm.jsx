@@ -344,10 +344,8 @@ export default function QuoteForm() {
   const [vehicles, setVehicles] = useState([makeEmptyVehicle()]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
-  const [promoMessage, setPromoMessage] = useState({ type: "", text: "" });
   const [quote, setQuote] = useState(null);
   const [submitted, setSubmitted] = useState(false);
-  const [appliedPromo, setAppliedPromo] = useState(null);
 
   // Two-step flow: 1 = shipment details → estimate, 2 = contact details → book
   const [step, setStep] = useState(1);
@@ -370,6 +368,8 @@ export default function QuoteForm() {
     // Prefill promo code from banner links like /?promo=USSTAR50#quote-form
     const promoParam = (params.get("promo") || "").toUpperCase().trim();
     if (promoParam && PROMO_CODES[promoParam]) {
+      // One-time sync from the URL (an external system) on mount, not a render loop.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData((p) => ({ ...p, promoCode: promoParam }));
     }
 
@@ -411,6 +411,8 @@ export default function QuoteForm() {
 
   useEffect(() => {
     if (formData.pickup.length === 5) {
+      // Loading flag for an async fetch triggered by this effect, not a render loop.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setZipLoadingPickup(true);
       getCityState(formData.pickup)
         .then((r) => setPickupCity(r || ""))
@@ -423,6 +425,8 @@ export default function QuoteForm() {
 
   useEffect(() => {
     if (formData.delivery.length === 5) {
+      // Loading flag for an async fetch triggered by this effect, not a render loop.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setZipLoadingDelivery(true);
       getCityState(formData.delivery)
         .then((r) => setDeliveryCity(r || ""))
@@ -433,22 +437,14 @@ export default function QuoteForm() {
     }
   }, [formData.delivery]);
 
-  // Check promo code as user types
-  useEffect(() => {
-    const code = formData.promoCode.toUpperCase().trim();
-    if (!code) {
-      setPromoMessage({ type: "", text: "" });
-      setAppliedPromo(null);
-      return;
-    }
-    if (PROMO_CODES[code]) {
-      setPromoMessage({ type: "success", text: `Promo applied! ${PROMO_CODES[code].label}` });
-      setAppliedPromo(PROMO_CODES[code]);
-    } else {
-      setPromoMessage({ type: "error", text: "Invalid promo code." });
-      setAppliedPromo(null);
-    }
-  }, [formData.promoCode]);
+  // Promo code validity is derived directly from formData.promoCode as the user types
+  const promoCodeTrimmed = formData.promoCode.toUpperCase().trim();
+  const appliedPromo = promoCodeTrimmed ? PROMO_CODES[promoCodeTrimmed] || null : null;
+  const promoMessage = !promoCodeTrimmed
+    ? { type: "", text: "" }
+    : appliedPromo
+      ? { type: "success", text: `Promo applied! ${appliedPromo.label}` }
+      : { type: "error", text: "Invalid promo code." };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -593,8 +589,6 @@ export default function QuoteForm() {
     setQuote(null);
     setSubmitted(false);
     setMessage({ type: "", text: "" });
-    setPromoMessage({ type: "", text: "" });
-    setAppliedPromo(null);
     setPickupCity("");
     setDeliveryCity("");
     setStep(1);

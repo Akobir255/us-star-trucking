@@ -74,7 +74,7 @@ function haversineMiles([lon1, lat1], [lon2, lat2]) {
 }
 
 // Which Hawaiian island a coordinate falls on (longitude bands)
-function hawaiiIsland([lon, lat]) {
+function hawaiiIsland([lon]) {
   if (lon < -159.0) return "Kauai";
   if (lon < -157.55) return "Oahu";
   if (lon < -155.95) return "Maui"; // Maui county incl. Molokai & Lanai
