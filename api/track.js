@@ -20,6 +20,7 @@ const BUCKET = "driver-documents";
 const LIMITS = {
   verify: { max: 10, windowMs: 10 * 60_000 },
   phone: { max: 15, windowMs: 10 * 60_000 },
+  order: { max: 20, windowMs: 10 * 60_000 },
 };
 const hits = new Map(); // key: `${kind}:${ip}` -> [timestamps]
 
@@ -141,6 +142,9 @@ export default async function handler(req, res) {
       const OLD_FORMAT = /^US-\d{6}$/;
       if (!NEW_FORMAT.test(orderParam) && !OLD_FORMAT.test(orderParam)) {
         return res.status(400).json({ error: "INVALID_ORDER_NUMBER" });
+      }
+      if (isRateLimited("order", ip)) {
+        return res.status(429).json({ error: "RATE_LIMITED" });
       }
       queryUrl =
         `${SUPABASE_URL}/rest/v1/orders?order_number=eq.${encodeURIComponent(orderParam)}` +
